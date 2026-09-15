@@ -53,7 +53,7 @@ class MT5ProfileMismatchError(RuntimeError):
 
 @dataclass(frozen=True)
 class MT5Config:
-    """MT5 connector connection settings (persisted in ``~/.vibe-trading/mt5.json``).
+    """MT5 connector connection settings (persisted in ``~/.person-trading/mt5.json``).
 
     Args:
         login: Terminal account number; pinned against ``account_info().login``.
@@ -148,7 +148,7 @@ def config_path() -> Path:
 
 
 def load_config() -> MT5Config:
-    """Load MT5 settings from ``~/.vibe-trading/mt5.json``."""
+    """Load MT5 settings from ``~/.person-trading/mt5.json``."""
     path = config_path()
     if not path.exists():
         return MT5Config()
@@ -186,7 +186,7 @@ def _require_mt5() -> ModuleType:
     except ImportError as exc:
         raise MT5DependencyError(
             "MetaTrader5 is not installed (Windows-only). Install the extra with "
-            '`pip install "vibe-trading-ai[mt5]"` and run a local MT5 terminal.'
+            '`pip install "person-trading-ai[mt5]"` and run a local MT5 terminal.'
         ) from exc
     return MetaTrader5
 

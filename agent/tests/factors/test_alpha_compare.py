@@ -1,4 +1,4 @@
-"""Unit + integration tests for ``vibe-trading alpha compare``.
+"""Unit + integration tests for ``person-trading alpha compare``.
 
 Two layers are covered:
 

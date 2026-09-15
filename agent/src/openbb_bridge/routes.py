@@ -1,4 +1,4 @@
-"""FastAPI routes exposing Vibe-Trading as an OpenBB Workspace custom agent.
+"""FastAPI routes exposing Person-Trading as an OpenBB Workspace custom agent.
 
 Two endpoints make up the OpenBB Workspace custom-agent contract:
 
@@ -40,13 +40,13 @@ AGENT_KEY = "vibe_trading_agent"
 QUERY_PATH = "/v1/query"
 
 _MANIFEST = AgentManifest(
-    name="Vibe-Trading Finance Agent",
+    name="Person-Trading Finance Agent",
     description=(
         "AI-powered quantitative finance research agent with backtesting, "
         "factor analysis, swarm teams, and a broad multi-market financial tool "
         "library covering data, strategy generation, and trade analysis."
     ),
-    image="https://raw.githubusercontent.com/HKUDS/Vibe-Trading/main/frontend/public/favicon.png",
+    image="https://raw.githubusercontent.com/HKUDS/Person-Trading/main/frontend/public/favicon.png",
     endpoints={"query": QUERY_PATH},
     features={
         # SSE streaming: implemented by the adapter's event mapper.
@@ -104,7 +104,7 @@ def register_openbb_routes(app: FastAPI) -> None:
 
     @app.get("/agents.json")
     def agents_manifest(request: Request) -> JSONResponse:
-        """Advertise Vibe-Trading as an OpenBB Workspace agent.
+        """Advertise Person-Trading as an OpenBB Workspace agent.
 
         ``endpoints.query`` is resolved against the URL the manifest was fetched
         through, because Workspace stores it verbatim and calls it directly.
@@ -124,12 +124,12 @@ def register_openbb_routes(app: FastAPI) -> None:
 
             async def unavailable() -> AsyncGenerator[dict, None]:
                 yield reasoning_step(
-                    message="Vibe-Trading session runtime is not enabled.",
+                    message="Person-Trading session runtime is not enabled.",
                     event_type="ERROR",
                 ).model_dump()
                 yield message_chunk(
                     text=(
-                        "The Vibe-Trading session runtime is not enabled. "
+                        "The Person-Trading session runtime is not enabled. "
                         "Set ENABLE_SESSION_RUNTIME=true to use the OpenBB "
                         "Workspace agent."
                     )

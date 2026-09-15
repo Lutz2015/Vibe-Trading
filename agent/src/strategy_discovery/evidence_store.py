@@ -129,14 +129,14 @@ def _default_db_path() -> Path:
     """Default database location: ``<runtime-root>/strategy_discovery.db``.
 
     Uses the shared runtime root helper (which honours ``VIBE_TRADING_HOME``)
-    when available, falling back to ``~/.vibe-trading`` otherwise.
+    when available, falling back to ``~/.person-trading`` otherwise.
     """
     try:
         from src.config.paths import get_runtime_root
 
         return get_runtime_root() / _DEFAULT_DB_FILENAME
     except Exception:  # noqa: BLE001 — config layer optional for this package
-        return Path.home() / ".vibe-trading" / _DEFAULT_DB_FILENAME
+        return Path.home() / ".person-trading" / _DEFAULT_DB_FILENAME
 
 
 def _validate_row_for_write(row: EvidenceRow) -> None:

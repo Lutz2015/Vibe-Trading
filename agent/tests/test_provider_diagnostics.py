@@ -57,7 +57,7 @@ def test_provider_capabilities_are_provider_specific() -> None:
 
     assert kimi.capture_reasoning is True
     assert kimi.send_reasoning_content is True
-    assert kimi.default_headers["User-Agent"].startswith("Vibe-Trading/")
+    assert kimi.default_headers["User-Agent"].startswith("Person-Trading/")
 
     assert gemini.gemini_thought_signatures is True
     assert gemini.send_reasoning_content is False
@@ -150,7 +150,7 @@ def test_kimi_user_agent_header_is_moonshot_only() -> None:
         with patch.object(llm_mod, "ChatOpenAIWithReasoning", _FakeChatOpenAI):
             build_llm()
 
-    assert captured["default_headers"]["User-Agent"].startswith("Vibe-Trading/")
+    assert captured["default_headers"]["User-Agent"].startswith("Person-Trading/")
 
     captured.clear()
     env = {
@@ -197,7 +197,7 @@ def test_kimi_user_agent_respects_moonshot_user_agent_env_var() -> None:
         with patch.object(llm_mod, "ChatOpenAIWithReasoning", _FakeChatOpenAI):
             build_llm()
 
-    assert captured["default_headers"]["User-Agent"].startswith("Vibe-Trading/")
+    assert captured["default_headers"]["User-Agent"].startswith("Person-Trading/")
 
 
 def test_kimi_inference_respects_custom_user_agent() -> None:
@@ -214,7 +214,7 @@ def test_nvidia_provider_uses_bearer_auth_with_compatibility_user_agent() -> Non
     assert nvidia.name == "nvidia"
     assert nvidia.api_key_env == "NVIDIA_API_KEY"
     assert nvidia.base_url_env == "NVIDIA_BASE_URL"
-    assert nvidia.default_headers["User-Agent"].startswith("Vibe-Trading/")
+    assert nvidia.default_headers["User-Agent"].startswith("Person-Trading/")
     assert "X-NVIDIA-API-Key" not in nvidia.default_headers
 
 
@@ -240,7 +240,7 @@ def test_nvidia_build_passes_only_capability_headers() -> None:
             build_llm()
 
     assert captured["vibe_provider"] == "nvidia"
-    assert captured["default_headers"]["User-Agent"].startswith("Vibe-Trading/")
+    assert captured["default_headers"]["User-Agent"].startswith("Person-Trading/")
     assert "X-NVIDIA-API-Key" not in captured["default_headers"]
 
 

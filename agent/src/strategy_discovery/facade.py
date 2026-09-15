@@ -55,12 +55,12 @@ _BORDERLINE_WARNING = (
 
 #: Note attached to query results when the evidence table is completely empty.
 #: Names the population path: the ``refresh_strategy_evidence`` tool (agent +
-#: MCP) and the ``vibe-trading strategy-evidence refresh`` CLI command, both
+#: MCP) and the ``person-trading strategy-evidence refresh`` CLI command, both
 #: of which drive the evidence harness over reproducible run artifacts.
 _EMPTY_EVIDENCE_NOTE = (
     "No per-regime evidence computed yet. Populate the store with "
     "`refresh_strategy_evidence` — exposed as an agent/MCP tool and as the "
-    "CLI command `vibe-trading strategy-evidence refresh --manifest <path>` — "
+    "CLI command `person-trading strategy-evidence refresh --manifest <path>` — "
     "which rebuilds evidence from reproducible backtest run artifacts "
     "(library callers may drive "
     "src.strategy_discovery.evidence_harness.rebuild_evidence directly). The "
@@ -679,7 +679,7 @@ class StrategyDiscoveryFacade:
                 envelope["note"] = (
                     f"No evidence rows found for strategy_id {strategy_id!r}{scope}. "
                     "Evidence rows are written by `refresh_strategy_evidence` "
-                    "(agent/MCP tool, or the CLI `vibe-trading strategy-evidence "
+                    "(agent/MCP tool, or the CLI `person-trading strategy-evidence "
                     "refresh`) over reproducible run artifacts."
                 )
             return _json_safe(envelope)

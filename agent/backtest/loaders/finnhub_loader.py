@@ -11,7 +11,7 @@ spacing plus session reuse. The endpoint answers with parallel arrays
 (``o``/``h``/``l``/``c``/``v`` plus epoch ``t``) and a status field ``s`` that
 reads ``"ok"`` on a hit or ``"no_data"`` for an empty window.
 
-Symbol convention (Vibe-Trading -> Finnhub):
+Symbol convention (Person-Trading -> Finnhub):
   * US ``AAPL.US`` -> ``AAPL`` (Finnhub carries US tickers bare)
   * Anything else is passed through uppercased (e.g. a bare ``MSFT``).
 

@@ -48,7 +48,7 @@ def test_live_returns_healthy(local_client: TestClient):
     assert resp.status_code == 200
     body = resp.json()
     assert body["status"] == "healthy"
-    assert body["service"] == "Vibe-Trading API"
+    assert body["service"] == "Person-Trading API"
 
 
 def test_health_is_backward_compatible_alias(local_client: TestClient):
@@ -65,7 +65,7 @@ def test_ready_returns_200_when_provider_ready(
     assert resp.status_code == 200
     body = resp.json()
     assert body["status"] == "ready"
-    assert body["service"] == "Vibe-Trading API"
+    assert body["service"] == "Person-Trading API"
 
 
 def test_ready_returns_503_when_provider_not_ready(

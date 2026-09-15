@@ -357,9 +357,12 @@ export function Settings() {
         ? t("settings.providerUsesManagedAuth", { command: selectedProvider.login_command })
         : t("settings.noApiKeyRequired");
   const apiKeyDisabled = !selectedProvider?.api_key_required || clearApiKey;
+  const apiKeyMasked =
+    Boolean(settings?.api_key_configured) && !apiKey && !clearApiKey;
   const tushareStatus = dataSettings.tushare_token_configured
     ? t("settings.configured")
     : t("settings.keepCurrentToken");
+  const tushareMasked = Boolean(dataSettings?.tushare_token_configured) && !tushareToken && !clearTushareToken;
   const channelRows = channelStatus
     ? Object.entries(channelStatus.channels ?? {}).sort(([a], [b]) => a.localeCompare(b))
     : [];
@@ -588,14 +591,29 @@ export function Settings() {
                   type="password"
                   value={apiKey}
                   onChange={(event) => setApiKey(event.target.value)}
-                  className={`${fieldClass} ps-9`}
-                  placeholder={keyStatus}
+                  className={`${fieldClass} ps-9${apiKeyMasked ? " font-mono tracking-[0.35em]" : ""}`}
+                  placeholder={
+                    apiKeyMasked
+                      ? t("settings.apiKeyMaskedPlaceholder", { defaultValue: "•••••••• (saved)" })
+                      : keyStatus
+                  }
                   autoComplete="current-password"
                   disabled={apiKeyDisabled}
                 />
+                {apiKeyMasked ? (
+                  <span className="pointer-events-none absolute end-3 top-2 rounded-full bg-positive/15 px-2 py-0.5 text-[11px] font-medium text-positive">
+                    {t("settings.configured")}
+                  </span>
+                ) : null}
               </div>
               <div className="flex items-start justify-between gap-3">
-                <span className={hintClass}>{keyStatus}</span>
+                <span className={hintClass}>
+                  {apiKeyMasked
+                    ? t("settings.apiKeyStoredHint", {
+                        defaultValue: "Key is saved. Paste a new value to replace it.",
+                      })
+                    : keyStatus}
+                </span>
                 {selectedProvider?.api_key_required ? (
                   <label className="flex shrink-0 items-center gap-2 text-xs text-muted-foreground">
                     <input
@@ -715,11 +733,20 @@ export function Settings() {
                   type="password"
                   value={tushareToken}
                   onChange={(event) => setTushareToken(event.target.value)}
-                  className={`${fieldClass} ps-9`}
-                  placeholder={tushareStatus}
+                  className={`${fieldClass} ps-9${tushareMasked ? " font-mono tracking-[0.35em]" : ""}`}
+                  placeholder={
+                    tushareMasked
+                      ? t("settings.apiKeyMaskedPlaceholder", { defaultValue: "•••••••• (saved)" })
+                      : tushareStatus
+                  }
                   autoComplete="current-password"
                   disabled={clearTushareToken}
                 />
+                {tushareMasked ? (
+                  <span className="pointer-events-none absolute end-3 top-2 rounded-full bg-positive/15 px-2 py-0.5 text-[11px] font-medium text-positive">
+                    {t("settings.configured")}
+                  </span>
+                ) : null}
               </div>
               <div className="flex items-start justify-between gap-3">
                 <span className={hintClass}>

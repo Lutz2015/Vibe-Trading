@@ -1,6 +1,6 @@
 """CLI surface for the strategy-discovery evidence cache.
 
-``vibe-trading strategy-evidence refresh --manifest <path>`` rebuilds the
+``person-trading strategy-evidence refresh --manifest <path>`` rebuilds the
 disposable facade-owned evidence cache from real backtest run artifacts —
 the same core the ``refresh_strategy_evidence`` agent tool runs
 (:func:`src.tools.strategy_discovery_tool.refresh_strategy_evidence_core`),
@@ -58,7 +58,7 @@ def _render_summary(envelope: dict) -> None:
 
 
 def _cmd_refresh(args: argparse.Namespace) -> int:
-    """Handle ``vibe-trading strategy-evidence refresh``."""
+    """Handle ``person-trading strategy-evidence refresh``."""
     from src.tools.strategy_discovery_tool import refresh_strategy_evidence_core
 
     manifest = getattr(args, "strategy_evidence_manifest", None)
@@ -161,7 +161,7 @@ def dispatch(args: argparse.Namespace) -> int:
         else:
             _print(
                 "[red]strategy-evidence requires a subcommand.[/red] "
-                "Try: vibe-trading strategy-evidence refresh --manifest <path>"
+                "Try: person-trading strategy-evidence refresh --manifest <path>"
             )
         return 2
     return int(handler(args))

@@ -57,7 +57,7 @@ Environment overrides:
 
 | Variable | Effect | Default |
 |----------|--------|---------|
-| `VIBE_TRADING_SEC_UA` | Replace the contact User-Agent with your own address | a Vibe-Trading contact string |
+| `VIBE_TRADING_SEC_UA` | Replace the contact User-Agent with your own address | a Person-Trading contact string |
 | `VIBE_TRADING_SEC_MIN_INTERVAL` | Raise the per-request spacing (never goes below the 0.12s floor) | `0.12` |
 
 ## Error handling

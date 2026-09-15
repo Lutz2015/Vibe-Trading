@@ -153,7 +153,7 @@ class TestSubmissionsAndFacts:
         ) as mock_get:
             sec.get_submissions(320193)
         ua = mock_get.call_args.kwargs["headers"]["User-Agent"]
-        assert "Vibe-Trading" in ua and "contact" in ua.lower()
+        assert "Person-Trading" in ua and "contact" in ua.lower()
 
     def test_user_agent_env_override(self, monkeypatch):
         monkeypatch.setenv("VIBE_TRADING_SEC_UA", "MyApp/2.0 (me@example.com)")

@@ -1,6 +1,6 @@
 """Per-broker order-intent extractors (SPEC.md Mandate Enforcement §4).
 
-Vibe-Trading does not control a broker's tool arg schema, so the enforcement
+Person-Trading does not control a broker's tool arg schema, so the enforcement
 gate cannot hard-code arg names. Each broker ships an ``extract_order_intent``
 function that maps the broker's ``place_order``-style kwargs to the normalized
 :class:`~src.live.enforcement.OrderIntent`, returning ``None`` (→ DENY) whenever

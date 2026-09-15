@@ -51,7 +51,7 @@ def _reset_crumb() -> None:
 
 
 class TestMapSymbol:
-    """Vibe-Trading -> Yahoo ticker translation."""
+    """Person-Trading -> Yahoo ticker translation."""
 
     def test_us_suffix_stripped(self):
         assert yahoo_client.map_symbol("AAPL.US") == "AAPL"

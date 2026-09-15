@@ -43,7 +43,7 @@ def evaluate_case(
 
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="Verify a Vibe-Trading run artifact bundle offline"
+        description="Verify a Person-Trading run artifact bundle offline"
     )
     parser.add_argument(
         "--case", required=True, type=Path, help="path to one Harness case JSON file"

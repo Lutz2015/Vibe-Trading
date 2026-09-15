@@ -10,7 +10,7 @@ import { getDesktopMessages } from "../dist/locales.js";
 import { startUnrelatedPythonSentinel } from "./process-sentinel.mjs";
 
 const electronRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const logDirectory = await mkdtemp(path.join(os.tmpdir(), "vibe-trading-desktop-shell-"));
+const logDirectory = await mkdtemp(path.join(os.tmpdir(), "person-trading-desktop-shell-"));
 const statuses = [];
 let unexpectedExit;
 const apiAuthKey = randomBytes(32).toString("base64url");

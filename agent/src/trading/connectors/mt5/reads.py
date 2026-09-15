@@ -78,7 +78,7 @@ def check_status(config: MT5Config | None = None) -> dict[str, Any]:
     if not report["sdk"]["installed"]:
         report["status"] = "error"
         report["error"] = (
-            "Optional dependency missing: install with `pip install \"vibe-trading-ai[mt5]\"` "
+            "Optional dependency missing: install with `pip install \"person-trading-ai[mt5]\"` "
             "(Windows-only; requires a local MT5 terminal)."
         )
         return report

@@ -1,1 +1,1 @@
-"""Offline evaluation utilities for Vibe-Trading."""
+"""Offline evaluation utilities for Person-Trading."""

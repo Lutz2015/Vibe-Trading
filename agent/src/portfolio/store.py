@@ -19,7 +19,7 @@ class PortfolioStore:
         Args:
             path: Database file path. Defaults to
                 ``portfolio/portfolio.sqlite3`` under the runtime root
-                (``~/.vibe-trading``).
+                (``~/.person-trading``).
         """
         self.path = path or (get_runtime_root() / "portfolio" / "portfolio.sqlite3")
         self.path.parent.mkdir(parents=True, exist_ok=True)

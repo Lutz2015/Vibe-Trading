@@ -373,7 +373,7 @@ def test_settings_write_permission_error_is_actionable(
     assert response.status_code == 503
     assert response.json()["detail"] == (
         "Unable to save settings; check ownership and permissions for "
-        "~/.vibe-trading/.env"
+        "~/.person-trading/.env"
     )
 
 

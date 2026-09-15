@@ -8,7 +8,7 @@ Two rules are enforced here, and the distinction matters:
   data tools clamp such values, but every entrypoint that spends money or places
   an order fails closed with an error envelope *before* the side effect.
 
-Every test here is hermetic: no network call, no ``~/.vibe-trading`` access, and
+Every test here is hermetic: no network call, no ``~/.person-trading`` access, and
 each one reaches the branch it claims to cover.
 """
 
@@ -339,7 +339,7 @@ def test_options_pricing_rejects_unusable_spot(bad_spot: Any) -> None:
     assert payload["error"]
 
 
-# ── session search: must not touch ~/.vibe-trading/sessions.db ────────────────
+# ── session search: must not touch ~/.person-trading/sessions.db ────────────────
 
 
 def test_session_search_rejects_malformed_max_results(monkeypatch: pytest.MonkeyPatch) -> None:

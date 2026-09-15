@@ -147,7 +147,7 @@ def config_path() -> Path:
 
 
 def load_config() -> EtoroConfig:
-    """Load eToro settings from ``~/.vibe-trading/etoro.json`` and env fallbacks."""
+    """Load eToro settings from ``~/.person-trading/etoro.json`` and env fallbacks."""
     path = config_path()
     base: dict[str, Any] = {}
     if path.exists():

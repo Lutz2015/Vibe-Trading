@@ -106,7 +106,7 @@ def test_raw_ok_non_data_payload_envelope_is_rejected():
 
 
 def test_raw_success_envelope_is_rejected():
-    """SYNTHETIC: no current Vibe-Trading tool emits a top-level "success" key
+    """SYNTHETIC: no current Person-Trading tool emits a top-level "success" key
     (confirmed by repository survey). This branch exists only for consistency
     with the sibling _is_tool_success / _is_error_result classifiers, which
     already check both ok and success defensively."""

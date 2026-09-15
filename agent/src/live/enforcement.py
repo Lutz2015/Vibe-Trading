@@ -632,7 +632,7 @@ def _check_universe_floors(
     """Enforce market-cap / liquidity floors via the data loaders (fail-closed).
 
     Both floors are optional (``None`` == no floor). When a floor is set, the
-    figure is fetched from Vibe-Trading's existing loaders (with auto-fallback);
+    figure is fetched from Person-Trading's existing loaders (with auto-fallback);
     if no loader can return a usable figure, the order is DENIED rather than
     waved through (SPEC §5 fail-closed contract).
 

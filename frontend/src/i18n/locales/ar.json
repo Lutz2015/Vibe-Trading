@@ -26,9 +26,10 @@
     "collapse": "طي",
     "expand": "توسيع",
     "skipToMain": "تخطَّ إلى المحتوى الرئيسي",
-    "sidebar": "الشريط الجانبي لـ Vibe-Trading",
+    "sidebar": "الشريط الجانبي لـ Personal-Trading",
     "mainNavigation": "التنقل الرئيسي",
-    "about": "حول"
+    "about": "حول",
+    "brandName": "Personal-Trading"
   },
   "runtime": {
     "monitorBadge": "مراقبة التداول",
@@ -98,9 +99,9 @@
     "connectorStatusUnavailable": "الحالة غير متاحة",
     "connectedAccessUnknown": "متصل · صلاحية الوصول غير معروفة",
     "missingLongbridgeVariables": "الإعدادات ناقصة. اضبط المتغيرات التالية في agent/.env، ثم أعد إنشاء الخدمة:",
-    "missingEtoroVariables": "الإعدادات ناقصة. اضبط متغيرات البيئة التالية أو أنشئ ~/.vibe-trading/etoro.json:",
+    "missingEtoroVariables": "الإعدادات ناقصة. اضبط متغيرات البيئة التالية أو أنشئ ~/.person-trading/etoro.json:",
     "missingEtoroFileHint": "مثال: {\"api_key\": \"YOUR_PUBLIC_API_KEY\", \"user_key\": \"YOUR_USER_KEY\", \"profile\": \"live-readonly\"}. الملفات: etoro-paper-sdk، etoro-live-sdk-readonly، etoro-paper-trade، etoro-live-trade.",
-    "missingConnectorVariables": "الإعدادات ناقصة. اضبط بيانات اعتماد الموصل في ~/.vibe-trading/ أو agent/.env ثم تحقق من الاتصال.",
+    "missingConnectorVariables": "الإعدادات ناقصة. اضبط بيانات اعتماد الموصل في ~/.person-trading/ أو agent/.env ثم تحقق من الاتصال.",
     "pathSeparatedKeyBound": "مسارات منفصلة للتجريبي/الحقيقي (مفتاح مشترك)",
     "sdkConnectorProfile": "اتصال مباشر عبر SDK · ملف تعريف للقراءة فقط",
     "connectionDetails": "تفاصيل الاتصال",
@@ -396,7 +397,7 @@
     "clearApiKey": "مسح مفتاح API المحفوظ",
     "channels": {
       "title": "قنوات IM",
-      "description": "صل محولات الدردشة بنفس وقت تشغيل جلسات Vibe-Trading المستخدم في Web UI و CLI.",
+      "description": "صل محولات الدردشة بنفس وقت تشغيل جلسات Personal-Trading المستخدم في Web UI و CLI.",
       "runtime": "وقت التشغيل",
       "running": "قيد التشغيل",
       "stopped": "متوقف",
@@ -484,7 +485,9 @@
     "oauth": "OAuth",
     "authentication": "المصادقة",
     "apiKey": "مفتاح API",
-    "tushareTokenDesc": "يُستخدم لبيانات الأسهم الصينية (فئة A) والعقود الآجلة والصناديق والاقتصاد الكلي. إذا لم يُضبط، يتراجع المشروع إلى AKShare حيثما توفر."
+    "tushareTokenDesc": "يُستخدم لبيانات الأسهم الصينية (فئة A) والعقود الآجلة والصناديق والاقتصاد الكلي. إذا لم يُضبط، يتراجع المشروع إلى AKShare حيثما توفر.",
+    "apiKeyMaskedPlaceholder": "•••••••• (محفوظ)",
+    "apiKeyStoredHint": "تم حفظ المفتاح بأمان. الصق قيمة جديدة لاستبداله، أو استخدم خيار المسح أدناه."
   },
   "qveris": {
     "title": "سوق أدوات QVeris",
@@ -1154,7 +1157,7 @@
     "unknown": "غير معروف",
     "justNow": "الآن",
     "loadingInstructions": "جارٍ تحميل تعليمات تفويض الموصل...",
-    "fallbackInstruction": "شغّل `vibe-trading connector list` لاختيار ملف تعريف الوسيط، ثم شغّل `vibe-trading connector authorize <الملف>` من جلسة سطح المكتب التي ستحتفظ باتصال الوسيط.",
+    "fallbackInstruction": "شغّل `person-trading connector list` لاختيار ملف تعريف الوسيط، ثم شغّل `person-trading connector authorize <الملف>` من جلسة سطح المكتب التي ستحتفظ باتصال الوسيط.",
     "secondsAgo": "قبل {{n}} ث",
     "minutesAgo": "قبل {{n}} د",
     "hoursAgo": "قبل {{n}} س",

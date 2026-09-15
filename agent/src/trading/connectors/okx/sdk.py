@@ -152,7 +152,7 @@ def config_path() -> Path:
 
 
 def load_config() -> OKXConfig:
-    """Load OKX settings from ``~/.vibe-trading/okx.json``."""
+    """Load OKX settings from ``~/.person-trading/okx.json``."""
     path = config_path()
     if not path.exists():
         return OKXConfig()

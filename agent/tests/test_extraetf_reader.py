@@ -1,7 +1,7 @@
 """Tests for the read-only extraETF export reader.
 
 All fixtures are synthetic, shaped after the anonymized exports posted in
-HKUDS/Vibe-Trading#1170. No real portfolio data is used.
+HKUDS/Person-Trading#1170. No real portfolio data is used.
 """
 
 from __future__ import annotations

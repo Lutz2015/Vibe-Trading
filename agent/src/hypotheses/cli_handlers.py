@@ -1,4 +1,4 @@
-"""CLI handlers for ``vibe-trading hypothesis {list,show,invalidate}``.
+"""CLI handlers for ``person-trading hypothesis {list,show,invalidate}``.
 
 All logic lives here; ``agent/cli.py`` only wires this in via :func:`add_subparser`
 and :func:`dispatch`. Handlers print to stdout (Rich when available, plain
@@ -307,7 +307,7 @@ def dispatch(args: argparse.Namespace) -> int:
         if _HYP_PARSER is not None:
             _HYP_PARSER.print_help()
         else:
-            _err("hypothesis requires a subcommand. Try: vibe-trading hypothesis list")
+            _err("hypothesis requires a subcommand. Try: person-trading hypothesis list")
         return 1
     handler = _DISPATCH.get(sub)
     if handler is None:

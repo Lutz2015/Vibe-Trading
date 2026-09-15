@@ -3,6 +3,19 @@ import { safeGet, safeSet } from "@/lib/storage";
 import { publishThemeChange } from "@/lib/theme-store";
 
 const STORAGE_KEY = "qa-theme";
+const COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
+
+function readCookieTheme(): string | null {
+  if (typeof document === "undefined") return null;
+  const match = document.cookie.match(/(?:^|;\s*)qa-theme=([^;]+)/);
+  return match ? decodeURIComponent(match[1]) : null;
+}
+
+function writeCookieTheme(value: "dark" | "light"): void {
+  if (typeof document === "undefined") return;
+  // Cookies ignore the port, so theme survives desktop backend port changes.
+  document.cookie = `qa-theme=${value};path=/;max-age=${COOKIE_MAX_AGE};SameSite=Lax`;
+}
 
 function getSystemPreference(): boolean {
   if (typeof window.matchMedia !== "function") return false;
@@ -14,7 +27,7 @@ function getSystemPreference(): boolean {
 }
 
 function getPreferredTheme(): boolean {
-  const saved = safeGet(STORAGE_KEY);
+  const saved = safeGet(STORAGE_KEY) ?? readCookieTheme();
   if (saved === "dark") return true;
   if (saved === "light") return false;
   return getSystemPreference();
@@ -71,7 +84,9 @@ export function useDarkMode() {
   const toggle = useCallback(() => {
     const nextDark = !darkRef.current;
     darkRef.current = nextDark;
-    safeSet(STORAGE_KEY, nextDark ? "dark" : "light");
+    const value = nextDark ? "dark" : "light";
+    safeSet(STORAGE_KEY, value);
+    writeCookieTheme(value);
     setDark(nextDark);
   }, []);
 

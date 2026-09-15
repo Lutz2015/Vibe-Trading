@@ -1,4 +1,4 @@
-"""Pin the volume-unit declarations of equity loaders (HKUDS/Vibe-Trading#1062).
+"""Pin the volume-unit declarations of equity loaders (HKUDS/Person-Trading#1062).
 
 Every A-share source declares board lots (1 lot = 100 shares) — baostock's
 native single-share volume is normalized at its loader boundary; the

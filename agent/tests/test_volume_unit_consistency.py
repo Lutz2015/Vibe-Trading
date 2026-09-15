@@ -1,4 +1,4 @@
-"""Empirical cross-source volume consistency guard (HKUDS/Vibe-Trading#1062).
+"""Empirical cross-source volume consistency guard (HKUDS/Person-Trading#1062).
 
 Fetches the same settled A-share trading day from every reachable loader and
 asserts the reported volumes agree within tolerance. This is the runtime lock

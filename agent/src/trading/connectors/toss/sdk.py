@@ -154,7 +154,7 @@ def config_path() -> Path:
 
 
 def load_config() -> TossConfig:
-    """Load Toss settings from ``~/.vibe-trading/toss.json``."""
+    """Load Toss settings from ``~/.person-trading/toss.json``."""
     path = config_path()
     if not path.exists():
         return TossConfig()

@@ -882,7 +882,7 @@ def test_concurrent_orders_share_one_daily_cap_permit(
     monkeypatch,
 ) -> None:
     """Two callers racing a cap of one must make only one broker call."""
-    runtime_root = tmp_path / ".vibe-trading"
+    runtime_root = tmp_path / ".person-trading"
     monkeypatch.setattr(live_paths, "get_runtime_root", lambda: runtime_root)
     monkeypatch.setattr(gate, "load_mandate", lambda broker: _mandate(max_trades=1))
     monkeypatch.setattr(gate, "halt_flag_set", lambda broker: False)

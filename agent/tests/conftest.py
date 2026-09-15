@@ -20,7 +20,7 @@ if str(AGENT_DIR) not in sys.path:
 # --------------------------------------------------------------------------- #
 # Sandbox the config runtime root BEFORE any test module is imported (#1116).
 # --------------------------------------------------------------------------- #
-# The suite must never resolve its config root against the real ~/.vibe-trading
+# The suite must never resolve its config root against the real ~/.person-trading
 # (live mandate + audit-ledger state). Modules in BOTH categories must resolve
 # to a temp sandbox:
 #
@@ -39,7 +39,7 @@ if str(AGENT_DIR) not in sys.path:
 #
 # The sandbox owns exactly ONE knob: the home directory. ``get_runtime_root()``
 # consults ``VIBE_TRADING_HOME`` first and only falls back to
-# ``Path.home()/".vibe-trading"`` (src/config/paths.py:27-34), so the override is
+# ``Path.home()/".person-trading"`` (src/config/paths.py:27-34), so the override is
 # DELETED rather than pointed at the sandbox. Two reasons, both load-bearing:
 #
 #   * A developer with ``VIBE_TRADING_HOME`` exported in their shell would
@@ -78,11 +78,11 @@ _REAL_LEDGERS = tuple(
 # ``Path.resolve()``d path against a ``Path.home()``-derived prefix: the two
 # spellings of the same directory do not compare equal, the guard reads it as an
 # escape attempt and refuses. Resolving here keeps one spelling everywhere.
-_SANDBOX_HOME = Path(tempfile.mkdtemp(prefix="vibe-trading-test-home-")).resolve()
+_SANDBOX_HOME = Path(tempfile.mkdtemp(prefix="person-trading-test-home-")).resolve()
 os.environ.pop("VIBE_TRADING_HOME", None)
 os.environ["HOME"] = str(_SANDBOX_HOME)
 os.environ["USERPROFILE"] = str(_SANDBOX_HOME)
-(_SANDBOX_HOME / ".vibe-trading").mkdir(parents=True, exist_ok=True)
+(_SANDBOX_HOME / ".person-trading").mkdir(parents=True, exist_ok=True)
 
 # A developer shell that exports MARKET_DATA_ORDER_* would silently reorder
 # the default fallback chains (registry.refresh_source_order_overrides reads
@@ -169,7 +169,7 @@ def _sandbox_runtime_root():
     """
     assert os.environ["HOME"] == str(_SANDBOX_HOME)
     assert os.environ["USERPROFILE"] == str(_SANDBOX_HOME)
-    yield _SANDBOX_HOME / ".vibe-trading"
+    yield _SANDBOX_HOME / ".person-trading"
     _teardown_sandbox()
 
 

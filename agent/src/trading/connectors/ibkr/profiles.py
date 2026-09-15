@@ -14,7 +14,7 @@ IBKR_PROFILES: tuple[TradingProfile, ...] = (
         capabilities=READ_CAPABILITIES,
         readonly=True,
         config={"profile": "paper", "host": "127.0.0.1", "port": 7497, "client_id": 77},
-        notes="Uses the user's local TWS paper session. No IBKR credentials enter Vibe-Trading.",
+        notes="Uses the user's local TWS paper session. No IBKR credentials enter Person-Trading.",
     ),
     TradingProfile(
         id="ibkr-live-local-readonly",

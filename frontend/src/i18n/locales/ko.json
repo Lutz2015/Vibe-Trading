@@ -26,9 +26,10 @@
     "collapse": "접기",
     "expand": "펼치기",
     "skipToMain": "본문으로 건너뛰기",
-    "sidebar": "Vibe-Trading 사이드바",
+    "sidebar": "Personal-Trading 사이드바",
     "mainNavigation": "주 내비게이션",
-    "about": "소개"
+    "about": "소개",
+    "brandName": "Personal-Trading"
   },
   "runtime": {
     "monitorBadge": "거래 모니터",
@@ -98,9 +99,9 @@
     "connectorStatusUnavailable": "상태를 확인할 수 없음",
     "connectedAccessUnknown": "연결됨 · 접근 권한 불명",
     "missingLongbridgeVariables": "설정이 누락되었습니다. agent/.env에 다음 변수를 설정하고 서비스를 다시 생성하세요:",
-    "missingEtoroVariables": "설정이 누락되었습니다. 다음 환경 변수를 설정하거나 ~/.vibe-trading/etoro.json을 생성하세요:",
+    "missingEtoroVariables": "설정이 누락되었습니다. 다음 환경 변수를 설정하거나 ~/.person-trading/etoro.json을 생성하세요:",
     "missingEtoroFileHint": "예: {\"api_key\": \"YOUR_PUBLIC_API_KEY\", \"user_key\": \"YOUR_USER_KEY\", \"profile\": \"live-readonly\"}. 프로필: etoro-paper-sdk, etoro-live-sdk-readonly, etoro-paper-trade, etoro-live-trade.",
-    "missingConnectorVariables": "설정이 누락되었습니다. ~/.vibe-trading/ 또는 agent/.env에 커넥터 자격 증명을 구성한 후 연결을 검증하세요.",
+    "missingConnectorVariables": "설정이 누락되었습니다. ~/.person-trading/ 또는 agent/.env에 커넥터 자격 증명을 구성한 후 연결을 검증하세요.",
     "pathSeparatedKeyBound": "데모/실계좌 경로 분리(공유 키 페어)",
     "sdkConnectorProfile": "SDK 직접 연결 · 읽기 전용 프로필",
     "connectionDetails": "연결 세부 정보",
@@ -396,7 +397,7 @@
     "clearApiKey": "저장된 API 키 삭제",
     "channels": {
       "title": "IM 채널",
-      "description": "채팅 어댑터를 Web UI와 CLI가 사용하는 동일한 Vibe-Trading 세션 런타임에 연결합니다.",
+      "description": "채팅 어댑터를 Web UI와 CLI가 사용하는 동일한 Personal-Trading 세션 런타임에 연결합니다.",
       "runtime": "런타임",
       "running": "실행 중",
       "stopped": "중지됨",
@@ -484,7 +485,9 @@
     "oauth": "OAuth",
     "authentication": "인증",
     "apiKey": "API 키",
-    "tushareTokenDesc": "중국 A주·선물·펀드·거시 데이터에 사용됩니다. 설정하지 않으면 가능한 경우 AKShare로 대체됩니다."
+    "tushareTokenDesc": "중국 A주·선물·펀드·거시 데이터에 사용됩니다. 설정하지 않으면 가능한 경우 AKShare로 대체됩니다.",
+    "apiKeyMaskedPlaceholder": "•••••••• (저장됨)",
+    "apiKeyStoredHint": "키가 안전하게 저장되었습니다. 새 값을 붙여넣어 교체하거나 아래 지우기 옵션을 사용하세요."
   },
   "qveris": {
     "title": "QVeris 도구 마켓플레이스",
@@ -1154,7 +1157,7 @@
     "unknown": "알 수 없음",
     "justNow": "방금 전",
     "loadingInstructions": "커넥터 인증 안내를 불러오는 중...",
-    "fallbackInstruction": "`vibe-trading connector list`를 실행해 브로커 프로필을 선택한 뒤, 브로커 연결을 유지할 데스크톱 세션에서 `vibe-trading connector authorize <프로필>`을 실행하세요.",
+    "fallbackInstruction": "`person-trading connector list`를 실행해 브로커 프로필을 선택한 뒤, 브로커 연결을 유지할 데스크톱 세션에서 `person-trading connector authorize <프로필>`을 실행하세요.",
     "secondsAgo": "{{n}}초 전",
     "minutesAgo": "{{n}}분 전",
     "hoursAgo": "{{n}}시간 전",

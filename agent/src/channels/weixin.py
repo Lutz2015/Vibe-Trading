@@ -127,7 +127,7 @@ class WeixinConfig(BaseModel):
     cdn_base_url: str = "https://novac2c.cdn.weixin.qq.com/c2c"
     route_tag: str | int | None = None
     token: str = ""  # Manually set token, or obtained via QR login
-    state_dir: str = ""  # Default: ~/.vibe-trading/weixin/
+    state_dir: str = ""  # Default: ~/.person-trading/weixin/
     poll_timeout: int = DEFAULT_LONG_POLL_TIMEOUT_S  # seconds for long-poll
 
 
@@ -477,7 +477,7 @@ class WeixinChannel(BaseChannel):
             self._token = self.config.token
         elif not self._load_state():
             if not await self._qr_login():
-                self.logger.error("login failed. Run 'vibe-trading channels login weixin' to authenticate.")
+                self.logger.error("login failed. Run 'person-trading channels login weixin' to authenticate.")
                 self._running = False
                 return
 
@@ -1291,7 +1291,7 @@ class WeixinChannel(BaseChannel):
         context_token: str,
     ) -> None:
         """Send a text message matching the exact protocol from send.ts."""
-        client_id = f"vibe-trading-{uuid.uuid4().hex[:12]}"
+        client_id = f"person-trading-{uuid.uuid4().hex[:12]}"
 
         item_list: list[dict] = []
         if text:
@@ -1446,7 +1446,7 @@ class WeixinChannel(BaseChannel):
             media_item["len"] = str(raw_size)
 
         # Send each media item as its own message (matching reference plugin)
-        client_id = f"vibe-trading-{uuid.uuid4().hex[:12]}"
+        client_id = f"person-trading-{uuid.uuid4().hex[:12]}"
         item_list: list[dict] = [{"type": item_type, item_key: media_item}]
 
         weixin_msg: dict[str, Any] = {

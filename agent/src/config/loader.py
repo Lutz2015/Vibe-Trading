@@ -178,7 +178,7 @@ def _resolve_swarm_agent_config_path(
 
     Args:
         runtime_root: Override the directory the on-disk lookup uses. Defaults
-            to ``~/.vibe-trading``. Tests pass a ``tmp_path`` here to keep
+            to ``~/.person-trading``. Tests pass a ``tmp_path`` here to keep
             assertions hermetic.
 
     Returns:
@@ -217,7 +217,7 @@ def load_swarm_agent_config(
 
     Args:
         runtime_root: Override the directory the on-disk lookup uses. Defaults
-            to ``~/.vibe-trading``.
+            to ``~/.person-trading``.
 
     Returns:
         The validated swarm agent config, or an empty :class:`AgentConfig`

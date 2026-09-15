@@ -1,13 +1,13 @@
-"""OpenBB Workspace bridge for Vibe-Trading.
+"""OpenBB Workspace bridge for Person-Trading.
 
-This package exposes Vibe-Trading's :class:`AgentLoop` as an OpenBB Workspace
+This package exposes Person-Trading's :class:`AgentLoop` as an OpenBB Workspace
 custom agent. It is a non-invasive adapter layer: it does not modify any of
-Vibe-Trading's core components (AgentLoop, ToolRegistry, SessionService) and can
+Person-Trading's core components (AgentLoop, ToolRegistry, SessionService) and can
 be enabled or removed independently of the rest of the API server.
 
 The ``openbb-ai`` SDK ships in the optional ``openbb`` extra::
 
-    pip install "vibe-trading-ai[openbb]"
+    pip install "person-trading-ai[openbb]"
 
 Nothing here imports that SDK at module level, so ``api_server`` can call
 :func:`try_register_openbb_routes` unconditionally and stay a thin assembler —
@@ -40,7 +40,7 @@ def try_register_openbb_routes(app: Any) -> bool:
     except ModuleNotFoundError as exc:
         logger.info(
             'OpenBB Workspace bridge disabled (%s). Install with: '
-            'pip install "vibe-trading-ai[openbb]"',
+            'pip install "person-trading-ai[openbb]"',
             exc,
         )
         return False

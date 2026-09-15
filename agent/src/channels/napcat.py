@@ -472,7 +472,7 @@ class NapcatChannel(BaseChannel):
                 return None
             return {"type": "image", "data": {"file": ref}}
         # Local path → base64 so it works even when napcat runs on a
-        # different host/container than vibe-trading.
+        # different host/container than person-trading.
         path = Path(os.path.expanduser(ref)).resolve()
         if not path.is_file():
             logger.warning("napcat: local image not found: {}", path)

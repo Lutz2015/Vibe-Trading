@@ -222,7 +222,7 @@ jobs:
           cache: npm
           cache-dependency-path: desktop/electron/package-lock.json
 
-      - name: Install Vibe-Trading source backend
+      - name: Install Person-Trading source backend
         run: python -m pip install -e .
 
       - name: Install desktop dependencies

@@ -1,19 +1,19 @@
 ---
 name: vnpy-export
-description: Export a Vibe-Trading backtest strategy to a runnable vnpy CtaTemplate Python class — supports A-share equities, futures, and crypto via BarGenerator + ArrayManager.
+description: Export a Person-Trading backtest strategy to a runnable vnpy CtaTemplate Python class — supports A-share equities, futures, and crypto via BarGenerator + ArrayManager.
 category: tool
 ---
 
 ## Overview
 
-This skill translates a Vibe-Trading strategy into a **vnpy `CtaTemplate` subclass** `.py` file
+This skill translates a Person-Trading strategy into a **vnpy `CtaTemplate` subclass** `.py` file
 that can be loaded directly into the vnpy CTA Strategy App for live trading or vnpy backtesting.
 
 Output file: `artifacts/vnpy_strategy/<StrategyName>Strategy.py` (inside the run directory).
 
 vnpy is the most widely-used open-source quant framework in mainland China (39k+ GitHub stars).
 Use this skill when the user asks to export to vnpy, requests a `/vnpy` command, or wants to
-run a Vibe-Trading strategy inside vnpy's CTA backtester or live trading engine.
+run a Person-Trading strategy inside vnpy's CTA backtester or live trading engine.
 
 ---
 
@@ -92,12 +92,12 @@ from vnpy_ctastrategy import (
 
 class {{StrategyName}}Strategy(CtaTemplate):
     """
-    Vibe-Trading export — {{StrategyName}}
+    Person-Trading export — {{StrategyName}}
     Generated from run: {{run_id}}
     Instrument: {{vt_symbol}}
     """
 
-    author = "Vibe-Trading"
+    author = "Person-Trading"
 
     # ── Parameters (editable in vnpy UI) ──────────────────────────────────
     {{param_name}} = {{param_default}}   # add one line per parameter
@@ -178,7 +178,7 @@ class {{StrategyName}}Strategy(CtaTemplate):
 `ArrayManager` is vnpy's built-in vectorised indicator library. Always prefer it over pandas
 when the equivalent method exists — it is faster and avoids look-ahead bias.
 
-| Python (Vibe-Trading / pandas / ta-lib) | vnpy ArrayManager |
+| Python (Person-Trading / pandas / ta-lib) | vnpy ArrayManager |
 |----------------------------------------|-------------------|
 | `df['close'].rolling(n).mean()` | `am.sma(n)` |
 | `df['close'].ewm(span=n).mean()` | `am.ema(n)` |
@@ -206,7 +206,7 @@ cross_over = fast_ma[-1] > slow_ma[-1] and fast_ma[-2] <= slow_ma[-2]
 
 ## Signal → Order Mapping
 
-| Vibe-Trading signal | Position check | vnpy call |
+| Person-Trading signal | Position check | vnpy call |
 |---------------------|---------------|-----------|
 | Long entry | `self.pos == 0` | `self.buy(price, volume)` |
 | Long entry (reverse from short) | `self.pos < 0` | `self.cover(price, vol); self.buy(price, vol)` |
@@ -230,7 +230,7 @@ cross_over = fast_ma[-1] > slow_ma[-1] and fast_ma[-2] <= slow_ma[-2]
 
 ## Multi-Timeframe Strategies
 
-When the Vibe-Trading strategy uses multiple timeframes (e.g., daily signal, hourly entry):
+When the Person-Trading strategy uses multiple timeframes (e.g., daily signal, hourly entry):
 
 ```python
 def __init__(self, ...):
@@ -308,7 +308,7 @@ Before saving the output file:
 - [ ] Position direction checked with `self.pos` before every order call
 - [ ] Stocks: no `short` / `cover` calls unless margin trading is explicitly requested
 - [ ] `load_bar(n)` warmup in `on_init` is at least `max(all indicator windows) + 2`
-- [ ] Comment block at top of file notes the original Vibe-Trading `run_id` and instrument
+- [ ] Comment block at top of file notes the original Person-Trading `run_id` and instrument
 
 ---
 

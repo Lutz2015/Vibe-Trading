@@ -14,7 +14,7 @@ SEC rate-limits by source IP and asks every client to send a descriptive
 ``User-Agent`` carrying a contact address; bursting without one earns a
 temporary block. Every request therefore routes through the shared
 :mod:`backtest.loaders._http` throttle under the ``"sec"`` host bucket, and the
-UA defaults to a Vibe-Trading contact string overridable via
+UA defaults to a Person-Trading contact string overridable via
 ``VIBE_TRADING_SEC_UA``.
 
 This module is a thin transport client, not a :class:`DataLoaderProtocol`
@@ -53,7 +53,7 @@ _COMPANY_FACTS_URL = "https://data.sec.gov/api/xbrl/companyfacts/CIK{cik}.json"
 _UA_ENV = "VIBE_TRADING_SEC_UA"
 # SEC's fair-access policy wants a real contact in the UA. Override via env to
 # present your own address; this default keeps the client compliant out of box.
-_DEFAULT_SEC_UA = f"Vibe-Trading/1.0 (contact: vibe-trading@example.com) {DEFAULT_USER_AGENT}"
+_DEFAULT_SEC_UA = f"Person-Trading/1.0 (contact: person-trading@example.com) {DEFAULT_USER_AGENT}"
 
 # Process-wide memoized ticker->CIK map ("AAPL" -> "0000320193"), built lazily.
 _TICKER_CACHE: Optional[Dict[str, str]] = None

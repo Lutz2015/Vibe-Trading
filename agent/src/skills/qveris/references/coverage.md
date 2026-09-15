@@ -1,6 +1,6 @@
 # QVeris Coverage Map
 
-This map condenses the 2026-07-07 Vibe-Trading design evidence. The measured
+This map condenses the 2026-07-07 Person-Trading design evidence. The measured
 sample ran 20 finance-domain searches at `limit=50`; every search hit the
 50-result cap. Deduplicated sample coverage was 841 tools across 63 providers.
 QVeris also markets "10,000+ capabilities" across 15+ categories; cite that as
@@ -33,7 +33,7 @@ results from `qveris_search`.
 
 ## Category Routing
 
-| Category | Representative tools/providers | Typical cost range | Route to QVeris when | Prefer free Vibe-Trading sources when |
+| Category | Representative tools/providers | Typical cost range | Route to QVeris when | Prefer free Person-Trading sources when |
 |----------|--------------------------------|--------------------|----------------------|---------------------------------------|
 | US/global equities OHLCV | FMP, AlphaVantage, TwelveData, EODHD, Yahoo | 1-24.2 credits/call | The user asks for a paid provider, global breadth, or a source not covered by free loaders. | Routine OHLCV can use `source:"auto"` with yahoo/stooq/sina/eastmoney/yfinance/free fallbacks. |
 | A-share and China market data | cn_financial_pro, cninfo, caidazi | 1-24.2 credits/call | Premium China fields, document-style data, or provider-specific coverage are needed. | A-share OHLCV and common flow/fundamental tools are covered by tencent/mootdx/eastmoney/akshare/tushare. |
@@ -53,7 +53,7 @@ results from `qveris_search`.
 
 ## Agent Policy
 
-- Start with free Vibe-Trading sources for routine OHLCV and official/free tools.
+- Start with free Person-Trading sources for routine OHLCV and official/free tools.
 - Use QVeris for paid breadth, specialist data, and provider comparison.
 - Always inspect before execute.
 - Rank paid candidates by `stats.success_rate`, `expected_cost`, provider fit,

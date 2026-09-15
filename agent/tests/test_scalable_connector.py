@@ -191,7 +191,7 @@ def test_seed_is_a_live_broker_channel_with_no_wildcard() -> None:
     assert server.resolved_transport() == "streamableHttp"
     assert server.url == "https://mcp.scalable.capital/mcp"
     assert server.auth is not None and server.auth.type == "oauth"
-    assert server.auth.cache_dir == "~/.vibe-trading/live/scalable/oauth"
+    assert server.auth.cache_dir == "~/.person-trading/live/scalable/oauth"
     assert server.auth.scopes == []
     assert "*" not in server.enabled_tools
     assert "scalable" in LIVE_BROKER_SERVER_KEYS

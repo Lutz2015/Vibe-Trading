@@ -16,7 +16,7 @@ import {
   verifyWindowsUpdateCandidate,
 } from "../dist/update-verification.js";
 
-const fixture = Buffer.from("vibe-trading-update-safety-fixture", "utf8");
+const fixture = Buffer.from("person-trading-update-safety-fixture", "utf8");
 const fixtureHash = createHash("sha256").update(fixture).digest("hex");
 const publisher = "ab".repeat(32);
 const otherPublisher = "cd".repeat(32);
@@ -32,7 +32,7 @@ const policy = {
 const validSignature = () => ({
   status: "Valid",
   artifactSha256: fixtureHash,
-  signerSubject: "CN=Vibe-Trading Test Publisher",
+  signerSubject: "CN=Person-Trading Test Publisher",
   certificateSha256: publisher,
 });
 

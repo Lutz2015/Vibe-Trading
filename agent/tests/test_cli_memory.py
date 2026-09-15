@@ -1,4 +1,4 @@
-"""Tests for the `vibe-trading memory` CLI subcommands."""
+"""Tests for the `person-trading memory` CLI subcommands."""
 
 from __future__ import annotations
 

@@ -7,7 +7,7 @@ category: data-source
 
 ## Overview
 
-The U.S. Securities and Exchange Commission (SEC) publishes free, no-auth JSON endpoints for every reporting company on its EDGAR system: a ticker-to-CIK directory, a recent-filings index, and the full set of XBRL ("companyfacts") financial concepts a company has reported. This skill documents how Vibe-Trading fetches that data through the bundled `sec_edgar_client` transport and the `get_sec_filings` agent tool.
+The U.S. Securities and Exchange Commission (SEC) publishes free, no-auth JSON endpoints for every reporting company on its EDGAR system: a ticker-to-CIK directory, a recent-filings index, and the full set of XBRL ("companyfacts") financial concepts a company has reported. This skill documents how Person-Trading fetches that data through the bundled `sec_edgar_client` transport and the `get_sec_filings` agent tool.
 
 This is the **fetch** skill — it covers how to get filing-index rows, document URLs, and us-gaap metric series out of EDGAR. The separate `edgar-sec-filings` skill is the **methodology** layer (how to read a 10-K, score insider activity, interpret 8-K items); for any actual data retrieval it delegates here.
 

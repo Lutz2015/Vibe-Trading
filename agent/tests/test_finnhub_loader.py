@@ -38,7 +38,7 @@ def _ok_payload() -> Dict[str, Any]:
 
 
 class TestToFinnhubSymbol:
-    """Vibe-Trading -> Finnhub ticker translation."""
+    """Person-Trading -> Finnhub ticker translation."""
 
     def test_us_suffix_stripped(self):
         assert _to_finnhub_symbol("AAPL.US") == "AAPL"

@@ -32,7 +32,7 @@ def test_presets_dir_lives_inside_swarm_package() -> None:
 
 
 def test_list_presets_returns_full_roster() -> None:
-    # Filter to bundled entries so a developer's own ~/.vibe-trading user
+    # Filter to bundled entries so a developer's own ~/.person-trading user
     # presets can never make the packaging regression flap.
     presets = [p for p in list_presets() if p["source"] == "bundled"]
     assert len(presets) == EXPECTED_PRESET_COUNT, (
@@ -118,7 +118,7 @@ def test_quant_strategy_desk_report_prompt_covers_four_sections() -> None:
     assert insp["layers"][-1][0]["task_id"] == "task-report"
 
 
-# ── User presets directory (~/.vibe-trading/swarm/presets/) ──────────────────
+# ── User presets directory (~/.person-trading/swarm/presets/) ──────────────────
 
 
 _USER_PRESET_YAML = """\

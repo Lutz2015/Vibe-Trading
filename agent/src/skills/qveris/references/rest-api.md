@@ -1,9 +1,9 @@
 # QVeris REST API Reference
 
-This reference is based on the frozen Vibe-Trading QVeris contract dated
+This reference is based on the frozen Person-Trading QVeris contract dated
 2026-07-07. API authentication uses `Authorization: Bearer <QVERIS_API_KEY>`.
 The default base endpoint is the QVeris API v1 base configured by
-`QVERIS_BASE_URL`; Vibe-Trading's default is the production API v1 endpoint from
+`QVERIS_BASE_URL`; Person-Trading's default is the production API v1 endpoint from
 the frozen contract.
 
 ## Common Fields
@@ -29,7 +29,7 @@ Searches the marketplace for matching capabilities. Invalid keys return HTTP
 |-------|------|----------|-------|
 | `query` | string | yes | Natural-language capability query. |
 | `limit` | integer | no | 1-100, default 20. |
-| `session_id` | string | no | Optional Vibe-Trading session id. |
+| `session_id` | string | no | Optional Person-Trading session id. |
 
 ### Response
 
@@ -68,7 +68,7 @@ Fetches full capability metadata by `tool_id`. Use this before paid execution.
 |-------|------|----------|-------|
 | `tool_ids` | string[] | yes | One or more ids returned by search. |
 | `search_id` | string | no | Original search correlation id. |
-| `session_id` | string | no | Optional Vibe-Trading session id. |
+| `session_id` | string | no | Optional Person-Trading session id. |
 
 ### Response
 
@@ -77,7 +77,7 @@ The response uses the same `results` shape as `/search`, but with fuller
 
 ## POST `/tools/execute?tool_id={tool_id}` (Paid When Billable)
 
-Executes one capability. Vibe-Trading must keep QVeris unavailable in `free`
+Executes one capability. Person-Trading must keep QVeris unavailable in `free`
 mode and check session budget in `paid` mode before sending the request.
 
 ### Query
@@ -91,7 +91,7 @@ mode and check session budget in `paid` mode before sending the request.
 | Field | Type | Required | Notes |
 |-------|------|----------|-------|
 | `search_id` | string | no | Correlates execution to discovery. |
-| `session_id` | string | no | Correlates execution to Vibe-Trading session. |
+| `session_id` | string | no | Correlates execution to Person-Trading session. |
 | `model` | string | no | Optional model hint accepted by QVeris. |
 | `parameters` | object | yes | Exact parameters from inspected schema. |
 | `max_response_size` | integer | no | Default 20480; `-1` requests no truncation. |
@@ -211,5 +211,5 @@ requests and retry 429 responses using headers.
 | `Retry-After` | Sleep for the indicated seconds before retry. |
 | `X-RateLimit-*` | If present, log only redacted/non-secret values and respect reset hints. |
 
-Vibe-Trading clients should use a minimum request interval of 0.5 seconds and at
+Person-Trading clients should use a minimum request interval of 0.5 seconds and at
 most 3 retries on 429.

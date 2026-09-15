@@ -122,7 +122,7 @@ def test_execute_keeps_runtime_run_valid_after_home_is_sandboxed(
     run_bucket: str,
 ) -> None:
     real_home = tmp_path / "real-home"
-    run_dir = real_home / ".vibe-trading" / run_bucket / "run-1"
+    run_dir = real_home / ".person-trading" / run_bucket / "run-1"
     run_dir.mkdir(parents=True)
     monkeypatch.setenv("HOME", str(real_home))
     monkeypatch.delenv("VIBE_TRADING_HOME", raising=False)
@@ -160,7 +160,7 @@ def test_sandbox_credentials_absent_in_this_environment() -> None:
 
 def test_prepare_sandbox_home_reexposes_only_loader_paths(tmp_path: Path) -> None:
     real_home = tmp_path / "home"
-    vt = real_home / ".vibe-trading"
+    vt = real_home / ".person-trading"
     (vt / "cache").mkdir(parents=True)
     (vt / "memory").mkdir(parents=True)
     (vt / ".env").write_text("SECRET=1", encoding="utf-8")
@@ -168,7 +168,7 @@ def test_prepare_sandbox_home_reexposes_only_loader_paths(tmp_path: Path) -> Non
 
     sandbox = _prepare_sandbox_home(real_home)
     try:
-        dst_vt = sandbox / ".vibe-trading"
+        dst_vt = sandbox / ".person-trading"
         # Loader-owned paths re-exposed (symlinked)...
         assert (dst_vt / "cache").exists()
         assert (dst_vt / "qveris.json").exists()
@@ -196,7 +196,7 @@ def test_prepare_sandbox_home_copy_fallback_when_symlink_privileges_missing(
     persistent secrets/state out of the ephemeral home.
     """
     real_home = tmp_path / "home"
-    vt = real_home / ".vibe-trading"
+    vt = real_home / ".person-trading"
     (vt / "cache").mkdir(parents=True)
     (vt / "data-bridge").mkdir(parents=True)
     (vt / "qveris.json").write_text("{}", encoding="utf-8")
@@ -208,7 +208,7 @@ def test_prepare_sandbox_home_copy_fallback_when_symlink_privileges_missing(
 
     sandbox = _prepare_sandbox_home(real_home)
     try:
-        dst_vt = sandbox / ".vibe-trading"
+        dst_vt = sandbox / ".person-trading"
         # Symlinks were impossible, yet the loader paths are still present...
         assert (dst_vt / "cache").is_dir()
         assert (dst_vt / "data-bridge").is_dir()
@@ -263,7 +263,7 @@ def test_rlimit_bootstrap_is_valid_python() -> None:
 
 def test_execute_never_passes_preexec_fn(monkeypatch, tmp_path: Path) -> None:
     """#1355: preexec_fn runs Python bytecode in the forked child of a
-    multi-threaded parent (``vibe-trading serve``), which POSIX leaves
+    multi-threaded parent (``person-trading serve``), which POSIX leaves
     undefined and which SIGSEGVs on aarch64/glibc 2.34. The rlimit ceiling must
     reach the child through the exec'd bootstrap instead, never through a fork
     callback."""

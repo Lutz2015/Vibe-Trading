@@ -30,10 +30,11 @@
     "collapse": "Einklappen",
     "expand": "Ausklappen",
     "skipToMain": "Zum Hauptinhalt springen",
-    "sidebar": "Vibe-Trading-Seitenleiste",
+    "sidebar": "Personal-Trading-Seitenleiste",
     "mainNavigation": "Hauptnavigation",
     "about": "Über",
-    "portfolio": "Portfolio"
+    "portfolio": "Portfolio",
+    "brandName": "Personal-Trading"
   },
   "runtime": {
     "monitorBadge": "Runtime-Monitor",
@@ -103,9 +104,9 @@
     "connectorStatusUnavailable": "Status nicht verfügbar",
     "connectedAccessUnknown": "Verbunden · Zugriff unbekannt",
     "missingLongbridgeVariables": "Konfiguration fehlt. Konfigurieren Sie diese Variablen in agent/.env und erstellen Sie den Dienst neu:",
-    "missingEtoroVariables": "Konfiguration fehlt. Setzen Sie diese Umgebungsvariablen oder erstellen Sie ~/.vibe-trading/etoro.json:",
+    "missingEtoroVariables": "Konfiguration fehlt. Setzen Sie diese Umgebungsvariablen oder erstellen Sie ~/.person-trading/etoro.json:",
     "missingEtoroFileHint": "Beispieldatei: {\"api_key\": \"YOUR_PUBLIC_API_KEY\", \"user_key\": \"YOUR_USER_KEY\", \"profile\": \"live-readonly\"}. Profile: etoro-paper-sdk, etoro-live-sdk-readonly, etoro-paper-trade, etoro-live-trade.",
-    "missingConnectorVariables": "Konfiguration fehlt. Konfigurieren Sie die Connector-Anmeldedaten in ~/.vibe-trading/ oder agent/.env, dann verifizieren Sie die Verbindung.",
+    "missingConnectorVariables": "Konfiguration fehlt. Konfigurieren Sie die Connector-Anmeldedaten in ~/.person-trading/ oder agent/.env, dann verifizieren Sie die Verbindung.",
     "pathSeparatedKeyBound": "Demo/Echt pfad-getrennt (gemeinsames Schlüsselpaar)",
     "sdkConnectorProfile": "Direkter SDK-Connector · schreibgeschütztes Profil",
     "connectionDetails": "Verbindungsdetails",
@@ -401,7 +402,7 @@
     "clearApiKey": "Gespeicherten API-Schlüssel löschen",
     "channels": {
       "title": "IM-Kanäle",
-      "description": "Verbinden Sie Chat-Adapter mit derselben Vibe-Trading-Sitzungs-Laufzeit, die von Web-UI und CLI verwendet wird.",
+      "description": "Verbinden Sie Chat-Adapter mit derselben Personal-Trading-Sitzungs-Laufzeit, die von Web-UI und CLI verwendet wird.",
       "runtime": "Laufzeit",
       "running": "Läuft",
       "stopped": "Gestoppt",
@@ -489,7 +490,9 @@
     "oauth": "OAuth",
     "authentication": "Authentifizierung",
     "apiKey": "API-Schlüssel",
-    "tushareTokenDesc": "Verwendet für China-A-Aktien, Futures, Fonds und Makrodaten. Falls nicht gesetzt, greift das Projekt auf AKShare zurück, sofern verfügbar."
+    "tushareTokenDesc": "Verwendet für China-A-Aktien, Futures, Fonds und Makrodaten. Falls nicht gesetzt, greift das Projekt auf AKShare zurück, sofern verfügbar.",
+    "apiKeyMaskedPlaceholder": "•••••••• (gespeichert)",
+    "apiKeyStoredHint": "Schlüssel ist sicher gespeichert. Einen neuen Wert einfügen, um ihn zu ersetzen, oder die Option zum Löschen unten verwenden."
   },
   "qveris": {
     "title": "QVeris-Tool-Marktplatz",
@@ -1159,7 +1162,7 @@
     "unknown": "unbekannt",
     "justNow": "gerade eben",
     "loadingInstructions": "Connector-Autorisierungsanweisungen werden geladen...",
-    "fallbackInstruction": "`vibe-trading connector list` ausführen, Broker-Profil wählen, dann `vibe-trading connector authorize <profile>` aus der Desktop-Sitzung ausführen, die die Broker-Verbindung hält.",
+    "fallbackInstruction": "`person-trading connector list` ausführen, Broker-Profil wählen, dann `person-trading connector authorize <profile>` aus der Desktop-Sitzung ausführen, die die Broker-Verbindung hält.",
     "secondsAgo": "vor {{n}}s",
     "minutesAgo": "vor {{n}}m",
     "hoursAgo": "vor {{n}}h",

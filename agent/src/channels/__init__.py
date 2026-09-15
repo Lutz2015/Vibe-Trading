@@ -1,6 +1,6 @@
 """Chat channels module — multi-IM adapter layer.
 
-Provides a plugin-based channel architecture for connecting Vibe-Trading
+Provides a plugin-based channel architecture for connecting Person-Trading
 to chat platforms (Telegram, Discord, Slack, Feishu, WhatsApp, etc.).
 
 Architecture::

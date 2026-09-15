@@ -59,7 +59,7 @@ deliberately asymmetric: it prefers a miss to a fabricated claim.
 
 Both APIs expose the abstract only, never the body, so ``extraction_scope``
 says so on every brief. Performance figures are the paper's *claims*; they are
-labelled as such and are explicitly not Vibe-Trading backtest results.
+labelled as such and are explicitly not Person-Trading backtest results.
 """
 
 from __future__ import annotations
@@ -121,7 +121,7 @@ _MAX_QUERY_TERMS = 6
 _NOT_STATED = "not stated in source"
 _CLAIM_DISCLAIMER = (
     "Every figure under claimed_performance is what the PAPER claims. None of "
-    "it has been reproduced by a Vibe-Trading backtest."
+    "it has been reproduced by a Person-Trading backtest."
 )
 
 # Unicode the two feeds actually emit (OpenAlex abstracts carry U+2010 hyphens,

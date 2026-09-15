@@ -37,7 +37,7 @@ The client therefore:
 
 | Variable | Effect | Default |
 |----------|--------|---------|
-| `VIBE_TRADING_SEC_UA` | Replace the contact User-Agent (use your own address) | a Vibe-Trading contact string |
+| `VIBE_TRADING_SEC_UA` | Replace the contact User-Agent (use your own address) | a Person-Trading contact string |
 | `VIBE_TRADING_SEC_MIN_INTERVAL` | Raise per-request spacing; never drops below the 0.12s floor | `0.12` |
 
 ## Coverage & lag

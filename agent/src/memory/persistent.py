@@ -18,7 +18,7 @@ from src.agent.frontmatter import parse_frontmatter as _parse_frontmatter
 
 logger = logging.getLogger(__name__)
 
-MEMORY_BASE = Path.home() / ".vibe-trading" / "memory"
+MEMORY_BASE = Path.home() / ".person-trading" / "memory"
 MAX_INDEX_LINES = 200
 MAX_ENTRY_CHARS = 8000
 MAX_RESULTS = 5

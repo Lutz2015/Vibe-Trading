@@ -44,7 +44,7 @@ class MemoryHierarchy:
 
         Args:
             base_dir: Root directory for memory storage
-                      (e.g. ~/.vibe-trading/memory/).
+                      (e.g. ~/.person-trading/memory/).
         """
         self._base_dir = base_dir
         self._index_path = base_dir / ".hierarchy.yaml"

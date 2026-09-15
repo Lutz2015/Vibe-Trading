@@ -1,7 +1,7 @@
 """Inject OpenBB Workspace context into a user message.
 
 Every ``/v1/query`` request carries the workspace state alongside the question.
-Vibe-Trading's :class:`AgentLoop` has no concept of OpenBB widgets, so this
+Person-Trading's :class:`AgentLoop` has no concept of OpenBB widgets, so this
 module distils the request into a compact natural-language prefix prepended to
 the user's message.
 
@@ -18,7 +18,7 @@ Three sources are folded in, in decreasing order of usefulness:
   requires the ``get_widget_data`` function-call round trip, which this bridge
   does not implement. The prefix therefore says so explicitly, so the model uses
   the widget parameters as intent (e.g. "the user is looking at AAPL") and pulls
-  values with Vibe-Trading's own data tools instead of inventing them.
+  values with Person-Trading's own data tools instead of inventing them.
 """
 
 from __future__ import annotations

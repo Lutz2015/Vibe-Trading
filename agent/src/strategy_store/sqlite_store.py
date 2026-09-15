@@ -34,7 +34,7 @@ from src.strategy_store.models import (
 # Constants
 # ---------------------------------------------------------------------------
 
-_DEFAULT_DB_PATH = Path.home() / ".vibe-trading" / "strategy_store.db"
+_DEFAULT_DB_PATH = Path.home() / ".person-trading" / "strategy_store.db"
 
 # Schema version introduced by the model-governance migration (adds the
 # developer/owner/validator/approver/model_version/artifact_version/
@@ -137,7 +137,7 @@ class SqliteStrategyStore:
         Args:
             db_path: SQLite database path.  When omitted,
                 ``VIBE_TRADING_STRATEGY_STORE_DB_PATH`` can override the
-                default ``~/.vibe-trading/strategy_store.db``.
+                default ``~/.person-trading/strategy_store.db``.
         """
         self.db_path = (
             Path(db_path) if db_path is not None else _default_db_path()

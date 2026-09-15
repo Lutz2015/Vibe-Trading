@@ -41,7 +41,7 @@ Counts are nominal; check `alpha_zoo action=health` for the live count currently
 - **No per-stock per-date factor values are surfaced to the agent.** IC results are aggregate stats (mean / std / IR / positive-ratio); the HTML report shows top-N by IR plus formulas, never the underlying panel.
 - **Lookahead is banned in the operator set.** `delta(df, d)` requires `d >= 1`; the negative-shift `Ref(df, -n)` form does not exist. See `docs/alpha-zoo/spec.md` for the full operator catalogue.
 - **Universe loaders may not be wired for every market yet.** When `alpha_bench` returns `universe loader for X not yet implemented`, that's the W2 scaffold — the universe is recognised but the data pull lands in W4.
-- **Do not expose absolute filesystem paths in agent output.** The bench tool writes to `~/.vibe-trading/reports/` by default; refer to it by that shorthand, not by the resolved absolute path.
+- **Do not expose absolute filesystem paths in agent output.** The bench tool writes to `~/.person-trading/reports/` by default; refer to it by that shorthand, not by the resolved absolute path.
 - **`alpha_zoo` is read-only.** `alpha_bench` writes a single HTML file per run — no scratch state elsewhere.
 
 ## Common Pitfalls

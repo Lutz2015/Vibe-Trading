@@ -225,7 +225,7 @@ class TranscriptService:
 
 
 class GatewaySessionManagerAdapter:
-    """Adapt Vibe-Trading SessionService to the WebSocket gateway contract."""
+    """Adapt Person-Trading SessionService to the WebSocket gateway contract."""
 
     def __init__(self, service: Any) -> None:
         self._service = service

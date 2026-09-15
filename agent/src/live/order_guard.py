@@ -278,7 +278,7 @@ class LiveOrderGuardTool(MCPRemoteTool):
         """Return a live USD price for the intent's symbol, fail-closed.
 
         Prefers the broker's mapped READ quote tool so the price is the broker's
-        own; falls back to Vibe-Trading's data loaders
+        own; falls back to Person-Trading's data loaders
         (:func:`src.live.enforcement.last_price_usd`, standard auto-fallback)
         when the broker quote is unavailable. Returns ``None`` when no source
         yields a usable price.

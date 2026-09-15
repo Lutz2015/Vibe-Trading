@@ -81,7 +81,7 @@ def _check_llm_provider() -> CheckResult:
                 name=f"LLM ({provider})",
                 status="error",
                 message=f"OAuth status unavailable: {exc}",
-                impact="run `vibe-trading provider login openai-codex`",
+                impact="run `person-trading provider login openai-codex`",
                 critical=True,
             )
         if not token:
@@ -89,7 +89,7 @@ def _check_llm_provider() -> CheckResult:
                 name=f"LLM ({provider})",
                 status="not_configured",
                 message="ChatGPT OAuth login not found",
-                impact="run `vibe-trading provider login openai-codex`",
+                impact="run `person-trading provider login openai-codex`",
                 critical=True,
             )
         account = getattr(token, "account_id", None) or "authenticated account"

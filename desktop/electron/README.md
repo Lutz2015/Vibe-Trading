@@ -1,6 +1,6 @@
-# Vibe-Trading Desktop (Unofficial Community Build)
+# Person-Trading Desktop (Unofficial Community Build)
 
-This directory contains an Electron host for the existing Vibe-Trading FastAPI
+This directory contains an Electron host for the existing Person-Trading FastAPI
 and React application. The Windows packaging layer can assemble an unsigned
 NSIS review artifact or require and verify Authenticode signing for a
 publishable installer. Both use an isolated Python runtime and encrypted
@@ -17,7 +17,7 @@ download an artifact, launch an installer, or enable updates. See
 ## What the shell does
 
 - Enforces a single desktop application instance.
-- Starts one owned `vibe-trading serve` process through a parent-death
+- Starts one owned `person-trading serve` process through a parent-death
   watchdog.
 - Selects a free loopback port and binds the backend to `127.0.0.1`.
 - Generates a 256-bit authentication secret for each desktop process.
@@ -42,11 +42,13 @@ download an artifact, launch an installer, or enable updates. See
 See [THREAT_MODEL.md](THREAT_MODEL.md) for the trust boundary and residual
 risks. See [REVIEW_NOTES.md](REVIEW_NOTES.md) for the file inventory and
 validation ledger. See [WINDOWS_PACKAGING.md](WINDOWS_PACKAGING.md) for the
-packaging-specific boundary and build commands.
+Windows packaging boundary and build commands. See
+[MACOS_PACKAGING.md](MACOS_PACKAGING.md) for the unsigned macOS arm64 DMG/ZIP
+review artifact.
 
 ## Run from source
 
-From a complete Vibe-Trading checkout:
+From a complete Person-Trading checkout:
 
 ```powershell
 python -m venv .venv
@@ -86,13 +88,13 @@ artifact mutation, concurrent journal creation, and failed-shutdown retry.
 Backend resolution is intentionally narrow. It checks an explicit
 `VIBE_TRADING_EXECUTABLE` override first, then exact application/resource
 locations used by packaged builds. In source mode only, it may use
-`.venv\Scripts\vibe-trading.exe` from an ancestor containing this project's
-`pyproject.toml` (`[project].name = "vibe-trading-ai"`). Its final fallback is
-`vibe-trading.exe` on `PATH`; arbitrary ancestor directories and the drive root
+`.venv\Scripts\person-trading.exe` from an ancestor containing this project's
+`pyproject.toml` (`[project].name = "person-trading-ai"`). Its final fallback is
+`person-trading.exe` on `PATH`; arbitrary ancestor directories and the drive root
 are never searched for executables. To select an explicit development backend:
 
 ```powershell
-$env:VIBE_TRADING_EXECUTABLE = "C:\path\to\vibe-trading.exe"
+$env:VIBE_TRADING_EXECUTABLE = "C:\path\to\person-trading.exe"
 npm start
 ```
 

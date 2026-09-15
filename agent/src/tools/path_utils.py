@@ -60,7 +60,7 @@ def safe_path(p: str, workdir: Path) -> Path:
     """
     _rejects_unc(p)
     base = Path(workdir).resolve()
-    # Expand ~ so home-relative paths (e.g. ~/.vibe-trading/scripts/foo.py)
+    # Expand ~ so home-relative paths (e.g. ~/.person-trading/scripts/foo.py)
     # resolve correctly instead of being treated as literal directory names.
     expanded = Path(p).expanduser()
     if expanded.is_absolute():
@@ -105,8 +105,8 @@ def _default_file_roots() -> list[Path]:
         agent_root / "runs",
         cwd / "uploads",
         cwd / "data",
-        home / ".vibe-trading" / "uploads",
-        home / ".vibe-trading" / "imports",
+        home / ".person-trading" / "uploads",
+        home / ".person-trading" / "imports",
         runtime_root / "uploads",
         runtime_root / "runs",
         runtime_root / "imports",
@@ -127,8 +127,8 @@ def _default_run_roots() -> list[Path]:
         agent_root / ".swarm" / "runs",  # un-migrated legacy swarm runs
         swarm_runs_root(),
         cwd / "runs",
-        home / ".vibe-trading" / "shadow_runs",
-        home / ".vibe-trading" / "runs",
+        home / ".person-trading" / "shadow_runs",
+        home / ".person-trading" / "runs",
         runtime_root / "shadow_runs",
         runtime_root / "runs",
     ]
@@ -168,8 +168,8 @@ def allowed_write_roots() -> list[Path]:
         agent_root / "uploads",
         agent_root / "runs",
         cwd / "uploads",
-        home / ".vibe-trading" / "uploads",
-        home / ".vibe-trading" / "runs",
+        home / ".person-trading" / "uploads",
+        home / ".person-trading" / "runs",
         runtime_root / "uploads",
         runtime_root / "runs",
     ]

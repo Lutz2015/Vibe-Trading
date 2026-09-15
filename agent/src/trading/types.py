@@ -43,7 +43,7 @@ class TradingProfile:
         connector: Broker/connector key, e.g. ``ibkr`` or ``robinhood``.
         label: Human-readable display label.
         environment: Paper or live account environment.
-        transport: How Vibe-Trading reaches the connector.
+        transport: How Person-Trading reaches the connector.
         capabilities: Capability strings exposed by this profile.
         readonly: Whether every operation in this profile is read-only.
         config: Connector-specific defaults.

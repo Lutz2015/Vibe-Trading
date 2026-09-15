@@ -1,4 +1,4 @@
-Vibe-Trading qlib158 zoo
+Person-Trading qlib158 zoo
 ========================
 
 This subpackage adapts the Alpha158 feature catalogue from:
@@ -20,7 +20,7 @@ file as part of its distribution …"). The Work as redistributed by us does
 not include such a file from the upstream; only the upstream LICENSE
 applies, copies of which are referenced from LICENSE.md.
 
-Modifications by Vibe-Trading
+Modifications by Person-Trading
 -----------------------------
 
 The Python implementations in this directory are re-written from scratch on

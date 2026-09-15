@@ -47,7 +47,7 @@ class CreateHypothesisTool(BaseTool):
             "skills": {
                 "type": "array",
                 "items": {"type": "string"},
-                "description": "Relevant Vibe-Trading skills",
+                "description": "Relevant Person-Trading skills",
             },
             "invalidation_notes": {"type": "string", "description": "Invalidation notes"},
         },

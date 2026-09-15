@@ -3,7 +3,7 @@
 Inbound:
 - Parse QQ botpy messages (C2C / Group)
 - Download attachments to media dir using chunked streaming write (memory-safe)
-- Publish to the Vibe-Trading bus via BaseChannel._handle_message()
+- Publish to the Person-Trading bus via BaseChannel._handle_message()
 - Content includes a clear, actionable "Received files:" list with local paths
 
 Outbound:
@@ -110,7 +110,7 @@ def _make_bot_class(channel: QQChannel) -> type[botpy.Client]:
 
     class _Bot(botpy.Client):
         def __init__(self):
-            # Disable botpy's file log — vibe-trading uses loguru; default "botpy.log" fails on read-only fs
+            # Disable botpy's file log — person-trading uses loguru; default "botpy.log" fails on read-only fs
             super().__init__(intents=intents, ext_handlers=False)
 
         async def on_ready(self):
@@ -138,7 +138,7 @@ class QQConfig(BaseModel):
     msg_format: Literal["plain", "markdown"] = "plain"
     ack_message: str = "⏳ Processing..."
 
-    # Optional: directory to save inbound attachments. If empty, use vibe-trading get_media_dir("qq").
+    # Optional: directory to save inbound attachments. If empty, use person-trading get_media_dir("qq").
     media_dir: str = ""
 
     # Download tuning
@@ -183,9 +183,9 @@ class QQChannel(BaseChannel):
             try:
                 root = Path(get_media_dir("qq"))
             except Exception:
-                root = Path.home() / ".vibe-trading" / "media" / "qq"
+                root = Path.home() / ".person-trading" / "media" / "qq"
         else:
-            root = Path.home() / ".vibe-trading" / "media" / "qq"
+            root = Path.home() / ".person-trading" / "media" / "qq"
 
         root.mkdir(parents=True, exist_ok=True)
         self.logger.info("media directory: {}", str(root))

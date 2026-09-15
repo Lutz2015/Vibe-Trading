@@ -1,6 +1,6 @@
-"""Self-update support: ``vibe-trading update``.
+"""Self-update support: ``person-trading update``.
 
-Checks PyPI for a newer ``vibe-trading-ai`` release than the currently
+Checks PyPI for a newer ``person-trading-ai`` release than the currently
 installed one and, when one exists, upgrades in place through ``pip`` using the
 same interpreter that is running the CLI (``sys.executable -m pip``, never a
 bare ``pip`` — the upgrade must target the interpreter that owns this CLI).
@@ -13,7 +13,7 @@ an ``pip install -e .`` install replaces the editable dev install with a
 released wheel, which is a surprise nobody wants.
 
 Design rules:
-- Invoking ``vibe-trading update`` means "upgrade me": there is deliberately no
+- Invoking ``person-trading update`` means "upgrade me": there is deliberately no
   confirmation prompt (user decision, 2026-08-07).
 - Never downgrade: only upgrade when the latest PyPI version is strictly
   greater than the installed one (PEP 440).
@@ -43,8 +43,8 @@ from cli.theme import get_console
 
 console = get_console()
 
-PACKAGE_NAME = "vibe-trading-ai"
-PYPI_JSON_URL = "https://pypi.org/pypi/vibe-trading-ai/json"
+PACKAGE_NAME = "person-trading-ai"
+PYPI_JSON_URL = "https://pypi.org/pypi/person-trading-ai/json"
 PYPI_TIMEOUT_SECONDS = 15
 VERIFY_TIMEOUT_SECONDS = 60
 
@@ -58,7 +58,7 @@ KIND_CHECKOUT = "checkout"
 
 
 def fetch_latest_version() -> str:
-    """Return the newest published version of ``vibe-trading-ai`` on PyPI.
+    """Return the newest published version of ``person-trading-ai`` on PyPI.
 
     Raises:
         requests.RequestException: network / HTTP failures — the caller turns
@@ -71,7 +71,7 @@ def fetch_latest_version() -> str:
 
 
 def detect_install_kind() -> str:
-    """Classify how ``vibe-trading-ai`` is installed, cheapest signals first.
+    """Classify how ``person-trading-ai`` is installed, cheapest signals first.
 
     Returns one of the ``KIND_*`` constants:
 
@@ -187,7 +187,7 @@ def _pip_upgrade(latest: str) -> int:
     )
     if proc.returncode != 0:
         console.print(
-            "[red]Upgrade failed.[/red] Re-run `vibe-trading update` or inspect the pip output above."
+            "[red]Upgrade failed.[/red] Re-run `person-trading update` or inspect the pip output above."
         )
         return EXIT_FAILED
     return _verify_upgrade(latest)
@@ -200,7 +200,7 @@ def _verify_upgrade(expected: str) -> int:
             [
                 sys.executable,
                 "-c",
-                "from importlib.metadata import version; print(version('vibe-trading-ai'))",
+                "from importlib.metadata import version; print(version('person-trading-ai'))",
             ],
             capture_output=True,
             text=True,
@@ -218,9 +218,9 @@ def _verify_upgrade(expected: str) -> int:
     if not confirmed:
         console.print(
             f"[yellow]Upgrade verification mismatch[/yellow] — expected {expected}, "
-            f"reported {rich_escape(installed or 'unknown')}. Check `vibe-trading --version`."
+            f"reported {rich_escape(installed or 'unknown')}. Check `person-trading --version`."
         )
         return EXIT_FAILED
 
-    console.print(f"Updated to {installed}. Run `vibe-trading --version` to confirm.")
+    console.print(f"Updated to {installed}. Run `person-trading --version` to confirm.")
     return EXIT_OK

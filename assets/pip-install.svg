@@ -50,7 +50,7 @@
   </clipPath>
   <g clip-path="url(#typed)">
     <text x="32" y="39" class="terminal-text" fill="#27c93f">pip install</text>
-    <text x="152" y="39" class="terminal-text" fill="#e2e2ff" font-weight="bold"> vibe-trading-ai</text>
+    <text x="152" y="39" class="terminal-text" fill="#e2e2ff" font-weight="bold"> person-trading-ai</text>
   </g>
 
   <!-- Blinking cursor -->

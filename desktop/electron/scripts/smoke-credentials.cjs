@@ -12,11 +12,11 @@ void app.whenReady().then(run).catch(async (error) => {
 
 async function run() {
   const temporaryRoot = await fs.mkdtemp(
-    path.join(os.tmpdir(), "vibe-trading-credentials-"),
+    path.join(os.tmpdir(), "person-trading-credentials-"),
   );
   const homeDirectory = path.join(temporaryRoot, "home");
   const userDataDirectory = path.join(temporaryRoot, "user-data");
-  const configDirectory = path.join(homeDirectory, ".vibe-trading");
+  const configDirectory = path.join(homeDirectory, ".person-trading");
   let exitCode = 0;
 
   try {
@@ -78,9 +78,9 @@ async function run() {
     }
 
     const migratedDotenv = await fs.readFile(path.join(configDirectory, ".env"), "utf8");
-    assert.match(migratedDotenv, /OPENAI_API_KEY is stored by Vibe-Trading Desktop/u);
-    assert.match(migratedDotenv, /MODELSCOPE_API_KEY is stored by Vibe-Trading Desktop/u);
-    assert.match(migratedDotenv, /TUSHARE_TOKEN is stored by Vibe-Trading Desktop/u);
+    assert.match(migratedDotenv, /OPENAI_API_KEY is stored by Person-Trading Desktop/u);
+    assert.match(migratedDotenv, /MODELSCOPE_API_KEY is stored by Person-Trading Desktop/u);
+    assert.match(migratedDotenv, /TUSHARE_TOKEN is stored by Person-Trading Desktop/u);
     assert.match(migratedDotenv, /ANTHROPIC_API_KEY=sk-xxx/u);
     assert.match(migratedDotenv, /NON_SECRET_SETTING=preserved/u);
     assert.ok(!migratedDotenv.includes("desktop-smoke-openai-secret"));

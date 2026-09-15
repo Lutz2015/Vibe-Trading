@@ -342,7 +342,7 @@ def fetch_subreddit_posts(
     reddit = praw.Reddit(
         client_id=os.getenv("REDDIT_CLIENT_ID"),
         client_secret=os.getenv("REDDIT_CLIENT_SECRET"),
-        user_agent="vibe-trading/1.0",
+        user_agent="person-trading/1.0",
     )
     subreddit = reddit.subreddit(subreddit_name)
     posts = []

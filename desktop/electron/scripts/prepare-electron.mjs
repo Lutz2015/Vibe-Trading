@@ -16,7 +16,23 @@ import { downloadArtifact } from "@electron/get";
 
 const DOWNLOAD_ATTEMPTS = 4;
 const DOWNLOAD_TIMEOUT_MS = 180_000;
-const WINDOWS_EXECUTABLE = "electron.exe";
+
+function resolveElectronTarget({ platform = process.platform, arch = process.arch } = {}) {
+  const electronPlatform = platform === "darwin" ? "darwin" : platform === "linux" ? "linux" : "win32";
+  const electronArch = arch === "arm64" ? "arm64" : arch === "ia32" ? "ia32" : "x64";
+  const executable =
+    electronPlatform === "win32"
+      ? "electron.exe"
+      : electronPlatform === "darwin"
+        ? "Electron.app/Contents/MacOS/Electron"
+        : "electron";
+  return {
+    platform: electronPlatform,
+    arch: electronArch,
+    executable,
+    archiveName: `electron-v{version}-${electronPlatform}-${electronArch}.zip`,
+  };
+}
 
 export async function prepareElectron() {
   const electronRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -28,7 +44,8 @@ export async function prepareElectron() {
     await readFile(path.join(electronModule, "checksums.json"), "utf8"),
   );
   const version = electronPackage.version;
-  const archiveName = `electron-v${version}-win32-x64.zip`;
+  const targetSpec = resolveElectronTarget();
+  const archiveName = targetSpec.archiveName.replace("{version}", version);
   const expected = checksums[archiveName];
   if (!expected) throw new Error(`Official checksum is missing for ${archiveName}`);
 
@@ -48,8 +65,8 @@ export async function prepareElectron() {
       downloadArtifact({
         version,
         artifactName: "electron",
-        platform: "win32",
-        arch: "x64",
+        platform: targetSpec.platform,
+        arch: targetSpec.arch,
         checksums,
         cacheRoot: path.join(cacheRoot, "electron-get"),
         downloadOptions: {
@@ -72,7 +89,13 @@ export async function prepareElectron() {
     },
   });
 
-  await installElectronRuntime({ electronModule, archive: target, version });
+  await installElectronRuntime({
+    electronModule,
+    archive: target,
+    version,
+    executable: targetSpec.executable,
+    platform: targetSpec.platform,
+  });
   console.log(`Electron archive and source runtime ready: ${target}`);
 }
 
@@ -116,15 +139,21 @@ export async function acquireVerifiedArchive({
   );
 }
 
-export async function installElectronRuntime({ electronModule, archive, version }) {
+export async function installElectronRuntime({
+  electronModule,
+  archive,
+  version,
+  executable = "electron.exe",
+  platform = "win32",
+}) {
   const dist = path.join(electronModule, "dist");
-  const executable = path.join(dist, WINDOWS_EXECUTABLE);
+  const executablePath = path.join(dist, executable);
   const versionFile = path.join(dist, "version");
   const pathFile = path.join(electronModule, "path.txt");
   if (
     (await readTrimmed(versionFile))?.replace(/^v/u, "") === version &&
-    (await readTrimmed(pathFile)) === WINDOWS_EXECUTABLE &&
-    (await exists(executable))
+    (await readTrimmed(pathFile)) === executable &&
+    (await exists(executablePath))
   ) {
     return;
   }
@@ -136,14 +165,14 @@ export async function installElectronRuntime({ electronModule, archive, version 
     await mkdir(temporaryDist, { recursive: true });
     await extractZip(archive, { dir: temporaryDist });
 
-    const extractedExecutable = path.join(temporaryDist, WINDOWS_EXECUTABLE);
+    const extractedExecutable = path.join(temporaryDist, executable);
     const extractedVersion = (await readTrimmed(path.join(temporaryDist, "version")))?.replace(
       /^v/u,
       "",
     );
     if (!(await exists(extractedExecutable)) || extractedVersion !== version) {
       throw new Error(
-        `Electron archive did not contain the expected Windows ${version} runtime`,
+        `Electron archive did not contain the expected ${platform} ${version} runtime`,
       );
     }
 
@@ -155,7 +184,7 @@ export async function installElectronRuntime({ electronModule, archive, version 
 
     await rm(dist, { recursive: true, force: true });
     await rename(temporaryDist, dist);
-    await writeFile(temporaryPathFile, WINDOWS_EXECUTABLE, "utf8");
+    await writeFile(temporaryPathFile, executable, "utf8");
     await rm(pathFile, { force: true });
     await rename(temporaryPathFile, pathFile);
   } finally {

@@ -1,5 +1,5 @@
 {
-  "name": "Vibe-Trading",
+  "name": "Person-Trading",
   "image": "mcr.microsoft.com/devcontainers/python:1-3.11-bookworm",
   "features": {
     "ghcr.io/devcontainers/features/node:1": {
@@ -12,12 +12,12 @@
   ],
   "portsAttributes": {
     "8899": {
-      "label": "Vibe-Trading API",
+      "label": "Person-Trading API",
       "onAutoForward": "notify",
       "visibility": "private"
     },
     "5899": {
-      "label": "Vibe-Trading Frontend",
+      "label": "Person-Trading Frontend",
       "onAutoForward": "notify",
       "visibility": "private"
     }

@@ -12,7 +12,7 @@ https://github.com/sharebook-kr/pykrx/issues/270). This loader passes
 backtest needs — so be clear that the series is *Naver-backed adjusted* data,
 not a verbatim KRX print. Nothing here silently inherits that choice.
 
-Symbol convention (Vibe-Trading -> pykrx):
+Symbol convention (Person-Trading -> pykrx):
   * ``005930.KS`` (KOSPI) / ``247540.KQ`` (KOSDAQ) -> bare 6-digit ticker
     ``005930``. The ``.KS``/``.KQ`` suffix follows the Yahoo convention already
     used for market inference elsewhere; pykrx itself takes the bare code and

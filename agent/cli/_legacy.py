@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
-"""Vibe-Trading CLI for natural-language finance research and backtesting.
+"""Person-Trading CLI for natural-language finance research and backtesting.
 
 Usage:
-    vibe-trading                           Interactive mode (default)
-    vibe-trading -p "Backtest AAPL MACD"   Single run
-    vibe-trading serve --port 8899         Start API server
-    vibe-trading chat                      Interactive mode
-    vibe-trading list                      List runs
-    vibe-trading show <run_id>             Show run details
+    person-trading                           Interactive mode (default)
+    person-trading -p "Backtest AAPL MACD"   Single run
+    person-trading serve --port 8899         Start API server
+    person-trading chat                      Interactive mode
+    person-trading list                      List runs
+    person-trading show <run_id>             Show run details
 """
 
 from __future__ import annotations
@@ -72,7 +72,7 @@ EXIT_SUCCESS = 0
 EXIT_RUN_FAILED = 1
 EXIT_USAGE_ERROR = 2
 
-# Rows printed by `vibe-trading portfolio show` before the combined-holdings table is cut.
+# Rows printed by `person-trading portfolio show` before the combined-holdings table is cut.
 _PORTFOLIO_CLI_MAX_HOLDINGS = 25
 RICH_TAG_PATTERN = re.compile(r"\[/?[^\]]+\]")
 SWARM_RUN_USAGE = """--swarm-run PRESET '{"k":"v"}'"""
@@ -882,7 +882,7 @@ class _RunDashboard:
             body.add_row("")
             body.add_row(Panel(Text(latest, style="dim"), title="Latest answer", border_style="dim", padding=(0, 1)))
 
-        return Panel(body, title="Vibe-Trading", border_style="cyan", padding=(1, 1 if compact else 2))
+        return Panel(body, title="Person-Trading", border_style="cyan", padding=(1, 1 if compact else 2))
 
 
 from cli.ui.rail import RailRunDashboard as _RunDashboard  # noqa: E402,F811
@@ -1474,9 +1474,9 @@ def _print_result(result: dict, elapsed: float, *, no_rich: bool = False) -> Non
         actions = Table(box=None, show_header=False, padding=(0, 1))
         actions.add_column(style="cyan", no_wrap=True)
         actions.add_column(style="dim")
-        actions.add_row(f"vibe-trading show {rid}", "details")
-        actions.add_row(f"vibe-trading code {rid}", "generated Python")
-        actions.add_row(f"vibe-trading continue {rid} \"...\"", "refine this run")
+        actions.add_row(f"person-trading show {rid}", "details")
+        actions.add_row(f"person-trading code {rid}", "generated Python")
+        actions.add_row(f"person-trading continue {rid} \"...\"", "refine this run")
         panels.append(Panel(actions, border_style="dim", title="Next", padding=(0, 1)))
 
     if _terminal_width() < 104:
@@ -1558,7 +1558,7 @@ def cmd_run(prompt: str, max_iter: int, *, json_mode: bool = False, no_rich: boo
         # after the command exits.
         if _read_metric_values(Path(result["run_dir"]) / "artifacts" / "metrics.csv"):
             hint = (
-                f"Dashboard: run `vibe-trading serve`, then open "
+                f"Dashboard: run `person-trading serve`, then open "
                 f"/runs/{result['run_id']}?view=dashboard"
             )
             if no_rich:
@@ -1708,7 +1708,7 @@ def _build_welcome_panel(term_width: Optional[int] = None) -> Panel:
     content_width = widths["content"]
 
     header_lines: list[Text] = []
-    title = f"Vibe-Trading v{_VERSION}"
+    title = f"Person-Trading v{_VERSION}"
     subtitle = "finance agent CLI"
     if term_width < 78:
         header_lines.append(Text(title, style="bold cyan"))
@@ -1834,7 +1834,7 @@ def _build_welcome_panel(term_width: Optional[int] = None) -> Panel:
     body.add_row("")
     body.add_row(Text(_clip_inline("Example: analyze AAPL momentum with risk controls", content_width), style="dim"))
 
-    return Panel(body, title="[bold cyan]Vibe-Trading[/bold cyan]", border_style="cyan", padding=(1, 1))
+    return Panel(body, title="[bold cyan]Person-Trading[/bold cyan]", border_style="cyan", padding=(1, 1))
 
 
 def _print_welcome() -> None:
@@ -1933,7 +1933,7 @@ def _show_settings() -> None:
             console.print(panel)
     else:
         console.print(Columns(panels, expand=True, equal=True))
-    console.print("[dim]Edit configuration in ~/.vibe-trading/.env, or run vibe-trading init.[/dim]")
+    console.print("[dim]Edit configuration in ~/.person-trading/.env, or run person-trading init.[/dim]")
 
 
 def _handle_slash_command(input_str: str, *, max_iter: int) -> None:
@@ -3036,8 +3036,8 @@ def cmd_provider_login(provider: str) -> int:
             "interactive terminal to paste the callback URL."
         )
         console.print(
-            "[yellow]Docker:[/yellow] run `docker compose exec vibe-trading "
-            "vibe-trading provider login openai-codex` or add `-it` to "
+            "[yellow]Docker:[/yellow] run `docker compose exec person-trading "
+            "person-trading provider login openai-codex` or add `-it` to "
             "`docker exec`."
         )
         return EXIT_RUN_FAILED
@@ -3072,7 +3072,7 @@ def _login_copilot() -> int:
 # reachable from the agent loop / tool registry. There is deliberately NO
 # `live commit` verb — committing a mandate happens only through the consent
 # flow's `POST /mandate/commit`, never a CLI command (the CLI cannot create or
-# widen a mandate). The public CLI surface is `vibe-trading connector ...`;
+# widen a mandate). The public CLI surface is `person-trading connector ...`;
 # `cmd_live_*` helpers remain only as the broker-runtime implementation behind
 # connector profiles.
 # ---------------------------------------------------------------------------
@@ -3211,7 +3211,7 @@ def _print_channels_status(payload: Dict[str, Any]) -> None:
     console.print(table)
     if payload.get("status") == "error":
         console.print(f"[yellow]API unavailable:[/yellow] {payload.get('error')}")
-        console.print("[dim]Start the backend with `vibe-trading serve --port 8000`, or inspect local config with this status output.[/dim]")
+        console.print("[dim]Start the backend with `person-trading serve --port 8000`, or inspect local config with this status output.[/dim]")
 
 
 def cmd_channels_status(*, json_mode: bool = False, local: bool = False) -> int:
@@ -3238,7 +3238,7 @@ def cmd_channels_start(*, json_mode: bool = False) -> int:
     elif failed:
         console.print(f"[red]Failed to start IM channels:[/red] {payload.get('error')}")
         console.print(
-            "[dim]Run `vibe-trading serve --port 8000` first, or set VIBE_TRADING_API_URL.[/dim]"
+            "[dim]Run `person-trading serve --port 8000` first, or set VIBE_TRADING_API_URL.[/dim]"
         )
     else:
         console.print("[green]IM channels started.[/green]")
@@ -3255,7 +3255,7 @@ def cmd_channels_stop(*, json_mode: bool = False) -> int:
     elif failed:
         console.print(f"[red]Failed to stop IM channels:[/red] {payload.get('error')}")
         console.print(
-            "[dim]Run `vibe-trading serve --port 8000` first, or set VIBE_TRADING_API_URL.[/dim]"
+            "[dim]Run `person-trading serve --port 8000` first, or set VIBE_TRADING_API_URL.[/dim]"
         )
     else:
         console.print("[green]IM channels stopped.[/green]")
@@ -3283,11 +3283,11 @@ def cmd_channels_login(channel_name: str, *, force: bool = False) -> int:
     section = dict(config.get(channel_name, {})) if isinstance(config.get(channel_name), dict) else {}
     if channel_name == "websocket":
         console.print("[green]WebSocket channel does not require interactive login.[/green]")
-        console.print("[dim]Configure channels.websocket in ~/.vibe-trading/agent.json, then run `vibe-trading channels start`.[/dim]")
+        console.print("[dim]Configure channels.websocket in ~/.person-trading/agent.json, then run `person-trading channels start`.[/dim]")
         return EXIT_SUCCESS
     if not section:
         console.print(f"[red]No config found for channel '{channel_name}'.[/red]")
-        console.print("[dim]Add it under channels.<name> in ~/.vibe-trading/agent.json, then retry.[/dim]")
+        console.print("[dim]Add it under channels.<name> in ~/.person-trading/agent.json, then retry.[/dim]")
         return EXIT_USAGE_ERROR
     section["enabled"] = True
     manager = ChannelManager({channel_name: section}, MessageBus())
@@ -3319,7 +3319,7 @@ def _dispatch_channels(args: argparse.Namespace) -> int:
         return cmd_channels_pairing(args.channel, text or "list")
     if command == "login":
         return cmd_channels_login(args.channel_name, force=args.force)
-    console.print("[red]channels requires a subcommand.[/red] Try: vibe-trading channels status")
+    console.print("[red]channels requires a subcommand.[/red] Try: person-trading channels status")
     return EXIT_USAGE_ERROR
 # QVERIS-INTEGRATION
 def _print_qveris_config(config) -> None:  # QVERIS-INTEGRATION
@@ -3425,7 +3425,7 @@ def _dispatch_data(args: argparse.Namespace) -> int:  # QVERIS-INTEGRATION
         return cmd_qveris_mode(mode=args.mode, budget=args.budget, key=args.key, url=args.url)  # QVERIS-INTEGRATION
     if args.data_command == "usage":  # QVERIS-INTEGRATION
         return cmd_qveris_usage()  # QVERIS-INTEGRATION
-    console.print("[red]data requires a subcommand.[/red] Try: vibe-trading data status")  # QVERIS-INTEGRATION
+    console.print("[red]data requires a subcommand.[/red] Try: person-trading data status")  # QVERIS-INTEGRATION
     return EXIT_USAGE_ERROR  # QVERIS-INTEGRATION
 # QVERIS-INTEGRATION
 def _live_server_config(broker: str):
@@ -3505,7 +3505,7 @@ def _print_missing_live_channel_config(key: str) -> None:
 
     console.print(
         f"[red]No live channel configured for '{key}'.[/red] "
-        "Add the broker's mcpServers entry to ~/.vibe-trading/agent.json first."
+        "Add the broker's mcpServers entry to ~/.person-trading/agent.json first."
     )
 
 
@@ -3583,7 +3583,7 @@ def cmd_live_authorize(broker: str) -> int:
     )
     console.print(
         "[dim]The channel is read-only until you commit a mandate and enable "
-        "order tools. Use `vibe-trading connector status` to check state.[/dim]"
+        "order tools. Use `person-trading connector status` to check state.[/dim]"
     )
     return EXIT_SUCCESS
 
@@ -3800,7 +3800,7 @@ def cmd_live_halt(broker: Optional[str] = None) -> int:
 
     With no broker, trips the global switch (halts all brokers); with a broker,
     trips only that broker's sentinel. The gate rejects all order attempts until
-    the switch is cleared with ``vibe-trading connector resume``.
+    the switch is cleared with ``person-trading connector resume``.
 
     Args:
         broker: Broker key, or ``None`` for the global switch.
@@ -3815,7 +3815,7 @@ def cmd_live_halt(broker: Optional[str] = None) -> int:
     scope = target or "ALL brokers"
     console.print(f"[bold red]Live trading halted[/bold red] for {scope}.")
     console.print(f"[dim]Sentinel: {path}[/dim]")
-    console.print("[dim]Run `vibe-trading connector resume` to re-enable.[/dim]")
+    console.print("[dim]Run `person-trading connector resume` to re-enable.[/dim]")
     return EXIT_SUCCESS
 
 
@@ -3917,13 +3917,13 @@ def cmd_live_start(broker: Optional[str] = None) -> int:
     if result.get("status") == "error":
         console.print(f"[red]Could not start the live runner:[/red] {result.get('error')}")
         console.print(
-            "[dim]Is the API server running? Start it with `vibe-trading serve`.[/dim]"
+            "[dim]Is the API server running? Start it with `person-trading serve`.[/dim]"
         )
         return EXIT_RUN_FAILED
 
     runner_id = result.get("runner_id") or _runner_id_for(key)
     console.print(f"[green]Live runner started[/green] for {key} [dim]({runner_id})[/dim].")
-    console.print("[dim]Check it with `vibe-trading connector status`.[/dim]")
+    console.print("[dim]Check it with `person-trading connector status`.[/dim]")
     return EXIT_SUCCESS
 
 
@@ -3945,7 +3945,7 @@ def cmd_live_stop(broker: Optional[str] = None) -> int:
     if result.get("status") == "error":
         console.print(f"[red]Could not stop the live runner:[/red] {result.get('error')}")
         console.print(
-            "[dim]Is the API server running? Start it with `vibe-trading serve`.[/dim]"
+            "[dim]Is the API server running? Start it with `person-trading serve`.[/dim]"
         )
         return EXIT_RUN_FAILED
 
@@ -3977,7 +3977,7 @@ def cmd_live_run(broker: Optional[str] = None) -> int:
     if result.get("status") == "error":
         console.print(f"[red]Could not start the live runner:[/red] {result.get('error')}")
         console.print(
-            "[dim]Is the API server running? Start it with `vibe-trading serve`.[/dim]"
+            "[dim]Is the API server running? Start it with `person-trading serve`.[/dim]"
         )
         return EXIT_RUN_FAILED
 
@@ -4064,7 +4064,7 @@ def cmd_connector_list() -> int:
             ", ".join(profile.capabilities),
         )
     console.print(table)
-    console.print("[dim]Use `vibe-trading connector use <profile>` to set the default profile.[/dim]")
+    console.print("[dim]Use `person-trading connector use <profile>` to set the default profile.[/dim]")
     return EXIT_SUCCESS
 
 
@@ -4218,7 +4218,7 @@ def cmd_portfolio_show(service: Any | None = None) -> int:
     if snapshot is None:
         console.print(
             "[dim]No portfolio snapshot yet. Select sources on the Web UI Portfolio page "
-            "(or `vibe-trading portfolio sources`), then run `vibe-trading portfolio refresh`.[/dim]"
+            "(or `person-trading portfolio sources`), then run `person-trading portfolio refresh`.[/dim]"
         )
         return EXIT_SUCCESS
     _print_portfolio_snapshot(snapshot)
@@ -4279,7 +4279,7 @@ def cmd_portfolio_sources(service: Any | None = None) -> int:
 
 
 def _dispatch_portfolio(args: argparse.Namespace) -> int:
-    """Route ``vibe-trading portfolio <subcommand>``; bare ``portfolio`` shows.
+    """Route ``person-trading portfolio <subcommand>``; bare ``portfolio`` shows.
 
     Args:
         args: Parsed CLI arguments.
@@ -4358,7 +4358,7 @@ def cmd_connector_configure(
     )
     path = save_config(cfg)
     console.print(f"[green]Configured[/green] {profile.id} [dim]({path})[/dim]")
-    console.print(f"[dim]Run `vibe-trading connector check {profile.id}` to verify it.[/dim]")
+    console.print(f"[dim]Run `person-trading connector check {profile.id}` to verify it.[/dim]")
     return EXIT_SUCCESS
 
 
@@ -5200,7 +5200,7 @@ def _dispatch_connector(args: argparse.Namespace) -> int:
         return cmd_connector_resume(args.profile)
     if sub == "revoke":
         return cmd_connector_revoke(args.profile)
-    console.print("[red]connector requires a subcommand.[/red] Try: vibe-trading connector list")
+    console.print("[red]connector requires a subcommand.[/red] Try: person-trading connector list")
     return EXIT_USAGE_ERROR
 
 
@@ -5210,8 +5210,8 @@ def _dispatch_connector(args: argparse.Namespace) -> int:
 
 def _build_parser() -> argparse.ArgumentParser:
     """Build the CLI parser with subcommands and compatibility flags."""
-    parser = argparse.ArgumentParser(description="Vibe-Trading CLI")
-    parser.add_argument("--version", action="version", version=f"vibe-trading {_VERSION}")
+    parser = argparse.ArgumentParser(description="Person-Trading CLI")
+    parser.add_argument("--version", action="version", version=f"person-trading {_VERSION}")
     parser.add_argument("-p", "--prompt", type=str, help="Prompt text")
     parser.add_argument("-f", "--prompt-file", type=Path, help="Read prompt text from a file")
     parser.add_argument("--json", action="store_true", help="Print machine-readable JSON output")
@@ -5303,10 +5303,10 @@ def _build_parser() -> argparse.ArgumentParser:
     chat_parser.add_argument("--max-iter", dest="chat_max_iter", type=int, default=50, help="Maximum agent iterations")
 
     subparsers.add_parser(
-        "update", help="Check for and install the latest vibe-trading-ai release from PyPI"
+        "update", help="Check for and install the latest person-trading-ai release from PyPI"
     )
 
-    subparsers.add_parser("init", help="Interactive setup: create ~/.vibe-trading/.env")
+    subparsers.add_parser("init", help="Interactive setup: create ~/.person-trading/.env")
 
     # Cross-platform frontend setup. See cmd_setup() for details.
     setup_parser = subparsers.add_parser(
@@ -5536,7 +5536,7 @@ def _handle_prompt_command(
     return cmd_run(resolved_prompt, max_iter, json_mode=json_mode, no_rich=no_rich)
 
 
-_INIT_ENV_PATH = Path.home() / ".vibe-trading" / ".env"
+_INIT_ENV_PATH = Path.home() / ".person-trading" / ".env"
 
 _PROVIDER_CHOICES: list[dict[str, str | None]] = [
     {
@@ -5861,7 +5861,7 @@ def cmd_memory_show(name: str, *, memory_dir: Optional[Path] = None) -> int:
     entry = pm.find(name)
     if entry is None:
         console.print(f"[red]Memory not found:[/red] {rich_escape(name)}")
-        console.print("[dim]Run `vibe-trading memory list` to see available titles.[/dim]")
+        console.print("[dim]Run `person-trading memory list` to see available titles.[/dim]")
         return EXIT_USAGE_ERROR
 
     style = _MEMORY_TYPE_STYLES.get(entry.memory_type, "white")
@@ -5937,8 +5937,8 @@ def cmd_memory_forget(name: str, *, yes: bool = False, memory_dir: Optional[Path
 
 
 def cmd_init() -> int:
-    """Interactive setup: create ~/.vibe-trading/.env."""
-    console.print(Panel("[bold cyan]Vibe-Trading setup[/bold cyan]\n[dim]Configure the default LLM provider and data tokens.[/dim]", border_style="cyan"))
+    """Interactive setup: create ~/.person-trading/.env."""
+    console.print(Panel("[bold cyan]Person-Trading setup[/bold cyan]\n[dim]Configure the default LLM provider and data tokens.[/dim]", border_style="cyan"))
 
     if _INIT_ENV_PATH.exists():
         console.print(f"[yellow]Config already exists:[/yellow] {_INIT_ENV_PATH}")
@@ -5996,7 +5996,7 @@ def cmd_init() -> int:
             )
     elif provider == "openai-codex":
         console.print("[dim]OpenAI Codex uses ChatGPT OAuth, not an API key.[/dim]")
-        console.print("[dim]After setup, run: vibe-trading provider login openai-codex[/dim]")
+        console.print("[dim]After setup, run: person-trading provider login openai-codex[/dim]")
     else:
         console.print("[dim]Ollama does not require an API key.[/dim]")
 
@@ -6031,9 +6031,9 @@ def cmd_init() -> int:
     next_steps.add_column(width=10, style="dim")
     next_steps.add_column(ratio=1)
     next_steps.add_row("Config", f"[cyan]{_INIT_ENV_PATH}[/cyan]")
-    next_steps.add_row("Run", "[bold]vibe-trading[/bold]")
+    next_steps.add_row("Run", "[bold]person-trading[/bold]")
     if provider == "openai-codex":
-        next_steps.add_row("OAuth", "[bold]vibe-trading provider login openai-codex[/bold]")
+        next_steps.add_row("OAuth", "[bold]person-trading provider login openai-codex[/bold]")
     console.print(Panel(next_steps, title="Setup complete", border_style="green", padding=(0, 1)))
     return 0
 
@@ -6143,7 +6143,7 @@ def cmd_setup(frontend_dir: Path) -> int:
     """
     console.print(
         Panel(
-            f"[bold cyan]Vibe-Trading frontend setup[/bold cyan]\n"
+            f"[bold cyan]Person-Trading frontend setup[/bold cyan]\n"
             f"[dim]{frontend_dir}[/dim]",
             border_style="cyan",
             padding=(0, 1),
@@ -6187,7 +6187,7 @@ def cmd_setup(frontend_dir: Path) -> int:
         Panel(
             "[green]Frontend built.[/green]\n"
             f"  Artifacts: [cyan]{frontend_dir / 'dist'}[/cyan]\n"
-            "[dim]Run [bold]vibe-trading serve[/bold] to serve everything on one port.[/dim]",
+            "[dim]Run [bold]person-trading serve[/bold] to serve everything on one port.[/dim]",
             border_style="green",
             padding=(0, 1),
         )
@@ -6229,7 +6229,7 @@ def cmd_dev(
     # exist (or is missing the Vite package), npm's bare-script
     # resolution will print a confusing "vite is not a command" error
     # and exit. Detect this case up front and point the user at
-    # ``vibe-trading setup`` instead.
+    # ``person-trading setup`` instead.
     vite_bin = frontend_dir / "node_modules" / ".bin" / ("vite.cmd" if _is_windows() else "vite")
     if not vite_bin.exists():
         console.print(
@@ -6237,10 +6237,10 @@ def cmd_dev(
                 f"[red]Frontend dependencies not installed.[/red]\n"
                 f"  Missing: [dim]{frontend_dir / 'node_modules'}[/dim]\n\n"
                 "Run this first:\n"
-                "  [cyan]vibe-trading setup[/cyan]\n\n"
+                "  [cyan]person-trading setup[/cyan]\n\n"
                 "[dim]Or, to start the dev mode anyway and install on the fly,\n"
-                "run [bold]vibe-trading setup[/bold] in another terminal.[/dim]",
-                title="vibe-trading dev",
+                "run [bold]person-trading setup[/bold] in another terminal.[/dim]",
+                title="person-trading dev",
                 border_style="red",
                 padding=(0, 1),
             )
@@ -6266,7 +6266,7 @@ def cmd_dev(
 
     console.print(
         Panel(
-            f"[bold cyan]Vibe-Trading dev[/bold cyan]\n"
+            f"[bold cyan]Person-Trading dev[/bold cyan]\n"
             f"  Backend  → [cyan]http://127.0.0.1:{backend_port}[/cyan]  "
             f"(cwd: {AGENT_DIR})\n"
             f"  Frontend → [cyan]http://localhost:{frontend_port}[/cyan]  "
@@ -6378,7 +6378,7 @@ def main(argv: list[str] | None = None) -> int:
             return cmd_provider_login(args.provider)
         if args.provider_command == "doctor":
             return cmd_provider_doctor()
-        console.print("[red]provider requires a subcommand.[/red] Try: vibe-trading provider doctor")
+        console.print("[red]provider requires a subcommand.[/red] Try: person-trading provider doctor")
         return EXIT_USAGE_ERROR
     if args.command == "channels":
         return _coerce_exit_code(_dispatch_channels(args))
@@ -6427,7 +6427,7 @@ def main(argv: list[str] | None = None) -> int:
             return _coerce_exit_code(cmd_memory_search(args.query, args.memory_limit))
         if args.memory_command == "forget":
             return _coerce_exit_code(cmd_memory_forget(args.name, yes=args.yes))
-        console.print("[red]memory requires a subcommand.[/red] Try: vibe-trading memory list")
+        console.print("[red]memory requires a subcommand.[/red] Try: person-trading memory list")
         return EXIT_USAGE_ERROR
 
     if args.list:

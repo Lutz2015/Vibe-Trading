@@ -1,6 +1,6 @@
 """Smoke test for the MCP server entry point.
 
-Regression test for PR #85 (deadlock fix). Spawns ``vibe-trading-mcp`` as a
+Regression test for PR #85 (deadlock fix). Spawns ``person-trading-mcp`` as a
 subprocess and walks through the full JSON-RPC happy path:
 
 1. ``initialize`` handshake.
@@ -133,7 +133,7 @@ def _extract_tool_result(resp: dict) -> dict:
 
 @pytest.mark.integration
 def test_mcp_server_happy_path() -> None:
-    """End-to-end smoke check for ``vibe-trading-mcp``.
+    """End-to-end smoke check for ``person-trading-mcp``.
 
     Verifies (1) the JSON-RPC handshake completes, (2) the tool catalogue
     is registered, and (3) ``tools/call analyze_options`` returns a sane

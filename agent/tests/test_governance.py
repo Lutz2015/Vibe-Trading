@@ -233,7 +233,7 @@ def test_manifest_rejects_empty_run_id_or_timestamp() -> None:
 def test_collect_key_package_versions_reflects_real_environment() -> None:
     """Sanity check against the actual installed environment (no mocking).
 
-    vibe-trading-ai is installed editable in this checkout (pyproject.toml
+    person-trading-ai is installed editable in this checkout (pyproject.toml
     pins 0.1.13 at the time this test was written); numpy is a hard
     dependency so it must resolve; arch is an optional 'stats' extra that is
     NOT installed in this environment, proving the None-when-absent path is
@@ -241,7 +241,7 @@ def test_collect_key_package_versions_reflects_real_environment() -> None:
     """
     versions = collect_key_package_versions()
     assert versions["numpy"] is not None
-    assert versions["vibe-trading-ai"] is not None
+    assert versions["person-trading-ai"] is not None
     assert "python" in versions and versions["python"]
     # Not asserting a specific arch install state (that is an environment
     # fact, not a manifest.py contract) -- but the key must be present.

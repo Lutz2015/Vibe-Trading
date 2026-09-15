@@ -1,19 +1,19 @@
 ---
 name: eastmoney
 category: data-source
-description: 东方财富（Eastmoney）免费免鉴权数据接口，覆盖资金流向、龙虎榜、融资融券、大宗交易、股东户数、限售解禁、行业概念板块、券商研报、财经新闻、A股/港股三大报表+主要指标、全市场选股与代码搜索；美股财报由 get_financial_statements 转 SEC EDGAR。东财请求经共享 IP 限速层节流（东财按源 IP 限流并临时封禁突发请求），通过 Vibe-Trading 工具直接调用，无需 token。
+description: 东方财富（Eastmoney）免费免鉴权数据接口，覆盖资金流向、龙虎榜、融资融券、大宗交易、股东户数、限售解禁、行业概念板块、券商研报、财经新闻、A股/港股三大报表+主要指标、全市场选股与代码搜索；美股财报由 get_financial_statements 转 SEC EDGAR。东财请求经共享 IP 限速层节流（东财按源 IP 限流并临时封禁突发请求），通过 Person-Trading 工具直接调用，无需 token。
 ---
 # Eastmoney（东方财富）
 
 ## 概述
 
-东方财富对外开放了一批免费、免鉴权的行情与披露接口（push2 / push2his / datacenter-web / reportapi / search-api）。这些接口由 Vibe-Trading 内置工具封装，统一返回 `{"ok": true/false, ...}` JSON 信封，覆盖 A 股 / 港股 / 美股的资金面、披露面、舆情面与基本面数据。本技能是上述接口的**索引页**：每个接口的端点 URL、入参、返回字段写在 `references/` 下；调用范例写在 `scripts/` 下。
+东方财富对外开放了一批免费、免鉴权的行情与披露接口（push2 / push2his / datacenter-web / reportapi / search-api）。这些接口由 Person-Trading 内置工具封装，统一返回 `{"ok": true/false, ...}` JSON 信封，覆盖 A 股 / 港股 / 美股的资金面、披露面、舆情面与基本面数据。本技能是上述接口的**索引页**：每个接口的端点 URL、入参、返回字段写在 `references/` 下；调用范例写在 `scripts/` 下。
 
 > **限速红线**：东方财富按**源 IP** 限流，并会临时封禁突发请求。所有工具内部已经过共享 per-host 节流层（`backtest.loaders._http`），切勿绕过工具直接对端点发起裸 HTTP 突发请求。可用环境变量 `VIBE_TRADING_EASTMONEY_MIN_INTERVAL` 调整最小请求间隔（默认 1.0 秒）。
 
 ## 快速上手
 
-这些接口已注册为 Vibe-Trading 工具，直接以工具名调用即可，无需安装 SDK、无需 token：
+这些接口已注册为 Person-Trading 工具，直接以工具名调用即可，无需安装 SDK、无需 token：
 
 ```python
 from src.tools.fund_flow_tool import FundFlowTool

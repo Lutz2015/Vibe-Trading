@@ -214,7 +214,7 @@ finally {
     }
 }
 if ($installExitCode -ne 0) {
-    throw 'Installing Vibe-Trading into the embedded runtime failed.'
+    throw 'Installing Person-Trading into the embedded runtime failed.'
 }
 
 # Dependency wheels often include test suites that are never imported at
@@ -335,11 +335,11 @@ Copy-Item `
 
 Copy-Item `
     -LiteralPath (Join-Path $repoRoot 'LICENSE') `
-    -Destination (Join-Path $runtimeRoot 'Vibe-Trading-LICENSE.txt') `
+    -Destination (Join-Path $runtimeRoot 'Person-Trading-LICENSE.txt') `
     -Force
 Copy-Item `
     -LiteralPath (Join-Path $repoRoot 'NOTICE') `
-    -Destination (Join-Path $runtimeRoot 'Vibe-Trading-NOTICE.txt') `
+    -Destination (Join-Path $runtimeRoot 'Person-Trading-NOTICE.txt') `
     -Force
 
 $runtimePython = Join-Path $runtimeRoot 'python.exe'

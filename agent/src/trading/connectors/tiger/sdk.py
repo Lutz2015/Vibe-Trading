@@ -127,7 +127,7 @@ def build_config(profile_config: Mapping[str, Any] | None = None, overrides: Map
     """Resolve the effective config: saved file ← profile defaults ← CLI overrides.
 
     Credentials (``tiger_id`` / ``private_key_path`` / ``account``) come from the
-    saved ``~/.vibe-trading/tiger.json``; the selected connector profile supplies
+    saved ``~/.person-trading/tiger.json``; the selected connector profile supplies
     the ``profile`` intent; CLI/tool overrides win last.
 
     Args:
@@ -152,7 +152,7 @@ def config_path() -> Path:
 
 
 def load_config() -> TigerConfig:
-    """Load Tiger settings from ``~/.vibe-trading/tiger.json``."""
+    """Load Tiger settings from ``~/.person-trading/tiger.json``."""
     path = config_path()
     if not path.exists():
         return TigerConfig()

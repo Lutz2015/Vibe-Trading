@@ -31,6 +31,8 @@ for (const key of [
 const backend = spawn(executable, backendArguments, {
   cwd: backendCwd,
   windowsHide: true,
+  // Own process group so POSIX platforms can terminate the full tree.
+  detached: process.platform !== "win32",
   env: backendEnvironment,
   stdio: ["ignore", "pipe", "pipe"],
 });
@@ -113,7 +115,15 @@ async function terminateProcessTree(child: ChildProcess): Promise<void> {
     });
     return;
   }
-  child.kill("SIGKILL");
+  try {
+    process.kill(-child.pid, "SIGKILL");
+  } catch {
+    try {
+      child.kill("SIGKILL");
+    } catch {
+      // The backend has already exited.
+    }
+  }
 }
 
 function sendToParent(message: unknown): void {

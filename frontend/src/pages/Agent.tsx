@@ -1762,12 +1762,6 @@ export function Agent() {
 
   return (
     <div className="flex flex-col flex-1 min-w-0 overflow-hidden h-full">
-      <ModelRuntimeBar
-        settings={llmSettings}
-        runtimeProvider={visibleRuntimeIdentity.provider}
-        runtimeModel={visibleRuntimeIdentity.model}
-        runtimeReasoningEffort={visibleRuntimeIdentity.reasoningEffort}
-      />
       <div
         ref={listRef}
         data-streaming={status === "streaming" ? "true" : undefined}
@@ -1964,6 +1958,13 @@ export function Agent() {
               onCancelSwarm={handleCancelSwarm}
             />
           </LiveRuntimePanel>
+          <ModelRuntimeBar
+            settings={llmSettings}
+            runtimeProvider={visibleRuntimeIdentity.provider}
+            runtimeModel={visibleRuntimeIdentity.model}
+            runtimeReasoningEffort={visibleRuntimeIdentity.reasoningEffort}
+            variant="footer"
+          />
         </div>
       </div>
     </div>

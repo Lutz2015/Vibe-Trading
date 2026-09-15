@@ -102,7 +102,7 @@ class WecomChannel(BaseChannel):
     async def start(self) -> None:
         """Start the WeCom bot with WebSocket long connection."""
         if not WECOM_AVAILABLE:
-            self.logger.error("SDK not installed. Run: pip install vibe-trading-ai[wecom]")
+            self.logger.error("SDK not installed. Run: pip install person-trading-ai[wecom]")
             return
 
         if not self.config.bot_id or not self.config.secret:

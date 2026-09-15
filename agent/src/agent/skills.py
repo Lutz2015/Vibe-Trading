@@ -94,7 +94,7 @@ def _load_skill_dir(dir_path: Path) -> Optional[Skill]:
     )
 
 
-USER_SKILLS_DIR = Path.home() / ".vibe-trading" / "skills" / "user"
+USER_SKILLS_DIR = Path.home() / ".person-trading" / "skills" / "user"
 
 
 class SkillsLoader:
@@ -110,7 +110,7 @@ class SkillsLoader:
 
         Args:
             skills_dir: Bundled skills directory path; defaults to agent/skills/.
-            user_skills_dir: User-created skills directory; defaults to ~/.vibe-trading/skills/user/.
+            user_skills_dir: User-created skills directory; defaults to ~/.person-trading/skills/user/.
         """
         self.skills_dir = skills_dir or Path(__file__).resolve().parents[1] / "skills"
         self._user_skills_dir = user_skills_dir or USER_SKILLS_DIR

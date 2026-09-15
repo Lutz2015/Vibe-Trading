@@ -139,7 +139,7 @@ def migrate_legacy_state(
                 continue
             if (source / "__init__.py").exists():
                 logger.warning(
-                    "Skipping %s: it looks like a Python package, not Vibe-Trading state.",
+                    "Skipping %s: it looks like a Python package, not Person-Trading state.",
                     source,
                 )
                 continue

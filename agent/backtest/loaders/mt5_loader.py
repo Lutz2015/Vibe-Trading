@@ -3,11 +3,11 @@
 Feeds backtests and ``get_market_data`` from the user's own broker feed
 (e.g. Exness), with the broker's exact symbols and session times. Requires
 Windows, the optional ``MetaTrader5`` package (``pip install
-"vibe-trading-ai[mt5]"``), and a running, logged-in MT5 terminal — when any of
+"person-trading-ai[mt5]"``), and a running, logged-in MT5 terminal — when any of
 those are missing :meth:`DataLoader.is_available` is ``False`` and the forex
 fallback chain degrades to akshare/yfinance/local.
 
-Config is shared with the MT5 trading connector via ``~/.vibe-trading/mt5.json``
+Config is shared with the MT5 trading connector via ``~/.person-trading/mt5.json``
 (read directly — this module deliberately does not import the connector).
 With no config file, ``mt5.initialize()`` attaches to the last-used, already
 logged-in terminal, which is the primary read-only path.
@@ -35,7 +35,7 @@ from backtest.loaders.registry import register
 logger = logging.getLogger(__name__)
 
 #: Shared file contract with the MT5 trading connector (extra keys tolerated).
-_MT5_CONFIG_PATH = Path.home() / ".vibe-trading" / "mt5.json"
+_MT5_CONFIG_PATH = Path.home() / ".person-trading" / "mt5.json"
 
 #: Canonical interval token → MetaTrader5 timeframe constant name.
 #: Lowercase ``1h``/``4h``/``1d``/``1w`` alias project-style tokens (connector parity).

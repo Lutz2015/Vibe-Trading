@@ -5,13 +5,20 @@ import path from "node:path";
 
 import { resolveBackend } from "../dist/backend-manager.js";
 
+const isWindows = process.platform === "win32";
+const cliName = isWindows ? "person-trading.exe" : "person-trading";
+const venvScriptsDir = isWindows ? "Scripts" : "bin";
+const packagedPython = isWindows
+  ? "backend/python.exe"
+  : "backend/bin/python3";
+
 const testRoot = await mkdtemp(path.join(os.tmpdir(), "vibe-desktop-resolution-"));
 
 try {
-  const explicit = await makeExecutable("explicit/vibe-trading.exe");
+  const explicit = await makeExecutable(`explicit/${cliName}`);
   const packagedResources = path.join(testRoot, "packaged/resources");
-  const packagedPython = await makeExecutable("packaged/resources/backend/python.exe");
-  const pathExecutable = await makeExecutable("path-bin/vibe-trading.exe");
+  const packagedPythonPath = await makeExecutable(path.posix.join("packaged/resources", packagedPython));
+  const pathExecutable = await makeExecutable(`path-bin/${cliName}`);
 
   assertResolution(
     resolveBackend(options({
@@ -29,12 +36,14 @@ try {
     resourcesPath: packagedResources,
     pathEnvironment: path.dirname(pathExecutable),
   }));
-  assertResolution(packagedResolution, packagedPython, "exact packaged resource must be selected");
+  assertResolution(packagedResolution, packagedPythonPath, "exact packaged resource must be selected");
   assert.equal(packagedResolution?.includeServeCommand, false);
 
   const sourceRoot = path.join(testRoot, "marked-source");
-  await writeProjectMarker(sourceRoot, "vibe-trading-ai");
-  const sourceExecutable = await makeExecutable("marked-source/.venv/Scripts/vibe-trading.exe");
+  await writeProjectMarker(sourceRoot, "person-trading-ai");
+  const sourceExecutable = await makeExecutable(
+    `marked-source/.venv/${venvScriptsDir}/${cliName}`,
+  );
   const sourceResolution = resolveBackend(options({
     appPath: path.join(sourceRoot, "desktop/electron"),
     resourcesPath: path.join(testRoot, "empty-resources"),
@@ -44,9 +53,9 @@ try {
   assertResolution(sourceResolution, sourceExecutable, "marked source virtual environment must be selected");
 
   const plantedRoot = path.join(testRoot, "unmarked-ancestor");
-  const plantedPython = await makeExecutable("unmarked-ancestor/backend/python.exe");
+  const plantedPython = await makeExecutable(path.posix.join("unmarked-ancestor", packagedPython));
   const plantedAppPath = path.join(plantedRoot, "workspace/desktop/electron");
-  const safePathExecutable = await makeExecutable("safe-path/vibe-trading.exe");
+  const safePathExecutable = await makeExecutable(`safe-path/${cliName}`);
   const unmarkedResolution = resolveBackend(options({
     appPath: plantedAppPath,
     resourcesPath: path.join(plantedAppPath, "resources"),
@@ -62,7 +71,7 @@ try {
 
   const wrongProjectRoot = path.join(testRoot, "wrong-project");
   await writeProjectMarker(wrongProjectRoot, "another-project");
-  await makeExecutable("wrong-project/.venv/Scripts/vibe-trading.exe");
+  await makeExecutable(`wrong-project/.venv/${venvScriptsDir}/${cliName}`);
   assertResolution(
     resolveBackend(options({
       appPath: path.join(wrongProjectRoot, "desktop/electron"),
@@ -87,6 +96,7 @@ try {
   );
 
   console.log(JSON.stringify({
+    platform: process.platform,
     explicitOverride: true,
     exactPackagedResource: true,
     markedSourceRoot: true,

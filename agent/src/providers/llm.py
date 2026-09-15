@@ -727,9 +727,9 @@ else:
 
 AGENT_DIR = Path(__file__).resolve().parents[2]
 
-# .env search order: ~/.vibe-trading/.env → agent/.env → $CWD/.env
+# .env search order: ~/.person-trading/.env → agent/.env → $CWD/.env
 _ENV_CANDIDATES = [
-    Path.home() / ".vibe-trading" / ".env",
+    Path.home() / ".person-trading" / ".env",
     AGENT_DIR / ".env",
     Path.cwd() / ".env",
 ]
@@ -738,7 +738,7 @@ _ENV_CANDIDATES = [
 # .env path (it leaks the OS username / home / CWD). The label names
 # which slot won - the entire P08 R1 signal - using compile-time
 # constants only.
-_ENV_LABELS = ("~/.vibe-trading/.env", "<AGENT_DIR>/.env", "<CWD>/.env")
+_ENV_LABELS = ("~/.person-trading/.env", "<AGENT_DIR>/.env", "<CWD>/.env")
 
 # Kimi reasoning models (K-series: kimi-k2*, kimi-k3, …, and the
 # kimi-for-coding alias) reject any temperature other than 1 with
@@ -1163,7 +1163,7 @@ def _build_anthropic(
     except Exception as exc:  # noqa: BLE001 - dependency error with install hint
         raise RuntimeError(
             "Anthropic provider requires langchain-anthropic. Install the optional "
-            'extra: pip install "vibe-trading-ai[anthropic]" (or pip install langchain-anthropic).'
+            'extra: pip install "person-trading-ai[anthropic]" (or pip install langchain-anthropic).'
         ) from exc
 
     safe_anthropic = _make_temperature_safe_anthropic(chat_anthropic)
@@ -1263,7 +1263,7 @@ def _sync_provider_env() -> None:
 
     if provider in {"openai-codex", "openai_codex"}:
         codex_url = get_env_config().llm.openai_codex_base_url
-        # SDK-side env setup, not Vibe-Trading config reads
+        # SDK-side env setup, not Person-Trading config reads
         os.environ["OPENAI_API_BASE"] = codex_url
         os.environ["OPENAI_BASE_URL"] = codex_url
         os.environ.pop("OPENAI_API_KEY", None)
@@ -1279,7 +1279,7 @@ def _sync_provider_env() -> None:
     api_key = creds["api_key"]
     base_url = creds["base_url"]
 
-    # SDK-side env setup, not Vibe-Trading config reads
+    # SDK-side env setup, not Person-Trading config reads
     if api_key:
         os.environ["OPENAI_API_KEY"] = api_key
     if base_url:

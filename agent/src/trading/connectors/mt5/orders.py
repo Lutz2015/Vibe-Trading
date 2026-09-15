@@ -35,7 +35,7 @@ from src.trading.connectors.mt5._client import (
 
 _MT5_ERRORS = (MT5DependencyError, MT5ConfigError, MT5ConnectionError, MT5ProfileMismatchError)
 
-_ORDER_COMMENT = "vibe-trading"
+_ORDER_COMMENT = "person-trading"
 _ORDER_MAGIC = 862_001
 
 

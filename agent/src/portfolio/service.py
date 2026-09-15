@@ -949,7 +949,7 @@ class PortfolioService:
             ``(usd_cny, usd_hkd, fetched_at)``.
         """
         url = "https://api.frankfurter.app/latest?from=USD&to=CNY,HKD"
-        request = urllib.request.Request(url, headers={"User-Agent": "Vibe-Trading/portfolio"})
+        request = urllib.request.Request(url, headers={"User-Agent": "Person-Trading/portfolio"})
         with urllib.request.urlopen(request, timeout=8) as response:  # noqa: S310 - fixed HTTPS host
             payload = json.load(response)
         return (

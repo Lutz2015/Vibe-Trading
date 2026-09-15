@@ -1,5 +1,5 @@
 [project]
-name = "vibe-trading-ai"
+name = "person-trading-ai"
 version = "0.1.15"
 description = "Natural-language finance research AI agent with backtesting"
 requires-python = ">=3.11"
@@ -78,12 +78,12 @@ dependencies = [
 [project.urls]
 Homepage = "https://vibetrading.wiki/"
 Documentation = "https://vibetrading.wiki/docs/"
-Repository = "https://github.com/HKUDS/Vibe-Trading"
-Issues = "https://github.com/HKUDS/Vibe-Trading/issues"
+Repository = "https://github.com/HKUDS/Person-Trading"
+Issues = "https://github.com/HKUDS/Person-Trading/issues"
 
 [project.scripts]
-vibe-trading = "cli:main"
-vibe-trading-mcp = "mcp_server:main"
+person-trading = "cli:main"
+person-trading-mcp = "mcp_server:main"
 
 [tool.setuptools]
 package-dir = {"" = "agent"}

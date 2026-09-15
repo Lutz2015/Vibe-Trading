@@ -6,7 +6,7 @@ way to reach it was a Python import, so a shipped template was effectively
 invisible. This module is the single place both non-interactive and interactive
 users enter through:
 
-* ``vibe-trading playbook list | show <slug> | create <slug>`` — the argparse
+* ``person-trading playbook list | show <slug> | create <slug>`` — the argparse
   subcommand, wired in :mod:`cli._legacy` next to ``alpha`` / ``hypothesis``.
 * ``/playbook`` — the REPL slash command, registered in
   :mod:`cli.commands.slash_router`, dispatched through ``run(ctx, *args)``.
@@ -227,7 +227,7 @@ def _schedule_note(job: Any) -> str:
         return "The scheduler is enabled; the API server will fire this job."
     return (
         "The scheduler is OFF — set VIBE_TRADING_ENABLE_SCHEDULER=1 and run "
-        "`vibe-trading serve` for stored jobs to fire."
+        "`person-trading serve` for stored jobs to fire."
     )
 
 
@@ -450,7 +450,7 @@ def run(ctx: Any = None, *args: str) -> int:
 
 
 # ---------------------------------------------------------------------------
-# argparse subcommand: vibe-trading playbook ...
+# argparse subcommand: person-trading playbook ...
 # ---------------------------------------------------------------------------
 
 _PLAYBOOK_PARSER: Optional[argparse.ArgumentParser] = None
@@ -536,7 +536,7 @@ def add_subparser(subparsers: Any) -> argparse.ArgumentParser:
 
 
 def _cmd_list(args: argparse.Namespace) -> int:
-    """Handle ``vibe-trading playbook list``."""
+    """Handle ``person-trading playbook list``."""
     playbooks, error = _load_catalogue()
     if error:
         _print(f"[bold red]{error}[/bold red]")
@@ -545,12 +545,12 @@ def _cmd_list(args: argparse.Namespace) -> int:
         print(json.dumps([p.to_dict() for p in playbooks], indent=2, ensure_ascii=False))
         return 0
     _render_catalogue(playbooks)
-    _print("[dim]vibe-trading playbook show <slug> for the full text.[/dim]")
+    _print("[dim]person-trading playbook show <slug> for the full text.[/dim]")
     return 0
 
 
 def _cmd_show(args: argparse.Namespace) -> int:
-    """Handle ``vibe-trading playbook show <slug>``."""
+    """Handle ``person-trading playbook show <slug>``."""
     variables, var_error = _parse_var_options(getattr(args, "playbook_vars", []) or [])
     if var_error:
         _print(f"[bold red]{var_error}[/bold red]")
@@ -575,7 +575,7 @@ def _cmd_show(args: argparse.Namespace) -> int:
 
 
 def _cmd_create(args: argparse.Namespace) -> int:
-    """Handle ``vibe-trading playbook create <slug>``."""
+    """Handle ``person-trading playbook create <slug>``."""
     variables, var_error = _parse_var_options(getattr(args, "playbook_vars", []) or [])
     if var_error:
         _print(f"[bold red]{var_error}[/bold red]")
@@ -645,7 +645,7 @@ def dispatch(args: argparse.Namespace) -> int:
         else:
             _print(
                 "[red]playbook requires a subcommand.[/red] "
-                "Try: vibe-trading playbook list"
+                "Try: person-trading playbook list"
             )
         return 2
     return int(handler(args))

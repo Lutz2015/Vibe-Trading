@@ -93,7 +93,7 @@ def test_credential_store_names_the_extra_when_keyring_is_missing(
     monkeypatch.setattr(builtins, "__import__", blocking_import)
     monkeypatch.delitem(sys.modules, "keyring", raising=False)
 
-    with pytest.raises(RuntimeError, match=r'vibe-trading-ai\[keyring\]'):
+    with pytest.raises(RuntimeError, match=r'person-trading-ai\[keyring\]'):
         CredentialStore().save("main-account", {"api_key": "value"})
 
 

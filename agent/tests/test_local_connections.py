@@ -37,7 +37,7 @@ def test_connection_registry_never_serializes_credentials(tmp_path):
 
     payload = (tmp_path / "connections.json").read_text(encoding="utf-8")
     assert "secret-value" not in payload
-    assert connection.credential_ref == "keyring://vibe-trading/main-binance"
+    assert connection.credential_ref == "keyring://person-trading/main-binance"
     if os.name == "posix":
         assert (tmp_path / "connections.json").stat().st_mode & 0o777 == 0o600
 

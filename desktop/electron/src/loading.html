@@ -7,13 +7,13 @@
       http-equiv="Content-Security-Policy"
       content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'"
     />
-    <title>Vibe-Trading Desktop (Unofficial Community Build)</title>
+    <title>个人交易智能体</title>
     <style>
       :root { color-scheme: dark; font-family: Inter, "Segoe UI", sans-serif; }
       * { box-sizing: border-box; }
       body { margin: 0; background: #0b0f14; color: #f4f7fa; min-height: 100vh; display: grid; place-items: center; }
       main { width: min(560px, calc(100vw - 48px)); text-align: center; }
-      .logo { width: 68px; height: 68px; margin: 0 auto 24px; border-radius: 20px; display: grid; place-items: center; background: #14251f; color: #29d391; font: 700 36px/1 Inter, sans-serif; }
+      .logo { width: 68px; height: 68px; margin: 0 auto 24px; border-radius: 16px; overflow: hidden; background: #0A101C; display: grid; place-items: center; }
       h1 { margin: 0; font-size: 26px; font-weight: 650; }
       p { color: #9aa7b5; line-height: 1.65; margin: 13px 0 24px; }
       .track { height: 4px; overflow: hidden; border-radius: 4px; background: #1e2732; }
@@ -30,7 +30,18 @@
   </head>
   <body>
     <main>
-      <div class="logo" aria-hidden="true">V</div>
+      <div class="logo" aria-hidden="true">
+        <svg viewBox="0 0 64 64" width="68" height="68" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="64" height="64" rx="16" fill="#0A101C"/>
+          <path d="M32 11 50.5 21.7v21.6L32 54 13.5 43.3V21.7L32 11Z" stroke="#94A3B8" stroke-opacity=".55" stroke-width="1.6" fill="#0F172A" fill-opacity=".45"/>
+          <path d="M18 43.5 27 33.5 35 37.5 46 22.5" stroke="#22D3EE" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="18" cy="43.5" r="3" fill="#22D3EE"/>
+          <circle cx="27" cy="33.5" r="3" fill="#67E8F9"/>
+          <circle cx="35" cy="37.5" r="3" fill="#6EE7B7"/>
+          <circle cx="46" cy="22.5" r="3.4" fill="#34D399"/>
+          <circle cx="46" cy="22.5" r="6.2" stroke="#34D399" stroke-opacity=".4" stroke-width="1.4"/>
+        </svg>
+      </div>
       <h1 id="title"></h1>
       <p id="message" role="status" aria-live="polite"></p>
       <div id="progress" class="track" role="progressbar"><div class="bar"></div></div>

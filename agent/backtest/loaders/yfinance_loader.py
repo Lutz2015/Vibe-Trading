@@ -258,7 +258,7 @@ class DataLoader:
         "vietnam_equity", "uk_equity", "crypto",
     }
     # yfinance volume is single shares for US/HK equities
-    # (HKUDS/Vibe-Trading#1062; HK verified 2026-08-11, 00700.HK ratio 1.00
+    # (HKUDS/Person-Trading#1062; HK verified 2026-08-11, 00700.HK ratio 1.00
     # vs tencent/eastmoney). Crypto base-asset units stay undeclared.
     volume_units = {"us_equity": "shares", "hk_equity": "shares", "uk_equity": "shares"}
     requires_auth = False

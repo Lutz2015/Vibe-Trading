@@ -19,7 +19,7 @@ from src.config.paths import get_runs_dir, get_sessions_dir, get_uploads_dir
 # Path constants
 # ============================================================================
 
-# helpers.py lives at agent/src/api/helpers.py — 4 levels up to Vibe-Trading/.
+# helpers.py lives at agent/src/api/helpers.py — 4 levels up to Person-Trading/.
 # AGENT_DIR stays a code location; state dirs resolve under the user-level
 # runtime root (#904).
 _AGENT_DIR = Path(__file__).resolve().parent.parent.parent  # agent/
@@ -28,7 +28,7 @@ RUNS_DIR = get_runs_dir()
 SESSIONS_DIR = get_sessions_dir()
 UPLOADS_DIR = get_uploads_dir()
 AGENT_DIR = _AGENT_DIR
-ENV_PATH = Path.home() / ".vibe-trading" / ".env"
+ENV_PATH = Path.home() / ".person-trading" / ".env"
 LEGACY_ENV_PATH = AGENT_DIR / ".env"
 ENV_EXAMPLE_PATH = AGENT_DIR / ".env.example"
 
@@ -129,7 +129,7 @@ def _ensure_agent_env_file(path: Path | None = None) -> Path:
     env_path = path or _host_attr("ENV_PATH", ENV_PATH)
     env_path.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
     if not env_path.exists():
-        _atomic_write_secret(env_path, "# Created by Vibe-Trading Web UI settings.\n")
+        _atomic_write_secret(env_path, "# Created by Person-Trading Web UI settings.\n")
     return env_path
 
 
@@ -183,7 +183,7 @@ def _read_env_values(path: Path) -> Dict[str, str]:
 def _project_relative_path(path: Path) -> str:
     """Return a project-relative display path without leaking an absolute path."""
     if path == ENV_PATH:
-        return "~/.vibe-trading/.env"
+        return "~/.person-trading/.env"
     try:
         return path.resolve().relative_to(AGENT_DIR.parent.resolve()).as_posix()
     except ValueError:

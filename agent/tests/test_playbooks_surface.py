@@ -7,7 +7,7 @@ the properties that are easy to break from any of them:
 * REST — ``GET /scheduled-runs/playbooks``, ``GET /scheduled-runs/playbooks/{slug}``
   and ``POST /scheduled-runs/playbooks/{slug}``, including the structural claim
   that EVERY route under ``/scheduled-runs`` carries ``require_auth``.
-* CLI — ``vibe-trading playbook list | show | create``, driven through
+* CLI — ``person-trading playbook list | show | create``, driven through
   ``cli._legacy.main`` so the argparse wiring is exercised, not just the handler.
 * Slash — ``/playbook`` registration plus its list / show / run / schedule paths.
 

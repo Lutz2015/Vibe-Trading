@@ -2,8 +2,8 @@
 
 Talks to a locally running MT5 terminal through the official ``MetaTrader5``
 Python package, which is **Windows-only** and an opt-in extra
-(``pip install "vibe-trading-ai[mt5]"``). Credentials live in
-``~/.vibe-trading/mt5.json``.
+(``pip install "person-trading-ai[mt5]"``). Credentials live in
+``~/.person-trading/mt5.json``.
 
 Paper/live separation: MT5 has no separate paper API — "paper" means the
 broker's DEMO account. Unlike key-scoped connectors the discriminator is

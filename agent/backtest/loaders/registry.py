@@ -82,7 +82,7 @@ def _ensure_registered() -> None:
     are silently skipped.
     """
     # Re-check env overrides even when already registered — a subprocess may
-    # have loaded ~/.vibe-trading/.env (or synced os.environ) after this
+    # have loaded ~/.person-trading/.env (or synced os.environ) after this
     # module's import-time refresh ran. Must precede the early return.
     refresh_source_order_overrides()
     global _registered
@@ -134,7 +134,7 @@ def _ensure_registered() -> None:
 
 # Sources that must NEVER silently fall through to a network loader when the
 # caller asked for them explicitly. ``local`` reads the user's own configured
-# files (``~/.vibe-trading/data-bridge/config.yaml``); its ``markets`` set spans
+# files (``~/.person-trading/data-bridge/config.yaml``); its ``markets`` set spans
 # every market only so the cross-market auto-resolver can *reach* it, not so an
 # unavailable ``local`` request can degrade into an unrelated network source.
 # An explicit ``local`` request that is unavailable is a config problem the user
@@ -319,7 +319,7 @@ def mixed_caliber_warning(stamps: dict[str, tuple[str, str]]) -> str | None:
 # ---------------------------------------------------------------------------
 
 # Users can reprioritize a market's chain via one env var per market
-# (persisted to ~/.vibe-trading/.env by the Settings page's "source
+# (persisted to ~/.person-trading/.env by the Settings page's "source
 # priority" card):
 #     MARKET_DATA_ORDER_A_SHARE=tushare,tencent,mootdx,...
 # The value must be a permutation of the market's default chain —
@@ -509,7 +509,7 @@ def get_loader_cls_with_fallback(source: str) -> Type[Any]:
     if source in _NO_NETWORK_FALLBACK_SOURCES:
         hint = {
             "local": "Check your Data Bridge config "
-            "(~/.vibe-trading/data-bridge/config.yaml) — it must exist and "
+            "(~/.person-trading/data-bridge/config.yaml) — it must exist and "
             "list at least one source.",
             "tickerall": "Set TICKERALL_API_KEY and TICKERALL_ACCOUNT_ID.",
             "fmp": "Set FMP_API_KEY.",

@@ -122,7 +122,7 @@ def test_serve_mounts_frontend_when_routes_include_router_without_path(
     fake_dist.mkdir(parents=True)
     fake_api_file.parent.mkdir(parents=True)
     fake_api_file.write_text("# test module path\n", encoding="utf-8")
-    (fake_dist / "index.html").write_text("<div>Vibe-Trading</div>\n", encoding="utf-8")
+    (fake_dist / "index.html").write_text("<div>Person-Trading</div>\n", encoding="utf-8")
 
     monkeypatch.setattr(api_server, "__file__", str(fake_api_file))
     api_server.app.routes.insert(0, SimpleNamespace())

@@ -1,7 +1,7 @@
 """Regression tests for the ``show`` subcommand dispatch.
 
 The subcommand parser defines a positional ``run_id``, but the dispatch
-previously read the ``--show`` flag instead — so ``vibe-trading show <id>``
+previously read the ``--show`` flag instead — so ``person-trading show <id>``
 always crashed with ``TypeError: unsupported operand type(s) for /:
 'PosixPath' and 'NoneType'``. The flag form kept working, hiding the bug.
 """

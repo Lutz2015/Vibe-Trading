@@ -7,7 +7,7 @@ These tests guard against regressions introduced by the MCP client integration:
 
 2. MCP server mode regression — importing mcp_server.py must not raise, and
    the FastMCP instance must expose the expected well-known tool names. This
-   confirms that the server-side MCP plugin (vibe-trading-mcp) is unaffected
+   confirms that the server-side MCP plugin (person-trading-mcp) is unaffected
    by the MCP client changes introduced in Phases 1-4.
 
 IMPORTANT notes:
@@ -16,7 +16,7 @@ IMPORTANT notes:
   and fast.
 - Do not add functional tests for individual mcp_server tools here; those
   belong in their own test files.
-- TODO(v1): Add a live smoke test that spawns `vibe-trading-mcp` as a stdio
+- TODO(v1): Add a live smoke test that spawns `person-trading-mcp` as a stdio
   subprocess once CI has network access and the SSE transport is tested end-
   to-end in Phase 6+.
 """
@@ -82,7 +82,7 @@ def test_build_registry_without_agent_config_returns_well_known_local_tools() ->
 
 
 # ---------------------------------------------------------------------------
-# MCP server mode regression (vibe-trading-mcp plugin)
+# MCP server mode regression (person-trading-mcp plugin)
 # ---------------------------------------------------------------------------
 
 

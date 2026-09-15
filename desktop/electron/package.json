@@ -1,10 +1,10 @@
 {
-  "name": "vibe-trading-desktop-unofficial-community",
+  "name": "person-trading-desktop-unofficial-community",
   "version": "0.3.0",
   "private": true,
-  "author": "Vibe-Trading Desktop Community Contributors",
+  "author": "Person-Trading Desktop Community Contributors",
   "license": "MIT",
-  "description": "Vibe-Trading Desktop (Unofficial Community Build)",
+  "description": "Person-Trading Desktop (Unofficial Community Build)",
   "main": "dist/main.js",
   "scripts": {
     "build": "tsc && node scripts/copy-static.mjs",
@@ -16,11 +16,15 @@
     "smoke:parent-death": "npm run build && npm run prepare:electron && node scripts/smoke-parent-death.mjs",
     "prepare:electron": "node scripts/prepare-electron.mjs",
     "runtime:win": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/build-backend.ps1",
+    "runtime:mac": "node scripts/build-backend.mjs",
+    "icon:mac": "node scripts/make-icon.mjs",
     "smoke:credentials": "npm run build && npm run prepare:electron && electron scripts/smoke-credentials.cjs",
     "smoke:lifecycle": "npm run build && npm run prepare:electron && node scripts/test-packaging-preparation.mjs && node scripts/test-locales.mjs && node scripts/test-backend-resolution.mjs && node scripts/smoke-lifecycle.mjs && node scripts/smoke-parent-death.mjs",
     "pack:win": "npm run build && npm run prepare:electron && electron-builder --publish never --win dir",
+    "pack:mac": "npm run build && electron-builder --publish never --mac dir --arm64",
     "installer:win:review": "npm run build && npm run prepare:electron && node scripts/build-review-installer.mjs",
     "installer:win:signed": "node scripts/build-signed-installer.mjs",
+    "installer:mac:review": "npm run build && node scripts/build-mac-installer.mjs",
     "sbom": "npm sbom --sbom-format cyclonedx"
   },
   "devDependencies": {
@@ -32,9 +36,9 @@
   },
   "build": {
     "appId": "io.github.vibetrading.community.desktop",
-    "productName": "Vibe-Trading Desktop (Unofficial Community Build)",
+    "productName": "Person-Trading Desktop (Unofficial Community Build)",
     "compression": "normal",
-    "artifactName": "Vibe-Trading-Desktop-Unofficial-${version}-${arch}.${ext}",
+    "artifactName": "Person-Trading-Desktop-Unofficial-${version}-${arch}.${ext}",
     "asar": true,
     "electronLanguages": [
       "ar",
@@ -44,7 +48,6 @@
       "ko",
       "zh-CN"
     ],
-    "electronDist": ".cache/electron-dist",
     "directories": {
       "output": "release"
     },
@@ -59,11 +62,11 @@
       },
       {
         "from": "../../LICENSE",
-        "to": "licenses/Vibe-Trading-LICENSE.txt"
+        "to": "licenses/Person-Trading-LICENSE.txt"
       },
       {
         "from": "../../NOTICE",
-        "to": "licenses/Vibe-Trading-NOTICE.txt"
+        "to": "licenses/Person-Trading-NOTICE.txt"
       }
     ],
     "win": {
@@ -74,6 +77,44 @@
           "arch": [
             "x64"
           ]
+        }
+      ]
+    },
+    "mac": {
+      "icon": "build/icon.icns",
+      "category": "public.app-category.finance",
+      "identity": null,
+      "hardenedRuntime": false,
+      "gatekeeperAssess": false,
+      "entitlements": null,
+      "entitlementsInherit": null,
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "arm64"
+          ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "arm64"
+          ]
+        }
+      ]
+    },
+    "dmg": {
+      "artifactName": "Person-Trading-Desktop-Unofficial-${version}-${arch}.dmg",
+      "contents": [
+        {
+          "x": 130,
+          "y": 220
+        },
+        {
+          "x": 410,
+          "y": 220,
+          "type": "link",
+          "path": "/Applications"
         }
       ]
     },

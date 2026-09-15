@@ -8,7 +8,7 @@ and, for live, the mandate gate.
 
 Architecture is a LOCAL OpenD gateway (default ``127.0.0.1:11111``), exactly
 like IBKR's local TWS / IB Gateway: OpenD runs on the operator's machine, holds
-the Futu login, and the SDK speaks to it over a local socket. Vibe-Trading never
+the Futu login, and the SDK speaks to it over a local socket. Person-Trading never
 sees Futu credentials. A TCP-port-open probe runs before every connect so a
 missing gateway degrades to a clean error instead of an SDK stack trace.
 
@@ -164,7 +164,7 @@ def build_config(profile_config: Mapping[str, Any] | None = None, overrides: Map
     """Resolve the effective config: saved file ← profile defaults ← CLI overrides.
 
     Gateway endpoint and account settings come from the saved
-    ``~/.vibe-trading/futu.json``; the selected connector profile supplies the
+    ``~/.person-trading/futu.json``; the selected connector profile supplies the
     ``profile`` / ``filter_trdmarket`` intent; CLI/tool overrides win last.
 
     Args:
@@ -189,7 +189,7 @@ def config_path() -> Path:
 
 
 def load_config() -> FutuConfig:
-    """Load Futu settings from ``~/.vibe-trading/futu.json``."""
+    """Load Futu settings from ``~/.person-trading/futu.json``."""
     path = config_path()
     if not path.exists():
         return FutuConfig()

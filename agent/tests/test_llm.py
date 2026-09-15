@@ -993,7 +993,7 @@ class TestKimiCodingProvider:
 
     def test_sets_kimi_user_agent_header(self) -> None:
         captured = self._build_and_capture("1.0")
-        assert captured["default_headers"]["User-Agent"].startswith("Vibe-Trading/")
+        assert captured["default_headers"]["User-Agent"].startswith("Person-Trading/")
 
 
 class TestGetLlmCredentials:

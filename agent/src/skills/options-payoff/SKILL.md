@@ -8,7 +8,7 @@ category: asset-class
 
 ## Overview
 
-This skill is designed for option strategy analysis scenarios within the Vibe-Trading quantitative framework, covering:
+This skill is designed for option strategy analysis scenarios within the Person-Trading quantitative framework, covering:
 - P&L curve generation for single-leg and multi-leg option portfolios
 - Black-Scholes pricing and Greeks calculation
 - Implied volatility inversion

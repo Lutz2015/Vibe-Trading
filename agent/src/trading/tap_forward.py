@@ -36,11 +36,11 @@ _FORWARD_POST_TIMEOUT = 60  # the POST returns 202 fast; approval is polled asyn
 _POLL_INTERVAL = 2
 
 
-# Project .env locations, mirroring Vibe-Trading's own loader
+# Project .env locations, mirroring Person-Trading's own loader
 # (src/providers/llm.py ``_ENV_CANDIDATES``): first existing file wins.
 # tap_forward.py lives at agent/src/trading/ -> parents[2] is the agent dir.
 _ENV_CANDIDATES = (
-    Path.home() / ".vibe-trading" / ".env",
+    Path.home() / ".person-trading" / ".env",
     Path(__file__).resolve().parents[2] / ".env",  # agent/.env
     Path.cwd() / ".env",
 )
@@ -53,7 +53,7 @@ def _load_env_into_environ() -> None:
     prefixed ``TAP_`` — so if one ``.env`` holds the app's config while a
     different one holds the TAP vars, both are honoured. (Returning after the
     first existing file would leave TAP silently disabled when e.g.
-    ``~/.vibe-trading/.env`` exists without the TAP vars but ``agent/.env`` has
+    ``~/.person-trading/.env`` exists without the TAP vars but ``agent/.env`` has
     them.) ``setdefault`` never overrides a real environment variable — e.g. one
     injected by docker-compose ``env_file`` — and scoping to ``TAP_`` leaves the
     app's own env loading untouched. Secret values are not logged.

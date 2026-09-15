@@ -118,7 +118,7 @@ def _oauth_provider(
             "auth": {
                 "type": "oauth",
                 "scopes": ["trading.read"],
-                "client_name": "Vibe-Trading",
+                "client_name": "Person-Trading",
                 "cache_dir": str(tmp_path / "oauth"),
                 "client_id": "client-id",
             },

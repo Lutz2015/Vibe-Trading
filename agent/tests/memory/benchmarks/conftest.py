@@ -14,7 +14,7 @@ from typing import Any
 
 import pytest
 
-# Project root (Vibe-Trading/)
+# Project root (Person-Trading/)
 PROJECT_ROOT = Path(__file__).resolve().parents[4]
 CORPUS_DIR = PROJECT_ROOT / "tmp" / "benchmark_corpus"
 

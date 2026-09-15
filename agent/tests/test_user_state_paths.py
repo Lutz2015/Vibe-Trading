@@ -1,7 +1,7 @@
 """User-level state directory resolution (issue #904).
 
 Session/run/upload history must live under the runtime root
-(``~/.vibe-trading`` by default), never relative to the installed code.
+(``~/.person-trading`` by default), never relative to the installed code.
 """
 
 from __future__ import annotations
@@ -16,7 +16,7 @@ from src.config.paths import get_runtime_root
 def test_runtime_root_defaults_to_home(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.delenv("VIBE_TRADING_HOME", raising=False)
 
-    assert get_runtime_root() == Path.home() / ".vibe-trading"
+    assert get_runtime_root() == Path.home() / ".person-trading"
 
 
 def test_runtime_root_honors_env_override(

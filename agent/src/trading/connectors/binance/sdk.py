@@ -164,7 +164,7 @@ def build_config(profile_config: Mapping[str, Any] | None = None, overrides: Map
     """Resolve the effective config: saved file ← profile defaults ← CLI overrides.
 
     Credentials (``api_key`` / ``api_secret``) come from the saved
-    ``~/.vibe-trading/binance.json``; the selected connector profile supplies the
+    ``~/.person-trading/binance.json``; the selected connector profile supplies the
     ``profile`` intent; CLI/tool overrides win last.
 
     """
@@ -183,7 +183,7 @@ def config_path() -> Path:
 
 
 def load_config() -> BinanceConfig:
-    """Load Binance settings from ``~/.vibe-trading/binance.json``."""
+    """Load Binance settings from ``~/.person-trading/binance.json``."""
     path = config_path()
     if not path.exists():
         return BinanceConfig()

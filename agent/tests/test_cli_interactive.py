@@ -184,7 +184,7 @@ class TestMainRouting:
         """Interactive startup must accept the provider loader's project-local `.env`."""
         cli_main = importlib.import_module("cli.main")
 
-        home_env = tmp_path / "home" / ".vibe-trading" / ".env"
+        home_env = tmp_path / "home" / ".person-trading" / ".env"
         project_env = tmp_path / "agent" / ".env"
         cwd_env = tmp_path / "cwd" / ".env"
         project_env.parent.mkdir(parents=True)
@@ -207,7 +207,7 @@ class TestMainRouting:
         """The startup banner should show the same project-local model the loader uses."""
         cli_main = importlib.import_module("cli.main")
 
-        home_env = tmp_path / "home" / ".vibe-trading" / ".env"
+        home_env = tmp_path / "home" / ".person-trading" / ".env"
         project_env = tmp_path / "agent" / ".env"
         cwd_env = tmp_path / "cwd" / ".env"
         project_env.parent.mkdir(parents=True)

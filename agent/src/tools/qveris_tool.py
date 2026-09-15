@@ -21,7 +21,7 @@ from src.agent.tools import BaseTool
 SIGNUP_URL = "https://qveris.ai/?ref=Vyjjo5G_1cAHJA"
 INVITE_CODE = "Vyjjo5G_1cAHJA"
 DEFAULT_BASE_URL = "https://qveris.ai/api/v1"
-QVERIS_CONFIG_PATH = Path.home() / ".vibe-trading" / "qveris.json"
+QVERIS_CONFIG_PATH = Path.home() / ".person-trading" / "qveris.json"
 VALID_MODES = {"free", "paid"}
 _LEGACY_MODE_MAP = {
     "preview": "free",
@@ -167,10 +167,10 @@ def _unconfigured_message(config: QVerisConfig | None = None) -> str:
     if not has_qveris_credentials(cfg):
         return (
             "QVeris is not configured; set QVERIS_API_KEY and enable paid mode "
-            "(`vibe-trading data mode paid` or Settings -> QVeris) to use QVeris tools"
+            "(`person-trading data mode paid` or Settings -> QVeris) to use QVeris tools"
         )
     return (
-        "QVeris paid mode is off; enable it with `vibe-trading data mode paid` "
+        "QVeris paid mode is off; enable it with `person-trading data mode paid` "
         "or Settings -> QVeris to use QVeris tools"
     )
 

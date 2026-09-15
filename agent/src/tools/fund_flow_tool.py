@@ -89,7 +89,7 @@ def _fetch_symbol_flow(symbol: str, *, period: str, days: int) -> dict[str, Any]
     """Fetch one symbol's capital-flow series and shape it into a result dict.
 
     Args:
-        symbol: Vibe-Trading symbol (e.g. ``"600519.SH"``, ``"AAPL.US"``).
+        symbol: Person-Trading symbol (e.g. ``"600519.SH"``, ``"AAPL.US"``).
         period: ``"daily"`` or ``"min"``.
         days: Number of most-recent daily bars to keep (ignored for ``"min"``).
 

@@ -31,9 +31,10 @@
     "collapse": "Contraer",
     "expand": "Expandir",
     "skipToMain": "Saltar al contenido principal",
-    "sidebar": "Barra lateral de Vibe-Trading",
+    "sidebar": "Barra lateral de Personal-Trading",
     "mainNavigation": "Navegación principal",
-    "about": "Acerca de"
+    "about": "Acerca de",
+    "brandName": "Personal-Trading"
   },
   "runtime": {
     "monitorBadge": "Monitor de Runtime",
@@ -103,9 +104,9 @@
     "connectorStatusUnavailable": "Estado no disponible",
     "connectedAccessUnknown": "Conectado · Acceso desconocido",
     "missingLongbridgeVariables": "Configuración faltante. Configura estas variables en agent/.env y recrea el servicio:",
-    "missingEtoroVariables": "Configuración faltante. Define estas variables de entorno o crea ~/.vibe-trading/etoro.json:",
+    "missingEtoroVariables": "Configuración faltante. Define estas variables de entorno o crea ~/.person-trading/etoro.json:",
     "missingEtoroFileHint": "Archivo de ejemplo: {\"api_key\": \"YOUR_PUBLIC_API_KEY\", \"user_key\": \"YOUR_USER_KEY\", \"profile\": \"live-readonly\"}. Perfiles: etoro-paper-sdk, etoro-live-sdk-readonly, etoro-paper-trade, etoro-live-trade.",
-    "missingConnectorVariables": "Configuración faltante. Configura las credenciales del conector en ~/.vibe-trading/ o agent/.env, luego verifica la conexión.",
+    "missingConnectorVariables": "Configuración faltante. Configura las credenciales del conector en ~/.person-trading/ o agent/.env, luego verifica la conexión.",
     "pathSeparatedKeyBound": "Demo/real con rutas separadas (par de claves compartido)",
     "sdkConnectorProfile": "Conector SDK directo · perfil de solo lectura",
     "connectionDetails": "Detalles de la conexión",
@@ -401,7 +402,7 @@
     "clearApiKey": "Borrar clave de API guardada",
     "channels": {
       "title": "Canales de mensajería",
-      "description": "Conecta adaptadores de chat al mismo runtime de sesión de Vibe-Trading usado por la interfaz web y la CLI.",
+      "description": "Conecta adaptadores de chat al mismo runtime de sesión de Personal-Trading usado por la interfaz web y la CLI.",
       "runtime": "Runtime",
       "running": "En ejecución",
       "stopped": "Detenido",
@@ -489,7 +490,9 @@
     "oauth": "OAuth",
     "authentication": "Autenticación",
     "apiKey": "Clave de API",
-    "tushareTokenDesc": "Usado para datos de acciones A, futuros, fondos y macro de China. Si no se configura, el proyecto recurre a AKShare cuando está disponible."
+    "tushareTokenDesc": "Usado para datos de acciones A, futuros, fondos y macro de China. Si no se configura, el proyecto recurre a AKShare cuando está disponible.",
+    "apiKeyMaskedPlaceholder": "•••••••• (guardada)",
+    "apiKeyStoredHint": "La clave está guardada de forma segura. Pega un valor nuevo para reemplazarla, o usa la opción de borrar de abajo."
   },
   "qveris": {
     "title": "Mercado de herramientas QVeris",
@@ -1159,7 +1162,7 @@
     "unknown": "desconocido",
     "justNow": "justo ahora",
     "loadingInstructions": "Cargando instrucciones de autorización del conector...",
-    "fallbackInstruction": "Ejecuta `vibe-trading connector list`, elige el perfil del broker y luego ejecuta `vibe-trading connector authorize <perfil>` desde la sesión de escritorio que mantendrá la conexión con el broker.",
+    "fallbackInstruction": "Ejecuta `person-trading connector list`, elige el perfil del broker y luego ejecuta `person-trading connector authorize <perfil>` desde la sesión de escritorio que mantendrá la conexión con el broker.",
     "secondsAgo": "hace {{n}}s",
     "minutesAgo": "hace {{n}}m",
     "hoursAgo": "hace {{n}}h",

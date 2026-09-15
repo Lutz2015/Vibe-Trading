@@ -232,7 +232,7 @@ def test_settings_default_to_user_writable_config_path() -> None:
     """Web settings must not target the installed package directory."""
     from pathlib import Path
 
-    assert helpers.ENV_PATH == Path.home() / ".vibe-trading" / ".env"
+    assert helpers.ENV_PATH == Path.home() / ".person-trading" / ".env"
     assert helpers.LEGACY_ENV_PATH == helpers.AGENT_DIR / ".env"
 
 

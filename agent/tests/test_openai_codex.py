@@ -168,7 +168,7 @@ def test_missing_codex_token_raises_login_hint(
     monkeypatch.setenv("VIBE_TRADING_HOME", str(tmp_path))
     adapter = OpenAICodexLLM(model=DEFAULT_CODEX_MODEL)
 
-    with pytest.raises(CodexAuthenticationError, match="vibe-trading provider login openai-codex"):
+    with pytest.raises(CodexAuthenticationError, match="person-trading provider login openai-codex"):
         adapter._headers()
 
 

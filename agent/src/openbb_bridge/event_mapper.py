@@ -1,12 +1,12 @@
-"""Map Vibe-Trading internal events to OpenBB Workspace SSE events.
+"""Map Person-Trading internal events to OpenBB Workspace SSE events.
 
-Vibe-Trading's :class:`AgentLoop` emits fine-grained events through the session
+Person-Trading's :class:`AgentLoop` emits fine-grained events through the session
 event bus (``text_delta``, ``tool_call``, ``tool_result``, ...). OpenBB
 Workspace expects a different, smaller vocabulary of Server-Sent Events built
 with the ``openbb_ai`` helper functions (``message_chunk``, ``reasoning_step``,
 ...).
 
-:class:`SSEEventMapper` translates one Vibe-Trading event into zero or more
+:class:`SSEEventMapper` translates one Person-Trading event into zero or more
 ``openbb_ai`` SSE objects. Returning an empty list means "swallow this event"
 (used for high-frequency progress / bookkeeping events that would only add
 noise to the Workspace transcript).
@@ -21,7 +21,7 @@ from openbb_ai.helpers import message_chunk, reasoning_step
 
 logger = logging.getLogger("openbb_bridge")
 
-# Vibe-Trading event types that carry the visible answer text.
+# Person-Trading event types that carry the visible answer text.
 _TEXT_EVENTS = {"text_delta"}
 
 # Events that are pure progress / telemetry and should not reach Workspace.
@@ -45,10 +45,10 @@ def _clip(value: Any, limit: int = 500) -> str:
 
 
 class SSEEventMapper:
-    """Translate Vibe-Trading events into ``openbb_ai`` SSE objects."""
+    """Translate Person-Trading events into ``openbb_ai`` SSE objects."""
 
     def map(self, event_type: str, data: Dict[str, Any]) -> List[Any]:
-        """Translate one Vibe-Trading event into ``openbb_ai`` SSE objects.
+        """Translate one Person-Trading event into ``openbb_ai`` SSE objects.
 
         Args:
             event_type: The session-bus event type.
@@ -130,13 +130,13 @@ class SSEEventMapper:
             if event_type == "attempt.started":
                 return [
                     reasoning_step(
-                        message="Vibe-Trading agent started.",
+                        message="Person-Trading agent started.",
                         event_type="INFO",
                     )
                 ]
 
             # Unknown event: swallow it rather than leaking internal noise.
-            logger.debug("Unmapped Vibe-Trading event: %s", event_type)
+            logger.debug("Unmapped Person-Trading event: %s", event_type)
             return []
         except Exception as exc:  # never break the stream on a mapping error
             logger.warning("Failed to map event %s: %s", event_type, exc)

@@ -1,6 +1,6 @@
 """Local data loader: reads CSV, Parquet, and DuckDB files from user config.
 
-Configuration lives at ``~/.vibe-trading/data-bridge/config.yaml``.
+Configuration lives at ``~/.person-trading/data-bridge/config.yaml``.
 Each entry maps a symbol to a data file with optional column-name overrides,
 date format, and (for DuckDB) an SQL query.
 
@@ -43,7 +43,7 @@ from backtest.loaders.registry import register
 
 logger = logging.getLogger(__name__)
 
-_CONFIG_DIR = Path.home() / ".vibe-trading" / "data-bridge"
+_CONFIG_DIR = Path.home() / ".person-trading" / "data-bridge"
 _CONFIG_PATH = _CONFIG_DIR / "config.yaml"
 
 _DEFAULT_COLUMNS = {

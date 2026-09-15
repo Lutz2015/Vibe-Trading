@@ -11,7 +11,7 @@ cookie plus a matching ``crumb`` token. This client fetches both lazily on the
 first call that needs them and refreshes them once on a 401 (the documented
 "crumb expired / unauthorized" signal), so callers never manage that handshake.
 
-Symbol convention (Vibe-Trading -> Yahoo):
+Symbol convention (Person-Trading -> Yahoo):
   * US ``AAPL.US`` -> ``AAPL`` (Yahoo carries US tickers bare)
   * HK ``00700.HK`` -> ``0700.HK`` (Yahoo drops the leading zero to 4 digits)
   * India ``RELIANCE.NS`` / ``500325.BO`` -> unchanged (Yahoo carries the
@@ -70,7 +70,7 @@ def _min_interval() -> float:
 
 
 def map_symbol(symbol: str) -> str:
-    """Translate a Vibe-Trading symbol into Yahoo's ticker convention.
+    """Translate a Person-Trading symbol into Yahoo's ticker convention.
 
     Args:
         symbol: Project-side symbol, e.g. ``AAPL.US``, ``00700.HK``, ``TD.TO``,

@@ -366,7 +366,7 @@ def loader_cache_root() -> Path:
     root = get_env_config().data.vibe_trading_data_cache_root
     if isinstance(root, str) and root.strip():
         return Path(root).expanduser()
-    return Path.home() / ".vibe-trading" / "cache" / "loaders"
+    return Path.home() / ".person-trading" / "cache" / "loaders"
 
 
 def make_loader_cache_key(
@@ -723,7 +723,7 @@ class DataLoaderProtocol(Protocol):
     the ``volume`` column per market, keyed by market name — e.g.
     ``{"a_share": "lots", "hk_equity": "shares"}``. ``"lots"`` means board
     lots (1 A-share lot = 100 shares); ``"shares"`` means single shares.
-    Sources differ natively (see HKUDS/Vibe-Trading#1062), so consumers must
+    Sources differ natively (see HKUDS/Person-Trading#1062), so consumers must
     read the per-symbol ``volume_unit`` from ``_provenance`` instead of
     assuming a unit; a missing market entry surfaces as ``null`` (undeclared).
     """

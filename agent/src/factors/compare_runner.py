@@ -2,7 +2,7 @@
 
 Shared core behind the three ``alpha compare`` surfaces:
 
-* ``vibe-trading alpha compare`` (CLI — ``factors/cli_handlers.py``)
+* ``person-trading alpha compare`` (CLI — ``factors/cli_handlers.py``)
 * ``POST /alpha/compare`` (Web UI — ``api/alpha_routes.py``)
 * the ``alpha_compare`` agent tool (``tools/alpha_compare_tool.py``)
 

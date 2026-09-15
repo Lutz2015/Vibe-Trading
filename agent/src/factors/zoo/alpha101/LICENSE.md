@@ -4,7 +4,7 @@
 
 **Kakushadze 101 Formulaic Alphas**
 
-This is the display name used throughout the Vibe-Trading codebase, manifests,
+This is the display name used throughout the Person-Trading codebase, manifests,
 wiki, and documentation when referring to the 101 alphas implemented under
 `agent/src/factors/zoo/alpha101/`. No other branding is used.
 
@@ -77,4 +77,4 @@ generator script is not retained in the published source tree).
 
 ## Contact
 
-Vibe-Trading project — <https://github.com/HKUDS/Vibe-Trading>
+Person-Trading project — <https://github.com/HKUDS/Person-Trading>

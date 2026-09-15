@@ -1,7 +1,7 @@
-"""Single source of truth for all Vibe-Trading environment variable defaults.
+"""Single source of truth for all Person-Trading environment variable defaults.
 
 This module defines Pydantic models for every environment variable consumed by
-the Vibe-Trading agent, grouped by functional category.  Each field carries the
+the Person-Trading agent, grouped by functional category.  Each field carries the
 correct type, default value, and env-var alias so that ``EnvConfig()`` with no
 arguments reads from ``os.environ`` and applies the documented defaults.
 

@@ -44,7 +44,7 @@
     "default_base_url": "https://chatgpt.com/backend-api/codex/responses",
     "api_key_required": false,
     "auth_type": "oauth",
-    "login_command": "vibe-trading provider login openai-codex"
+    "login_command": "person-trading provider login openai-codex"
   },
   {
     "name": "deepseek",
@@ -152,6 +152,10 @@
     "base_url_env": "MOONSHOT_BASE_URL",
     "default_model": "kimi-k2.6",
     "default_base_url": "https://api.moonshot.ai/v1",
+    "base_url_options": [
+      "https://api.moonshot.ai/v1",
+      "https://api.moonshot.cn/v1"
+    ],
     "api_key_required": true
   },
   {

@@ -473,7 +473,7 @@ def test_nothing_is_invented_for_a_paper_that_states_nothing():
 
 def test_claims_are_labelled_as_the_papers_own():
     payload = _brief(["2607.27461"], _response(text=_ARXIV_FEED))
-    assert "None of it has been reproduced by a Vibe-Trading backtest" in payload["disclaimer"]
+    assert "None of it has been reproduced by a Person-Trading backtest" in payload["disclaimer"]
     brief = payload["papers"][0]["factor_brief"]
     assert brief["disclaimer"] == payload["disclaimer"]
     assert any("alpha-zoo" in a for a in brief["next_actions"])

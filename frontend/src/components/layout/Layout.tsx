@@ -27,7 +27,6 @@ export function Layout() {
     { to: "/portfolio", icon: WalletCards, label: t('layout.portfolio') },
     { to: "/alpha-zoo", icon: Layers, label: t('layout.alphaZoo') },
     { to: "/options", icon: CandlestickChart, label: t('layout.optionsLab') },
-    { to: "/settings", icon: Settings, label: t('layout.settings') },
     { to: "/correlation", icon: BarChart3, label: t('layout.correlation') },
   ];
   const { pathname } = useLocation();
@@ -106,7 +105,7 @@ export function Layout() {
       </a>
       {/* Sidebar */}
       <aside
-        aria-label={t('layout.sidebar', { defaultValue: 'Vibe-Trading sidebar' })}
+        aria-label={t('layout.sidebar', { defaultValue: 'Personal-Trading sidebar' })}
         className={cn(
           "max-md:w-12 border-e border-border/60 bg-card flex flex-col shrink-0 transition-all duration-200 overflow-visible",
           collapsed ? "w-12" : "w-64"
@@ -116,12 +115,14 @@ export function Layout() {
         <div className={cn("border-b border-border/60", collapsed ? "p-2 flex justify-center" : "p-4 max-md:p-2 max-md:flex max-md:justify-center")}>
           <Link
             to="/"
-            aria-label="Vibe-Trading"
+            aria-label={t('layout.brandName', { defaultValue: 'Personal-Trading' })}
             className={cn("flex items-center", collapsed ? "justify-center" : "gap-2 max-md:justify-center")}
           >
             <BrandMark className="h-6 w-6 shrink-0" />
             {!collapsed && (
-              <span className="text-[15px] font-semibold tracking-tight max-md:hidden">Vibe-Trading</span>
+              <span className="text-[15px] font-semibold tracking-tight max-md:hidden">
+                {t('layout.brandName', { defaultValue: 'Personal-Trading' })}
+              </span>
             )}
           </Link>
         </div>
@@ -254,59 +255,65 @@ export function Layout() {
           </div>
         )}
 
-        {/* Spacer when collapsed */}
+        {/* Spacer when sessions are hidden */}
         {collapsed && <div className="flex-1" />}
 
-        {/* Footer */}
-        <div className={cn("mt-auto border-t border-border/60", collapsed ? "p-1 flex flex-col items-center gap-1" : "p-3 space-y-2 max-md:p-1 max-md:flex max-md:flex-col max-md:items-center max-md:gap-1 max-md:space-y-0")}>
+        {/* Footer — Settings sits bottom-left */}
+        <div className={cn("mt-auto border-t border-border/60", collapsed ? "p-1 flex flex-col items-center gap-1" : "p-2 space-y-1 max-md:p-1")}>
+          <Link
+            to="/settings"
+            aria-label={t('layout.settings')}
+            className={cn(
+              "flex items-center rounded-md text-[13px] transition-colors",
+              collapsed ? "justify-center px-2 py-1.5" : "gap-3 px-3 py-1.5",
+              pathname.startsWith("/settings")
+                ? "bg-primary/10 text-primary font-medium"
+                : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+            )}
+            title={collapsed ? t('layout.settings') : undefined}
+          >
+            <Settings className="h-4 w-4 shrink-0" aria-hidden="true" />
+            {!collapsed && <span>{t('layout.settings')}</span>}
+          </Link>
           {collapsed ? (
-            <>
-              <button onClick={toggle} className="p-1.5 text-muted-foreground hover:text-foreground rounded transition-colors" title={dark ? t('layout.light') : t('layout.dark')}>
-                {dark ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
-              </button>
-              <button onClick={() => setCollapsed(false)} className="p-1.5 text-muted-foreground hover:text-foreground rounded transition-colors" title={t('layout.expand')}>
-                <ChevronsRight className="h-3.5 w-3.5" />
-              </button>
-            </>
+            <button onClick={() => setCollapsed(false)} className="p-1.5 text-muted-foreground hover:text-foreground rounded transition-colors" title={t('layout.expand')}>
+              <ChevronsRight className="h-3.5 w-3.5" />
+            </button>
           ) : (
-            <>
-              <div className="flex items-center justify-between max-md:flex-col">
-                <button
-                  onClick={toggle}
-                  className="flex items-center gap-1.5 p-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  {dark ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
-                  <span className="max-md:hidden">{dark ? t('layout.light') : t('layout.dark')}</span>
-                </button>
-                <div className="flex items-center gap-1 max-md:hidden">
-                  <button
-                    onClick={() => setCollapsed(true)}
-                    className="p-1.5 text-muted-foreground hover:text-foreground rounded transition-colors"
-                    title={t('layout.collapse')}
-                  >
-                    <ChevronsLeft className="h-3.5 w-3.5" />
-                  </button>
-                </div>
+            <div className="flex items-center justify-between px-1 max-md:flex-col">
+              <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground/60 max-md:hidden">
+                <span>{t('app.version')}</span>
+                <span aria-hidden="true">·</span>
+                <Link to="/about" className="transition-colors hover:text-foreground">
+                  {t('layout.about')}
+                </Link>
               </div>
-              <div className="flex flex-col gap-1 max-md:items-center">
-                <LanguageSwitcher />
-                {/* About is marketing, not a work surface — it lives here by
-                    the version stamp instead of in the primary nav. */}
-                <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground/60 max-md:hidden">
-                  <span>{t('app.version')}</span>
-                  <span aria-hidden="true">·</span>
-                  <Link to="/about" className="transition-colors hover:text-foreground">
-                    {t('layout.about')}
-                  </Link>
-                </div>
-              </div>
-            </>
+              <button
+                onClick={() => setCollapsed(true)}
+                className="p-1.5 text-muted-foreground hover:text-foreground rounded transition-colors max-md:hidden"
+                title={t('layout.collapse')}
+              >
+                <ChevronsLeft className="h-3.5 w-3.5" />
+              </button>
+            </div>
           )}
         </div>
       </aside>
 
       {/* Main */}
       <div className="relative flex-1 flex flex-col overflow-hidden">
+        {/* Top-right chrome: theme + language */}
+        <div className="flex items-center justify-end gap-0.5 border-b border-border/60 bg-card/40 px-3 py-1.5">
+          <LanguageSwitcher />
+          <button
+            onClick={toggle}
+            className="p-1.5 text-muted-foreground hover:text-foreground rounded transition-colors"
+            title={dark ? t('layout.light') : t('layout.dark')}
+            aria-label={dark ? t('layout.light') : t('layout.dark')}
+          >
+            {dark ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
+          </button>
+        </div>
         <ConnectionBanner status={sseStatus} retryAttempt={sseRetryAttempt} />
         <main id="main" className="flex-1 min-h-0 overflow-auto">
           <Outlet />
@@ -333,7 +340,7 @@ function LanguageSwitcher() {
   const { i18n, t } = useTranslation();
   const [open, setOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement | null>(null);
-  const [menuStyle, setMenuStyle] = useState<{ left: number; bottom: number; minWidth: number } | null>(null);
+  const [menuStyle, setMenuStyle] = useState<{ left: number; top: number; minWidth: number } | null>(null);
 
   useEffect(() => {
     if (!open) return;
@@ -360,25 +367,22 @@ function LanguageSwitcher() {
   }, [open]);
 
   // Recompute the menu's fixed coordinates whenever it opens, or whenever
-  // the viewport changes (resize / scroll / language switch). The menu is
-  // anchored to the trigger's *left edge* and sits *above* the trigger.
+  // the viewport changes (resize / scroll / language switch). The trigger
+  // lives in the top-right toolbar, so the menu opens *below* it.
   useEffect(() => {
     if (!open || !triggerRef.current) return;
     const place = () => {
       const r = triggerRef.current?.getBoundingClientRect();
       if (!r) return;
-      // Anchor: align the menu's right edge with the trigger's right edge,
-      // then clamp to the viewport so the menu never overflows the screen.
-      const menuWidth = 160; // px — approx longest label "العربية" + padding
-      const gap = 4; // mb-1
+      const menuWidth = 160;
+      const gap = 4;
       const desiredLeft = r.right - menuWidth;
       const maxLeft = window.innerWidth - menuWidth - 8;
       const minLeft = 8;
       const left = Math.max(minLeft, Math.min(maxLeft, desiredLeft));
       setMenuStyle({
         left,
-        // distance from viewport bottom: viewport height − trigger top + gap
-        bottom: window.innerHeight - r.top + gap,
+        top: r.bottom + gap,
         minWidth: menuWidth,
       });
     };
@@ -424,7 +428,7 @@ function LanguageSwitcher() {
           style={{
             position: "fixed",
             left: menuStyle.left,
-            bottom: menuStyle.bottom,
+            top: menuStyle.top,
             minWidth: menuStyle.minWidth,
             zIndex: 60,
           }}

@@ -305,7 +305,9 @@ export class BackendManager {
 
 }
 
-const sourceProjectName = "vibe-trading-ai";
+const sourceProjectName = "person-trading-ai";
+const isWindows = process.platform === "win32";
+const cliExecutableName = isWindows ? "person-trading.exe" : "person-trading";
 
 export function resolveBackend(options: BackendResolutionOptions): ResolvedBackend | undefined {
   const configured = options.executableOverride;
@@ -324,7 +326,12 @@ export function resolveBackend(options: BackendResolutionOptions): ResolvedBacke
       if (sourceRoot) sourceRoots.add(sourceRoot);
     }
     for (const sourceRoot of sourceRoots) {
-      const candidate = path.join(sourceRoot, ".venv", "Scripts", "vibe-trading.exe");
+      const candidate = path.join(
+        sourceRoot,
+        ".venv",
+        isWindows ? "Scripts" : "bin",
+        cliExecutableName,
+      );
       if (existsSync(candidate)) return commandBackend(candidate);
     }
   }
@@ -332,7 +339,7 @@ export function resolveBackend(options: BackendResolutionOptions): ResolvedBacke
   for (const rawEntry of (options.pathEnvironment ?? "").split(path.delimiter)) {
     const entry = rawEntry.replaceAll('"', "").trim();
     if (!entry) continue;
-    const candidate = path.join(entry, "vibe-trading.exe");
+    const candidate = path.join(entry, cliExecutableName);
     if (existsSync(candidate)) return commandBackend(candidate);
   }
   return undefined;
@@ -348,10 +355,16 @@ function trustedPackagedRoots(appPath: string, resourcesPath: string): string[] 
 }
 
 function resolvePackagedBackend(root: string): ResolvedBackend | undefined {
-  for (const candidate of [
-    path.join(root, "backend", "python.exe"),
-    path.join(root, "runtime", "backend", "python.exe"),
-  ]) {
+  const pythonCandidates = isWindows
+    ? [
+        path.join(root, "backend", "python.exe"),
+        path.join(root, "runtime", "backend", "python.exe"),
+      ]
+    : [
+        path.join(root, "backend", "bin", "python3"),
+        path.join(root, "runtime", "backend", "bin", "python3"),
+      ];
+  for (const candidate of pythonCandidates) {
     if (existsSync(candidate)) {
       return {
         executable: path.resolve(candidate),
@@ -363,10 +376,16 @@ function resolvePackagedBackend(root: string): ResolvedBackend | undefined {
       };
     }
   }
-  for (const candidate of [
-    path.join(root, "backend", "Scripts", "vibe-trading.exe"),
-    path.join(root, "runtime", "Scripts", "vibe-trading.exe"),
-  ]) {
+  const cliCandidates = isWindows
+    ? [
+        path.join(root, "backend", "Scripts", "person-trading.exe"),
+        path.join(root, "runtime", "Scripts", "person-trading.exe"),
+      ]
+    : [
+        path.join(root, "backend", "bin", "person-trading"),
+        path.join(root, "runtime", "bin", "person-trading"),
+      ];
+  for (const candidate of cliCandidates) {
     if (existsSync(candidate)) return commandBackend(candidate);
   }
   return undefined;

@@ -302,7 +302,7 @@ class TestGenericErrorEnvelope:
     raw exception text (file paths, internals) belongs to server logs only."""
 
     class ExplodingFacade:
-        _SECRET = "traceback-canary /Users/x/.vibe-trading/secrets/token"
+        _SECRET = "traceback-canary /Users/x/.person-trading/secrets/token"
 
         def __init__(self, *args, **kwargs):
             pass

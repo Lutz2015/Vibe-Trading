@@ -1,7 +1,7 @@
 ---
 name: qveris
 category: data-source
-description: Paid capability marketplace for global multi-asset data; use it when free Vibe-Trading sources lack coverage, depth, or provider quality, and keep free sources as the default for routine OHLCV.
+description: Paid capability marketplace for global multi-asset data; use it when free Person-Trading sources lack coverage, depth, or provider quality, and keep free sources as the default for routine OHLCV.
 ---
 # QVeris
 
@@ -13,7 +13,7 @@ as options Greeks, analyst/calendar feeds, broad provider comparison, or paid
 China/HK/global coverage. For ordinary OHLCV, keep `source: "auto"` on the free
 loader chain unless the user explicitly selects `source: "qveris"`.
 
-Signup link: [QVeris via Vibe-Trading](https://qveris.ai/?ref=Vyjjo5G_1cAHJA).
+Signup link: [QVeris via Person-Trading](https://qveris.ai/?ref=Vyjjo5G_1cAHJA).
 Invite code fallback: `Vyjjo5G_1cAHJA`.
 
 ## Workflow
@@ -64,7 +64,7 @@ choosing among paid options.
 
 ## Billing and Modes
 
-- The default free route is Vibe-Trading's built-in public data stack; QVeris
+- The default free route is Person-Trading's built-in public data stack; QVeris
   tools are unavailable in `mode="free"`.
 - Discover (`qveris_search`) and inspect (`qveris_inspect`) are free only after
   the user explicitly enables the paid QVeris route.
@@ -80,7 +80,7 @@ choosing among paid options.
   `remaining_credits` for the user.
 
 Configuration can come from `QVERIS_API_KEY` / `QVERIS_BASE_URL`, or from
-Settings -> QVeris / `vibe-trading data mode paid`. If QVeris is disabled, in
+Settings -> QVeris / `person-trading data mode paid`. If QVeris is disabled, in
 free mode, or no API key is configured, the tools should be treated as
 unavailable.
 
@@ -98,7 +98,7 @@ If a summary is enough, cite that the response was truncated and work only from
 Check balance and recent usage through:
 
 - Web: Settings -> QVeris.
-- CLI: `vibe-trading data status` or `vibe-trading data usage`.
+- CLI: `person-trading data status` or `person-trading data usage`.
 - Agent/API tools: status is derived from free search/ledger/usage endpoints.
 
 For reconciliation, prefer `execution_id`, `tool_id`, `charge_outcome`, `cost`,

@@ -437,7 +437,7 @@ def _normalize_preset_name(value: str) -> str | None:
 
     Names in the static routing table are accepted as before. Names outside it
     are accepted only when they resolve to an actual preset file — which lets
-    explicitly named user presets (``~/.vibe-trading/swarm/presets/``) run
+    explicitly named user presets (``~/.person-trading/swarm/presets/``) run
     through this tool. Keyword ROUTING stays limited to the curated table: a
     user preset is reachable only by naming it, never by keyword match.
     """
@@ -480,7 +480,7 @@ def _resolve_preset(prompt: str, explicit_preset: str | None = None) -> tuple[st
             available = ", ".join(sorted(_PRESET_NAMES))
             return None, (
                 f"Unknown preset_name '{explicit_preset}'. Available presets: {available}. "
-                "User presets in ~/.vibe-trading/swarm/presets/ are also accepted by name."
+                "User presets in ~/.person-trading/swarm/presets/ are also accepted by name."
             )
         return preset, None
 

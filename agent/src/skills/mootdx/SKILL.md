@@ -11,7 +11,7 @@ Mootdx talks the native 通达信 (TDX) binary protocol over TCP, bypassing the 
 - GitHub: https://github.com/mootdx/mootdx
 - Install: `pip install mootdx && pip install 'httpx>=0.28.1'`
 
-> Mootdx pins `httpx<0.26` in `setup.py`, but only uses basic `httpx.Client/get` APIs that are forward-compatible. The second `pip install` restores the modern httpx that the rest of Vibe-Trading (MCP server, fastmcp) needs.
+> Mootdx pins `httpx<0.26` in `setup.py`, but only uses basic `httpx.Client/get` APIs that are forward-compatible. The second `pip install` restores the modern httpx that the rest of Person-Trading (MCP server, fastmcp) needs.
 
 ## Quick Start
 

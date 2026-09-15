@@ -37,7 +37,7 @@ logger = logging.getLogger(__name__)
 # always-on control for VT-001 is the AST scrubber in backtest/runner.py, not
 # any of this.
 _SANDBOX_USER = "vibe-sandbox"
-# The only paths under ~/.vibe-trading re-exposed into the ephemeral sandbox
+# The only paths under ~/.person-trading re-exposed into the ephemeral sandbox
 # HOME. Data loaders that run in the same subprocess resolve these via
 # Path.home(); everything else in the real home (.env, sessions.db, memory/,
 # live/ mandate+audit ledger, shadow_*, dotfiles) stays unreadable to generated
@@ -84,7 +84,7 @@ def _rlimit_as_bytes() -> int:
 
 # Applied by the freshly-exec'd child, NOT by a ``preexec_fn``. ``preexec_fn``
 # runs Python bytecode between fork() and exec(); when the parent is
-# multi-threaded — which ``vibe-trading serve`` always is (uvicorn workers plus
+# multi-threaded — which ``person-trading serve`` always is (uvicorn workers plus
 # the background agent loops) — that is undefined behaviour per POSIX and
 # CPython documents it as unsafe. On aarch64/glibc 2.34 it reliably SIGSEGVs the
 # child, so every backtest launched from the Web UI died before exec (#1355).
@@ -148,16 +148,16 @@ def _prepare_sandbox_home(real_home: Path | None) -> Path:
     """Create an ephemeral HOME and symlink in only the loader-owned paths.
 
     The generated strategy runs in the same subprocess as the data loaders, so
-    the ephemeral home re-exposes the narrow set of ``~/.vibe-trading`` paths the
+    the ephemeral home re-exposes the narrow set of ``~/.person-trading`` paths the
     loaders need (opt-in cache, local data-bridge config, qveris config) and
     nothing else. Symlinks are used so the opt-in loader cache still persists
     across runs; ``shutil.rmtree`` later removes the links, never their targets.
     """
     sandbox = Path(tempfile.mkdtemp(prefix="vibe-sandbox-home-"))
     if real_home is not None:
-        src_root = real_home / ".vibe-trading"
+        src_root = real_home / ".person-trading"
         if src_root.is_dir():
-            dst_root = sandbox / ".vibe-trading"
+            dst_root = sandbox / ".person-trading"
             dst_root.mkdir(parents=True, exist_ok=True)
             for rel in _SANDBOX_HOME_REEXPOSE:
                 src = src_root / rel
@@ -507,7 +507,7 @@ class Runner:
         # ``execute()`` replaces HOME with an ephemeral sandbox directory.  The
         # backtest entry point validates ``run_dir`` again in that child
         # process, so its HOME-derived default roots no longer include a run
-        # created under the real ``~/.vibe-trading/runs``.  Carry the exact
+        # created under the real ``~/.person-trading/runs``.  Carry the exact
         # current run directory across the boundary as an explicit root.  Using
         # the run itself (rather than its parent) keeps the sandbox grant as
         # narrow as possible while ensuring artifacts land in the canonical
@@ -598,7 +598,7 @@ class Runner:
             cmd.extend(cli_args)
 
         # VT-001 defense-in-depth: give the generated-code subprocess an ephemeral
-        # HOME (so it can't read the persistent ~/.vibe-trading secrets/state),
+        # HOME (so it can't read the persistent ~/.person-trading secrets/state),
         # drop to an unprivileged UID where the hardened container supports it,
         # and cap its address space / fd count on top of the wall-clock timeout.
         real_home = None

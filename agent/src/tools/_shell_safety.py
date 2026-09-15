@@ -30,7 +30,7 @@ _POWERSHELL_PYTHON_PIPE = re.compile(
 )
 _BROAD_PYTHON_KILL_ERROR = (
     "Broad Python process termination is blocked because it can terminate "
-    "Vibe-Trading itself. Use cancel_background with the task_id returned "
+    "Person-Trading itself. Use cancel_background with the task_id returned "
     "by background_run."
 )
 

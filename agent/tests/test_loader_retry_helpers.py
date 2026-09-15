@@ -248,7 +248,7 @@ def test_loader_cache_disabled_by_default_bypasses_home(tmp_path, monkeypatch):
 
     assert calls["count"] == 1
     pd.testing.assert_frame_equal(out, frame)
-    assert not (home / ".vibe-trading").exists()
+    assert not (home / ".person-trading").exists()
 
 
 def test_stubbed_config_cannot_enable_cache_or_redirect_root_into_cwd(monkeypatch, tmp_path):
@@ -273,7 +273,7 @@ def test_stubbed_config_cannot_enable_cache_or_redirect_root_into_cwd(monkeypatc
 
     root = base.loader_cache_root()
     assert root.is_absolute()
-    assert root == home / ".vibe-trading" / "cache" / "loaders"
+    assert root == home / ".person-trading" / "cache" / "loaders"
 
 
 def test_loader_cache_root_honors_real_string_override(monkeypatch, tmp_path):

@@ -153,7 +153,7 @@ def artifact_dir(tmp_path: Path) -> Path:
         timestamp="2026-08-30T00:00:00Z",
         system_prompt="fixture",
         tool_names=["search_symbol"],
-        package_versions={"vibe-trading-ai": "fixture"},
+        package_versions={"person-trading-ai": "fixture"},
     )
     (run_dir / "run_manifest.json").write_text(
         manifest.to_json() + "\n", encoding="utf-8"

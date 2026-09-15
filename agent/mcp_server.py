@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Vibe-Trading MCP Server — expose finance research tools to any MCP client.
+"""Person-Trading MCP Server — expose finance research tools to any MCP client.
 
 Works with OpenClaw, Claude Desktop, Cursor, and any MCP-compatible client.
 Zero API key required for HK/US/crypto research markets (yfinance, OKX,
@@ -40,13 +40,13 @@ at ``http://<host>:<port>/mcp`` (NOT ``/sse``, which is a legacy-SSE artifact).
 
 OpenClaw config (~/.openclaw/config.yaml):
     skills:
-      - name: vibe-trading
+      - name: person-trading
         command: python /path/to/agent/mcp_server.py
 
 Claude Desktop config:
     {
       "mcpServers": {
-        "vibe-trading": {
+        "person-trading": {
           "command": "python",
           "args": ["/path/to/agent/mcp_server.py"]
         }
@@ -82,7 +82,7 @@ from src.market_data import (
     get_loader,
 )
 
-mcp = FastMCP("Vibe-Trading", version=APP_VERSION)
+mcp = FastMCP("Person-Trading", version=APP_VERSION)
 
 logger = logging.getLogger(__name__)
 
@@ -656,7 +656,7 @@ def add_goal_evidence(
         claim_id: Optional claim this evidence supports or contradicts.
         evidence_type: Evidence category, default evidence.
         tool_call_id: Source tool call id for traceability; it does not verify evidence by itself.
-        run_id: Vibe-Trading run id. It verifies evidence only when the run directory exists.
+        run_id: Person-Trading run id. It verifies evidence only when the run directory exists.
         source_provider: Data/provider name such as yfinance, OKX, tushare.
             Defaults to "agent_tool" when omitted.
         source_type: Source category such as market_data, document, backtest.
@@ -966,7 +966,7 @@ def alpha_bench(
 
         try:
             report_roots = [
-                Path.home() / ".vibe-trading" / "reports",
+                Path.home() / ".person-trading" / "reports",
                 get_runtime_root() / "reports",
                 *allowed_write_roots(),
             ]
@@ -2313,7 +2313,7 @@ def qveris_search(query: str, limit: int = 20, session_id: str | None = None) ->
     Discovery is free. Returns candidate tools with ``tool_id``, ``provider``,
     ``parameters``, ``expected_cost`` and ``stats.success_rate``; choose by
     expected cost and success rate before any paid execute. Requires QVeris
-    paid routing (``QVERIS_API_KEY`` and paid mode via ``vibe-trading data
+    paid routing (``QVERIS_API_KEY`` and paid mode via ``person-trading data
     mode paid`` or Settings -> QVeris) — without it the tool returns a
     not-available error.
 
@@ -2340,7 +2340,7 @@ def qveris_inspect(
     Fetches the complete descriptors for one or more ``tool_ids`` returned by
     ``qveris_search``. Inspection is free: verify required parameters, enum
     values, date formats and output shape before a paid call. Requires QVeris
-    paid routing (``QVERIS_API_KEY`` and paid mode via ``vibe-trading data
+    paid routing (``QVERIS_API_KEY`` and paid mode via ``person-trading data
     mode paid`` or Settings -> QVeris) — without it the tool returns a
     not-available error.
 
@@ -2374,7 +2374,7 @@ def qveris_execute(
     per-session credit budget before sending the request; the result preserves
     ``cost`` and ``remaining_credits``. Research/data execution only — it
     never places orders. Requires QVeris paid routing (``QVERIS_API_KEY`` and
-    paid mode via ``vibe-trading data mode paid`` or Settings -> QVeris) —
+    paid mode via ``person-trading data mode paid`` or Settings -> QVeris) —
     without it the tool returns a not-available error.
 
     Args:
@@ -2915,7 +2915,7 @@ def extract_shadow_strategy(
 
     Run `analyze_trade_journal` first if the journal hasn't been parsed.
     Returns shadow_id + rules preview. Profile persists to
-    ~/.vibe-trading/shadow_accounts/.
+    ~/.person-trading/shadow_accounts/.
 
     Args:
         journal_path: Path to the CSV/Excel broker export.
@@ -3029,11 +3029,11 @@ def scan_shadow_signals(
 
 
 def main():
-    """Entry point for `vibe-trading-mcp` CLI command."""
+    """Entry point for `person-trading-mcp` CLI command."""
     global _include_shell_tools, _registry
     import argparse
 
-    parser = argparse.ArgumentParser(description="Vibe-Trading MCP Server")
+    parser = argparse.ArgumentParser(description="Person-Trading MCP Server")
     parser.add_argument(
         "--transport",
         choices=["stdio", "sse", "http"],

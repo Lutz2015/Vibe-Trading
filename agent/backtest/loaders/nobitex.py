@@ -73,7 +73,7 @@ _NOBITEX_PROBE_TIMEOUT_S = positive_env_int("NOBITEX_PROBE_TIMEOUT_S", 8)
 
 _OUTPUT_COLUMNS = ["open", "high", "low", "close", "volume"]
 
-_HEADERS = {"User-Agent": "TraderBot/vibe-trading-loader"}
+_HEADERS = {"User-Agent": "TraderBot/person-trading-loader"}
 
 
 def map_symbol(symbol: str) -> str:

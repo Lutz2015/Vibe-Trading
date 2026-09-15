@@ -1,1 +1,1 @@
-"""Vibe-Trading core package."""
+"""Person-Trading core package."""

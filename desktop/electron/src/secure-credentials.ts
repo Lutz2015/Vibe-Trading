@@ -87,9 +87,9 @@ export class SecureCredentialStore {
       throw new Error(this.messages.credentialEncryptionUnavailable);
     }
     await this.load();
-    await this.migrateDotenv(path.join(this.homeDirectory, ".vibe-trading", ".env"));
+    await this.migrateDotenv(path.join(this.homeDirectory, ".person-trading", ".env"));
     await this.migrateJsonField(
-      path.join(this.homeDirectory, ".vibe-trading", "qveris.json"),
+      path.join(this.homeDirectory, ".person-trading", "qveris.json"),
       "api_key",
       "QVERIS_API_KEY",
     );
@@ -184,7 +184,7 @@ export class SecureCredentialStore {
           this.values[name] = safeStorage.encryptString(value).toString("base64");
           this.migrated.push(name);
         }
-        nextLines.push(`# ${name} is stored by Vibe-Trading Desktop secure storage.`);
+        nextLines.push(`# ${name} is stored by Person-Trading Desktop secure storage.`);
         changed = true;
       } else {
         nextLines.push(line);

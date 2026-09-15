@@ -26,7 +26,8 @@ let quitting = false;
 let desktopLocale: DesktopLocale = "en";
 let desktopMessages = getDesktopMessages(desktopLocale);
 const apiAuthKey = randomBytes(32).toString("base64url");
-const productName = "Vibe-Trading Desktop (Unofficial Community Build)";
+const productName = "Person-Trading Desktop (Unofficial Community Build)";
+const windowTitle = "个人交易智能体";
 const testUserData = process.env.VIBE_TRADING_DESKTOP_TEST_USER_DATA;
 let credentialStore: SecureCredentialStore | undefined;
 
@@ -71,7 +72,7 @@ function createWindow(): void {
     minHeight: 640,
     show: false,
     backgroundColor: "#0b0f14",
-    title: productName,
+    title: windowTitle,
     autoHideMenuBar: true,
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
@@ -79,7 +80,7 @@ function createWindow(): void {
       nodeIntegration: false,
       sandbox: true,
       devTools: !app.isPackaged,
-      partition: "persist:vibe-trading-desktop",
+      partition: "persist:person-trading-desktop",
     },
   });
   const rendererSession = mainWindow.webContents.session;
@@ -218,6 +219,20 @@ function createMenu(): void {
         { label: desktopMessages.menuOpenLogs, click: () => void shell.openPath(app.getPath("logs")) },
         { type: "separator" },
         { role: "quit", label: desktopMessages.menuQuit },
+      ],
+    },
+    {
+      // macOS needs an Edit menu with cut/copy/paste roles; without them
+      // Cmd+V does not reach focused inputs (including password fields).
+      label: desktopMessages.menuEdit,
+      submenu: [
+        { role: "undo" },
+        { role: "redo" },
+        { type: "separator" },
+        { role: "cut" },
+        { role: "copy" },
+        { role: "paste" },
+        { role: "selectAll" },
       ],
     },
     {

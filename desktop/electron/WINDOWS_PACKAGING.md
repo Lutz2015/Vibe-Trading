@@ -53,7 +53,7 @@ Electron Builder's supported compression-level override at level 7 to bound
 build time without changing installed build-tool code.
 Python dependencies are installed from
 `desktop/electron/requirements-windows-lock.txt` with `--require-hashes`; the
-checked-out Vibe-Trading package is then installed with `--no-deps` so
+checked-out Person-Trading package is then installed with `--no-deps` so
 packaging cannot silently resolve versions outside that lock.
 
 `prepare:electron` downloads the official Windows x64 Electron archive with
@@ -79,8 +79,8 @@ Electron `safeStorage` uses the operating-system encryption facility for the
 current user. Decrypted values are injected only into the child backend
 environment and are not returned to the renderer.
 
-On first startup, supported secrets in `~/.vibe-trading/.env` and the QVeris
-API key in `~/.vibe-trading/qveris.json` are migrated into encrypted storage.
+On first startup, supported secrets in `~/.person-trading/.env` and the QVeris
+API key in `~/.person-trading/qveris.json` are migrated into encrypted storage.
 The plaintext fields are then removed. Backend settings writes in desktop
 secure mode explicitly blank known credential fields instead of writing the
 injected values back to dotenv.
@@ -131,10 +131,10 @@ runs the complete packaging path for relevant pull requests and pushes to
 ## Local validation record
 
 Windows host validation on 2026-08-08 against the current upstream
-`vibe-trading-ai` 0.1.13 source:
+`person-trading-ai` 0.1.13 source:
 
 - [x] all 183 installed third-party Python distributions exactly match the
-  committed Windows lock; the checked-out `vibe-trading-ai` package is the only
+  committed Windows lock; the checked-out `person-trading-ai` package is the only
   additional distribution;
 - [x] `pip check` confirms that the locked runtime satisfies the checked-out
   project dependency metadata;

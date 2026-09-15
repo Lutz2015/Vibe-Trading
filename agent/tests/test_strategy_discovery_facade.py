@@ -449,7 +449,7 @@ class TestQueryStrategies:
         # AC8 + D12: an empty evidence store yields an ok envelope with a note
         # that no evidence has been computed — never rows, never an error. The
         # note names `refresh_strategy_evidence` (agent/MCP tool + the
-        # `vibe-trading strategy-evidence refresh` CLI) as the population path.
+        # `person-trading strategy-evidence refresh` CLI) as the population path.
         facade, _ = _make_facade(tmp_path, alpha_ids=("a1",))
         payload = facade.query_strategies(min_evidence_quality="any")
         assert payload["status"] == "ok"
@@ -464,7 +464,7 @@ class TestQueryStrategies:
             f"path: {note!r}"
         )
         assert (
-            "vibe-trading strategy-evidence refresh" in note
+            "person-trading strategy-evidence refresh" in note
         ), f"the note must name the CLI population command: {note!r}"
 
     def test_item_shape_carries_every_evidence_field_plus_borderline(

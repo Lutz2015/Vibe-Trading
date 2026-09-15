@@ -48,7 +48,7 @@ const installers = (await readdir(releaseDirectory, { withFileTypes: true }))
   .filter(
     (entry) =>
       entry.isFile() &&
-      /^Vibe-Trading-Desktop-Unofficial-.*-x64\.exe$/u.test(entry.name),
+      /^Person-Trading-Desktop-Unofficial-.*-x64\.exe$/u.test(entry.name),
   )
   .map((entry) => path.join(releaseDirectory, entry.name));
 

@@ -19,7 +19,7 @@ function draftsFromEntries(entries: SourceOrderEntry[]): Drafts {
  * Card that shows every market's data-source fallback order and lets the user
  * reorder it in-page. Saving PUTs all markets at once (order = draft when it
  * differs from the default, null otherwise so a reset also clears residue in
- * ~/.vibe-trading/.env); the backend hot-applies without a restart.
+ * ~/.person-trading/.env); the backend hot-applies without a restart.
  */
 export function SourcePrioritySettings() {
   const { t } = useTranslation();

@@ -86,7 +86,7 @@ __all__ = [
 
 #: Curated distributions whose version can shift a computed number or change
 #: available functionality. Rationale per package:
-#:   - "vibe-trading-ai": pins the code release itself.
+#:   - "person-trading-ai": pins the code release itself.
 #:   - "numpy" / "pandas" / "scipy": the numeric kernel every metric,
 #:     optimizer, and quantlib formula (agent/src/quantlib/) runs on top of —
 #:     a minor version bump in any of them can silently shift a computed
@@ -99,7 +99,7 @@ __all__ = [
 #:     which is itself methodology-relevant (those functions were simply
 #:     unavailable for this run).
 _KEY_PACKAGES: tuple[str, ...] = (
-    "vibe-trading-ai",
+    "person-trading-ai",
     "langchain",
     "langchain-core",
     "numpy",

@@ -1,6 +1,6 @@
 """Percentage-point deltas: one shape, one verdict, in both languages.
 
-Regression history for HKUDS/Vibe-Trading#1341: the price scan masked "%" but
+Regression history for HKUDS/Person-Trading#1341: the price scan masked "%" but
 not the percentage-point spellings, so "~3.6pp below Penumbra" yielded 3.0 (the
 ".6" consumed as a decimal) and that number reached the OHLC comparator as an
 unsourced price claim — rejecting a correct fundamentals answer and demanding

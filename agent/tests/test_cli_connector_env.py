@@ -1,7 +1,7 @@
-"""Regression (#901): the ``connector`` CLI path must load ``~/.vibe-trading/.env``.
+"""Regression (#901): the ``connector`` CLI path must load ``~/.person-trading/.env``.
 
 ``EnvConfig`` reads only ``os.environ``; ``_ensure_dotenv()`` is what populates it
-from ``~/.vibe-trading/.env``. ``main()`` routes the ``connector`` group straight to
+from ``~/.person-trading/.env``. ``main()`` routes the ``connector`` group straight to
 ``_dispatch_connector`` without the interactive TUI's preflight, so nothing loaded
 the file — and every connector resolving credentials through ``get_env_config()``
 (Longbridge's app key / secret / access token, Futu's ``FUTU_TRADE_PWD_MD5``)

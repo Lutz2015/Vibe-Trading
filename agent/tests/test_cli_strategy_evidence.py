@@ -1,4 +1,4 @@
-"""CLI contract for ``vibe-trading strategy-evidence refresh`` (#969 Phase 2).
+"""CLI contract for ``person-trading strategy-evidence refresh`` (#969 Phase 2).
 
 Driven through ``cli._legacy.main`` so the argparse wiring is exercised, not
 just the handler (same invocation style as ``test_playbooks_surface.py``).

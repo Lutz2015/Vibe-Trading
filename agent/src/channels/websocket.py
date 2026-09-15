@@ -1,4 +1,4 @@
-"""WebSocket server channel: vibe-trading acts as a WebSocket server and serves connected clients."""
+"""WebSocket server channel: person-trading acts as a WebSocket server and serves connected clients."""
 
 from __future__ import annotations
 
@@ -60,10 +60,10 @@ class WebSocketConfig(BaseModel):
     - ``token_issue_path``: If non-empty, **GET** (HTTP/1.1) to this path returns JSON
       ``{"token": "...", "expires_in": <seconds>}``; use ``?token=...`` when opening the WebSocket.
       Must differ from ``path`` (the WS upgrade path). If the client runs in the **same process** as
-      vibe-trading and shares the asyncio loop, use a thread or async HTTP client for GET—do not call
+      person-trading and shares the asyncio loop, use a thread or async HTTP client for GET—do not call
       blocking ``urllib`` or synchronous ``httpx`` from inside a coroutine.
     - ``token_issue_secret``: If non-empty, token requests must send ``Authorization: Bearer <secret>`` or
-      ``X-Vibe-Trading-Auth: <secret>``.
+      ``X-Person-Trading-Auth: <secret>``.
     - ``websocket_requires_token``: If True, the handshake must include a valid token (static or issued and not expired).
     - Each connection has its own session: a unique ``chat_id`` maps to the agent session internally.
     - ``media`` field in outbound messages contains local filesystem paths; remote clients need a
@@ -413,7 +413,7 @@ class WebSocketChannel(BaseChannel):
             supplied = ""
             if auth.startswith(bearer):
                 supplied = auth[len(bearer):].strip()
-            supplied = supplied or request.headers.get("X-Vibe-Trading-Auth", "").strip()
+            supplied = supplied or request.headers.get("X-Person-Trading-Auth", "").strip()
             if not supplied or not hmac.compare_digest(supplied, secret):
                 return connection.respond(401, "Unauthorized")
         token, expires_in = self._tokens.issue_token(ttl_s=self.config.token_ttl_s)

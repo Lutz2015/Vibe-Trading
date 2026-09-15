@@ -5,7 +5,7 @@ remains in the file-based SessionStore; this module provides a fast search
 layer on top.
 
 Database location: ``sessions.db`` under the runtime root (default
-``~/.vibe-trading``; WAL mode for concurrent reads).
+``~/.person-trading``; WAL mode for concurrent reads).
 """
 
 from __future__ import annotations

@@ -76,8 +76,8 @@ def test_per_test_home_redirect_still_wins(
     monkeypatch.setenv("HOME", str(own_home))
     monkeypatch.setenv("USERPROFILE", str(own_home))  # Windows Path.home()
 
-    assert get_runtime_root() == own_home / ".vibe-trading"
-    assert get_runtime_root() != conftest._SANDBOX_HOME / ".vibe-trading"
+    assert get_runtime_root() == own_home / ".person-trading"
+    assert get_runtime_root() != conftest._SANDBOX_HOME / ".person-trading"
 
 
 def test_real_ledger_guard_fires_when_the_ledger_changes() -> None:

@@ -30,7 +30,7 @@ per-source skill.
 | tencent | A-shares, HK, US (never-banned) | No | Unrestricted | data-routing |
 | mootdx | A-shares (TDX servers, never-banned) | No | China network | data-routing |
 | futu | A/HK/US via OpenD gateway | Yes (OpenD running) | Local gateway | data-routing (runner-internal) |
-| mt5 | Forex & metals (your broker's MT5 feed) | Yes (running, logged-in MT5 terminal; optional `~/.vibe-trading/mt5.json`) | Local terminal (Windows) | data-routing (runner-internal) |
+| mt5 | Forex & metals (your broker's MT5 feed) | Yes (running, logged-in MT5 terminal; optional `~/.person-trading/mt5.json`) | Local terminal (Windows) | data-routing (runner-internal) |
 | tickerall | Forex & metals (same broker MT5 feed, hosted) | Yes (`TICKERALL_API_KEY` + `TICKERALL_ACCOUNT_ID`; read-only) | Hosted API (any OS, no terminal) | data-routing (runner-internal; **explicit `source=tickerall` only**) |
 | local | User CSV/parquet on disk | No | Offline | data-routing (runner-internal) |
 | eastmoney | A-shares, HK, US equities | No (IP-throttled) | Unrestricted | data-routing |

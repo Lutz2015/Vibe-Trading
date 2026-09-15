@@ -51,7 +51,7 @@ def test_daily_order_lock_is_cross_process(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """A lock held here denies another process, then becomes available."""
-    runtime_root = tmp_path / ".vibe-trading"
+    runtime_root = tmp_path / ".person-trading"
     monkeypatch.setattr(live_paths, "get_runtime_root", lambda: runtime_root)
     repo_root = Path(__file__).resolve().parents[2]
 
@@ -64,7 +64,7 @@ def test_daily_order_lock_is_cross_process(
 
 
 def test_action_id_increment_is_durable_and_deduplicated(tmp_path, monkeypatch) -> None:
-    runtime_root = tmp_path / ".vibe-trading"
+    runtime_root = tmp_path / ".person-trading"
     monkeypatch.setattr(live_paths, "get_runtime_root", lambda: runtime_root)
 
     assert increment_daily_count("alpaca", action_id="act_one") == 1
@@ -76,7 +76,7 @@ def test_action_id_increment_is_durable_and_deduplicated(tmp_path, monkeypatch) 
 
 
 def test_action_id_deduplicates_after_utc_rollover(tmp_path, monkeypatch) -> None:
-    runtime_root = tmp_path / ".vibe-trading"
+    runtime_root = tmp_path / ".person-trading"
     current_day = ["2026-08-25"]
     monkeypatch.setattr(live_paths, "get_runtime_root", lambda: runtime_root)
     monkeypatch.setattr(daily_count, "_utc_today", lambda: current_day[0])
@@ -105,7 +105,7 @@ def test_action_id_deduplicates_after_utc_rollover(tmp_path, monkeypatch) -> Non
 def test_action_id_accounting_rejects_malformed_evidence(
     tmp_path, monkeypatch, counter_date, action_ids
 ) -> None:
-    runtime_root = tmp_path / ".vibe-trading"
+    runtime_root = tmp_path / ".person-trading"
     monkeypatch.setattr(live_paths, "get_runtime_root", lambda: runtime_root)
     path = runtime_root / "live" / "alpaca" / "trade_counter.json"
     path.parent.mkdir(parents=True)
@@ -119,7 +119,7 @@ def test_action_id_accounting_rejects_malformed_evidence(
 
 
 def test_action_id_accounting_wraps_directory_failure(tmp_path, monkeypatch) -> None:
-    runtime_root = tmp_path / ".vibe-trading"
+    runtime_root = tmp_path / ".person-trading"
     runtime_root.write_text("not a directory", encoding="utf-8")
     monkeypatch.setattr(live_paths, "get_runtime_root", lambda: runtime_root)
 

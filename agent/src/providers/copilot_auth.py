@@ -2,7 +2,7 @@
 
 Authentication and transport are delegated to GitHub's supported SDK. The SDK
 resolves ``COPILOT_GITHUB_TOKEN``, stored Copilot CLI credentials, and ``gh``
-credentials without Vibe-Trading borrowing an OAuth client or editor identity.
+credentials without Person-Trading borrowing an OAuth client or editor identity.
 """
 
 from __future__ import annotations
@@ -80,7 +80,7 @@ def get_copilot_auth_status() -> tuple[bool, str]:
         except ImportError:
             return False, (
                 "github-copilot-sdk is not installed - "
-                'pip install "vibe-trading-ai[copilot]"'
+                'pip install "person-trading-ai[copilot]"'
             )
 
         async with CopilotClient(**_client_options()) as client:
@@ -168,7 +168,7 @@ def _convert_tools(tools: list[dict[str, Any]]) -> list[Any]:
     except ImportError as exc:
         raise RuntimeError(
             "GitHub Copilot provider requires github-copilot-sdk. Install the optional "
-            'extra: pip install "vibe-trading-ai[copilot]" (or pip install github-copilot-sdk).'
+            'extra: pip install "person-trading-ai[copilot]" (or pip install github-copilot-sdk).'
         ) from exc
 
     converted = []
@@ -212,7 +212,7 @@ async def _run_copilot(
     except ImportError as exc:
         raise RuntimeError(
             "GitHub Copilot provider requires github-copilot-sdk. Install the optional "
-            'extra: pip install "vibe-trading-ai[copilot]" (or pip install github-copilot-sdk).'
+            'extra: pip install "person-trading-ai[copilot]" (or pip install github-copilot-sdk).'
         ) from exc
 
     system_message, prompt = _convert_messages(messages)

@@ -8,7 +8,7 @@ implementation, pinned by tests, is now importable::
 
 Optional dependencies
 ---------------------
-Neither ``statsmodels`` nor ``arch`` is declared by ``vibe-trading-ai`` (checked
+Neither ``statsmodels`` nor ``arch`` is declared by ``person-trading-ai`` (checked
 in ``pyproject.toml`` and ``agent/requirements.txt``; only ``numpy``, ``pandas``
 and ``scipy`` are). They are therefore imported lazily *inside* each function
 that needs them, so importing this module never fails and a user who only wants
@@ -62,7 +62,7 @@ _DW_NEGATIVE_ABOVE = 2.5
 
 #: Both packages ship in the one ``stats`` extra, so the hint is the same for
 #: either miss: installing the extra resolves both at their pinned floors.
-_INSTALL_HINT = 'pip install "vibe-trading-ai[stats]"'
+_INSTALL_HINT = 'pip install "person-trading-ai[stats]"'
 
 
 def _require(module_path: str, package: str, feature: str) -> Any:

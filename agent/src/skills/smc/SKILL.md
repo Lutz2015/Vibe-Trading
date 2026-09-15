@@ -27,7 +27,7 @@ Direction from ChoCH + confirmation from BOS + filtering by FVG:
 ## Dependencies
 
 ```bash
-pip install "vibe-trading-ai[smc]"
+pip install "person-trading-ai[smc]"
 ```
 
 ## Parameters

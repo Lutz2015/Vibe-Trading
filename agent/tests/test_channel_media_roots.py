@@ -11,7 +11,7 @@ def test_media_dir_lives_under_uploads_root(tmp_path, monkeypatch):
     from src.channels.utils import get_media_dir
 
     media = get_media_dir("napcat")
-    assert media == tmp_path / ".vibe-trading" / "uploads" / "napcat"
+    assert media == tmp_path / ".person-trading" / "uploads" / "napcat"
     assert media.is_dir()
 
 

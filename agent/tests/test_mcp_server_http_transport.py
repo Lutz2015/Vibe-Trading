@@ -1,4 +1,4 @@
-"""Integration test for the Vibe-Trading MCP server's Streamable HTTP transport.
+"""Integration test for the Person-Trading MCP server's Streamable HTTP transport.
 
 Spawns the real ``mcp_server.py --transport http`` and verifies the single
 ``/mcp`` endpoint behaves per the MCP Streamable HTTP transport:
@@ -116,7 +116,7 @@ def test_mcp_server_http_transport() -> None:
         data = json.loads(body)
         assert "result" in data, f"initialize response missing result: {data}"
         server_info = data["result"].get("serverInfo", {})
-        assert server_info.get("name") == "Vibe-Trading", server_info
+        assert server_info.get("name") == "Person-Trading", server_info
 
         # The legacy SSE path is not mounted by the streamable-http transport.
         legacy = requests.post(

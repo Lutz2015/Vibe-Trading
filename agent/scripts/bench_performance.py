@@ -117,7 +117,7 @@ def bench_equity():
 
 
 if __name__ == "__main__":
-    print("Vibe-Trading Performance Benchmark")
+    print("Person-Trading Performance Benchmark")
     print("=" * 50)
     print()
 

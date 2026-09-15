@@ -227,7 +227,7 @@ if DISCORD_AVAILABLE:
                 if not await self._interaction_channel_allowed(interaction, channel):
                     await self._reply_ephemeral(interaction, "This channel is not allowed for this bot.")
                     return
-                await self._reply_ephemeral(interaction, "Use /help for available commands. Docs: https://github.com/HKUDS/Vibe-Trading")
+                await self._reply_ephemeral(interaction, "Use /help for available commands. Docs: https://github.com/HKUDS/Person-Trading")
 
             @self.tree.error
             async def on_app_command_error(
@@ -244,7 +244,7 @@ if DISCORD_AVAILABLE:
                 )
 
         async def send_outbound(self, msg: OutboundMessage) -> None:
-            """Send a vibe-trading outbound message using Discord transport rules."""
+            """Send a person-trading outbound message using Discord transport rules."""
             channel_id = int(msg.chat_id)
 
             channel = self._channel._known_channels.get(msg.chat_id) or self.get_channel(channel_id)
@@ -394,7 +394,7 @@ class DiscordChannel(BaseChannel):
     async def start(self) -> None:
         """Start the Discord client."""
         if not DISCORD_AVAILABLE:
-            self.logger.error("discord.py not installed. Run: pip install vibe-trading-ai[discord]")
+            self.logger.error("discord.py not installed. Run: pip install person-trading-ai[discord]")
             return
 
         if not self.config.token:

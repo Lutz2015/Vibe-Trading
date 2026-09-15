@@ -1,7 +1,7 @@
 """QVeris loader: explicit, key-gated OHLCV fetches through QVeris tools.
 
 This loader is intentionally self-contained for the QVeris integration parcel:
-it reads the shared ``~/.vibe-trading/qveris.json`` config schema, applies the
+it reads the shared ``~/.person-trading/qveris.json`` config schema, applies the
 ``QVERIS_API_KEY`` / ``QVERIS_BASE_URL`` environment overrides, and embeds the
 small HTTP client it needs for ``POST /search``, ``POST /tools/execute``, and
 truncated-result downloads.
@@ -34,7 +34,7 @@ from backtest.loaders.registry import register
 
 logger = logging.getLogger(__name__)
 
-_CONFIG_PATH = Path.home() / ".vibe-trading" / "qveris.json"
+_CONFIG_PATH = Path.home() / ".person-trading" / "qveris.json"
 _DEFAULT_BASE_URL = "https://qveris.ai/api/v1"
 _API_KEY_ENV = "QVERIS_API_KEY"
 _BASE_URL_ENV = "QVERIS_BASE_URL"
@@ -215,7 +215,7 @@ class QVerisClient:
             return json.loads(response.text)
 
     def _request(self, method: str, url: str, *, auth: bool, **kwargs: Any) -> requests.Response:
-        headers = {"User-Agent": "Vibe-Trading/1.0"}
+        headers = {"User-Agent": "Person-Trading/1.0"}
         if auth:
             headers["Authorization"] = f"Bearer {self._config.api_key}"
 

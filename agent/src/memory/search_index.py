@@ -5,7 +5,7 @@ token-scan in PersistentMemory.find_relevant(). Falls back gracefully if
 FTS5 is unavailable.
 
 Feature flag: VT_MEMORY_FTS_INDEX (default off).
-Database: ~/.vibe-trading/memory_index.db (separate from sessions.db).
+Database: ~/.person-trading/memory_index.db (separate from sessions.db).
 """
 
 from __future__ import annotations
@@ -20,7 +20,7 @@ from typing import List, Optional
 
 logger = logging.getLogger(__name__)
 
-_DEFAULT_DB_PATH = Path.home() / ".vibe-trading" / "memory_index.db"
+_DEFAULT_DB_PATH = Path.home() / ".person-trading" / "memory_index.db"
 
 # Body text truncation limit (chars)
 _MAX_BODY_LEN = 50_000
@@ -124,7 +124,7 @@ class MemorySearchIndex:
         """Initialize the search index.
 
         Args:
-            db_path: Path to SQLite DB (default: ~/.vibe-trading/memory_index.db).
+            db_path: Path to SQLite DB (default: ~/.person-trading/memory_index.db).
         """
         self.db_path = db_path or _DEFAULT_DB_PATH
         self.db_path.parent.mkdir(parents=True, exist_ok=True)

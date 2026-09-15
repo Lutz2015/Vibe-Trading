@@ -203,8 +203,8 @@ class TestRunnerControlEndpoints:
             assert cmd_connector_start("robinhood-live-mcp") == EXIT_SUCCESS
 
         out = capsys.readouterr().out
-        assert "vibe-trading connector status" in out
-        assert "vibe-trading live" not in out
+        assert "person-trading connector status" in out
+        assert "person-trading live" not in out
 
     def test_connector_start_rejects_readonly_ibkr_mcp(
         self, capsys: pytest.CaptureFixture[str]
@@ -484,12 +484,12 @@ class TestReplConnectorBridge:
 
 
 # ---------------------------------------------------------------------------
-# ``vibe-trading resume <session-id>`` dispatches to the interactive loop
+# ``person-trading resume <session-id>`` dispatches to the interactive loop
 # ---------------------------------------------------------------------------
 
 
 class TestResumeByIdDispatch:
-    """``main()`` routes ``vibe-trading resume <session-id>`` to ``_interactive_loop``."""
+    """``main()`` routes ``person-trading resume <session-id>`` to ``_interactive_loop``."""
 
     def test_resume_by_id_dispatches_with_session_id(self) -> None:
         with patch.object(main, "_interactive_loop", return_value=0) as mock:

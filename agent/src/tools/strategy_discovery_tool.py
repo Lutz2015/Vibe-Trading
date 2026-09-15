@@ -589,7 +589,7 @@ def refresh_strategy_evidence_core(
     Validates the exactly-one-source rule, loads the manifest (or accepts
     inline ``runs``), validates every entry (path containment included), and
     rebuilds the DEFAULT evidence store — ``EvidenceStore()`` resolution:
-    env override → runtime root → ``~/.vibe-trading``; NEVER a CWD-relative
+    env override → runtime root → ``~/.person-trading``; NEVER a CWD-relative
     path.
 
     Returns:

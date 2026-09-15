@@ -207,7 +207,7 @@ def _eastmoney_filter(group: str, code: str, secid: str) -> str:
 
     Args:
         group: Market group from :func:`_eastmoney_market_group`.
-        code: Original Vibe-Trading symbol (e.g. ``"600519.SH"``).
+        code: Original Person-Trading symbol (e.g. ``"600519.SH"``).
         secid: Resolved Eastmoney secid (e.g. ``"1.600519"``).
 
     Returns:

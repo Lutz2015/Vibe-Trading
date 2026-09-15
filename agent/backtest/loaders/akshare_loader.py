@@ -91,7 +91,7 @@ class DataLoader:
 
     name = "akshare"
     markets = {"a_share", "us_equity", "hk_equity", "futures", "fund", "macro", "forex"}
-    # stock_zh_a_hist empirically returns board lots (HKUDS/Vibe-Trading#1062;
+    # stock_zh_a_hist empirically returns board lots (HKUDS/Person-Trading#1062;
     # 600519.SH 2026-07-31 ratio 1.00 vs tencent/eastmoney). Note: akshare's
     # own documentation states shares for this interface — the docs disagree
     # with the actual behavior. Other markets stay undeclared.

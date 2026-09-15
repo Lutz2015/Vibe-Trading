@@ -69,7 +69,7 @@ class DataLoader:
 
     name = "mootdx"
     markets = {"a_share"}
-    # Tongdaxin K-line convention is board lots (HKUDS/Vibe-Trading#1062).
+    # Tongdaxin K-line convention is board lots (HKUDS/Person-Trading#1062).
     # Tentative declaration: TDX quote servers were unreachable from the
     # audit environment; the cross-source consistency test pins this at
     # runtime where TDX access exists.

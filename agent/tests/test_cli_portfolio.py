@@ -1,4 +1,4 @@
-"""CLI surface for the read-only portfolio: ``vibe-trading portfolio show|refresh|sources``.
+"""CLI surface for the read-only portfolio: ``person-trading portfolio show|refresh|sources``.
 
 The Web UI and the ``portfolio_summary`` tool already expose the snapshot; the
 CLI is the third surface the project's full-stack rule asks for. These tests

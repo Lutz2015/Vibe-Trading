@@ -22,7 +22,7 @@ from src.quantlib.timeseries import (
 )
 ```
 
-**Optional backends**: `statsmodels` powers everything except the two bootstrap helpers (which are pure numpy); `arch` powers `fit_garch` only. Neither is declared as a dependency of `vibe-trading-ai`, so both are imported lazily inside the functions. Importing the module always works; calling a function whose backend is missing raises an `ImportError` naming the package and the install command (`pip install "statsmodels>=0.14"` / `pip install "arch>=6.0"`). If you hit that error, report it to the user rather than silently substituting a different method.
+**Optional backends**: `statsmodels` powers everything except the two bootstrap helpers (which are pure numpy); `arch` powers `fit_garch` only. Neither is declared as a dependency of `person-trading-ai`, so both are imported lazily inside the functions. Importing the module always works; calling a function whose backend is missing raises an `ImportError` naming the package and the install command (`pip install "statsmodels>=0.14"` / `pip install "arch>=6.0"`). If you hit that error, report it to the user rather than silently substituting a different method.
 
 ## Time-Series Tests
 

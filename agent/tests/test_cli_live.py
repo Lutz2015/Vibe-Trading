@@ -47,7 +47,7 @@ def live_root(tmp_path: Path):
 
     ``src.live.paths.live_root`` and ``broker_dir`` both resolve through
     ``get_runtime_root`` at call time, so patching it isolates halt + mandate
-    state for halt.py / store.py without touching the real ~/.vibe-trading.
+    state for halt.py / store.py without touching the real ~/.person-trading.
     """
     with patch.object(live_paths, "get_runtime_root", return_value=tmp_path):
         yield tmp_path
@@ -207,8 +207,8 @@ class TestConnectorHaltResume:
         assert halt_flag_set("robinhood") is True
 
         out = capsys.readouterr().out
-        assert "vibe-trading connector resume" in out
-        assert "vibe-trading live" not in out
+        assert "person-trading connector resume" in out
+        assert "person-trading live" not in out
 
     def test_resume_without_profile_uses_selected_connector(
         self, live_root: Path, monkeypatch: pytest.MonkeyPatch

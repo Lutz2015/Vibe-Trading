@@ -1,4 +1,4 @@
-"""Tests for the ``vibe-trading update`` self-upgrade command."""
+"""Tests for the ``person-trading update`` self-upgrade command."""
 
 from __future__ import annotations
 

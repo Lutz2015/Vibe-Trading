@@ -60,7 +60,7 @@ def _persist_login_credentials(
     if path.suffix.lower() != ".json":
         raise ValueError(
             "Feishu QR login requires a JSON agent config; use "
-            "~/.vibe-trading/agent.json"
+            "~/.person-trading/agent.json"
         )
 
     payload: dict[str, Any] = {}
@@ -706,13 +706,13 @@ class FeishuChannel(BaseChannel):
             _LOGIN_CONSOLE.print("Use --force to re-authenticate with a new bot.\n")
             return True
 
-        _LOGIN_CONSOLE.print("Authorize with the mobile app. vibe-trading will save the new bot credentials.\n")
+        _LOGIN_CONSOLE.print("Authorize with the mobile app. person-trading will save the new bot credentials.\n")
 
         result = qr_register(initial_domain=self.config.domain or "feishu")
         if not result:
             _LOGIN_CONSOLE.print(
                 "[yellow]Login was not completed.[/yellow] "
-                "Run 'vibe-trading channels login feishu --force' to retry."
+                "Run 'person-trading channels login feishu --force' to retry."
             )
             return False
 
@@ -756,7 +756,7 @@ class FeishuChannel(BaseChannel):
         if not self.config.app_id or not self.config.app_secret:
             self.logger.error(
                 "app_id and app_secret not configured. "
-                "Run 'vibe-trading channels login feishu' to set up via QR code."
+                "Run 'person-trading channels login feishu' to set up via QR code."
             )
             return
 

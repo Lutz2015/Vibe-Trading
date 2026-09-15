@@ -1,5 +1,5 @@
-"""Unit tests for the cross-platform `vibe-trading setup` and
-`vibe-trading dev` commands.
+"""Unit tests for the cross-platform `person-trading setup` and
+`person-trading dev` commands.
 
 These tests cover the entrypoint and platform-aware build-command
 selection. They do not actually invoke ``npm`` (we mock ``shutil.which``
@@ -139,7 +139,7 @@ class TestCmdSetupRunsSteps:
 
 
 class TestCmdDev:
-    """`vibe-trading dev` should use vite.config.ts's port (5899), not
+    """`person-trading dev` should use vite.config.ts's port (5899), not
     5173, and launch the backend from AGENT_DIR so the in-repo `cli`
     package is importable."""
 

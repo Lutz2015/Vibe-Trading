@@ -165,13 +165,13 @@ class SessionService:
         """
         if partial:
             return (
-                "Vibe Trading restarted before this response finished. "
+                "Person Trading restarted before this response finished. "
                 "The partial response recovered below may be incomplete:\n\n"
                 f"{partial}\n\n"
                 "Review it before sending a follow-up or retrying the request."
             )
         return (
-            "Vibe Trading restarted before this response finished, so no "
+            "Person Trading restarted before this response finished, so no "
             "complete assistant response was saved. Review any completed tool "
             "actions before retrying the request."
         )

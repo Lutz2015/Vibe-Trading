@@ -3,7 +3,7 @@
 ## Scope
 
 This document covers the Electron main process, its sandboxed renderer, and the
-single Vibe-Trading Python process started by the shell. The Windows packaging
+single Person-Trading Python process started by the shell. The Windows packaging
 layer additionally covers local credential encryption, migration, and
 injection into that owned Python process. Auto-update, optional messaging
 adapters, personal WeChat pairing, broker configuration, and release ownership
@@ -17,7 +17,7 @@ or default-enabled updater exists.
 ## Assets
 
 - The per-launch API authentication secret.
-- Local Vibe-Trading sessions, reports, configuration, and research data.
+- Local Person-Trading sessions, reports, configuration, and research data.
 - Any credentials already present in the environment inherited by the Python
   process.
 - LLM, Tushare, and QVeris credentials managed by the desktop host.
@@ -96,9 +96,9 @@ therefore security-significant.
   subtrees. It does not walk their ancestors.
 - Source-mode discovery is disabled for packaged applications. During source
   development, an ancestor is accepted only when its `pyproject.toml` contains
-  `[project].name = "vibe-trading-ai"`; only that marked root's
-  `.venv\Scripts\vibe-trading.exe` is eligible.
-- The final fallback checks non-empty `PATH` entries for `vibe-trading.exe`.
+  `[project].name = "person-trading-ai"`; only that marked root's
+  `.venv\Scripts\person-trading.exe` is eligible.
+- The final fallback checks non-empty `PATH` entries for `person-trading.exe`.
 - No generic executable candidate is evaluated while walking ancestors, and
   the filesystem drive root is never treated as a source-project root.
 
@@ -168,7 +168,7 @@ therefore security-significant.
 - The on-disk JSON file contains only Base64-encoded ciphertext and the list of
   configured names.
 - Writes use a same-directory temporary file followed by rename.
-- Existing supported values in `~/.vibe-trading/.env` and QVeris configuration
+- Existing supported values in `~/.person-trading/.env` and QVeris configuration
   are migrated once; the corresponding plaintext field is removed after the
   encrypted store has been persisted.
 - Decrypted values are injected only into the owned backend child environment.

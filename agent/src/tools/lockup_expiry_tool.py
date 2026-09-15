@@ -73,7 +73,7 @@ def _clamp_horizon(horizon_days: Any) -> int:
 
 
 def _normalize_code(code: str) -> str | None:
-    """Reduce a Vibe-Trading symbol to its bare 6-digit A-share code.
+    """Reduce a Person-Trading symbol to its bare 6-digit A-share code.
 
     Accepts ``"600519"``, ``"600519.SH"``, ``"000001.SZ"`` and similar; the
     Eastmoney report keys on the bare numeric code regardless of exchange.

@@ -137,7 +137,7 @@ def config_path() -> Path:
 
 
 def load_config() -> Trading212Config:
-    """Load Trading 212 settings from ``~/.vibe-trading/trading212.json``."""
+    """Load Trading 212 settings from ``~/.person-trading/trading212.json``."""
     path = config_path()
     if not path.exists():
         return Trading212Config()

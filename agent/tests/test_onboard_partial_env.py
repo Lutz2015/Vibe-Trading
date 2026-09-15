@@ -27,11 +27,11 @@ def _mode(path: Path) -> int:
 
 @pytest.fixture()
 def fake_home(tmp_path, monkeypatch):
-    """Point ``Path.home()`` at a temp dir so no real ~/.vibe-trading is touched."""
+    """Point ``Path.home()`` at a temp dir so no real ~/.person-trading is touched."""
     home = tmp_path / "home"
     home.mkdir()
     monkeypatch.setenv("HOME", str(home))
-    assert onboard._env_dir() == home / ".vibe-trading"
+    assert onboard._env_dir() == home / ".person-trading"
     return home
 
 

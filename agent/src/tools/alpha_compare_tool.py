@@ -1,7 +1,7 @@
 """Agent tool: head-to-head comparison of hand-picked Alpha Zoo alphas.
 
 Thin wrapper over :func:`src.factors.compare_runner.compare_alphas` — the same
-core behind ``vibe-trading alpha compare`` (CLI) and ``POST /alpha/compare``
+core behind ``person-trading alpha compare`` (CLI) and ``POST /alpha/compare``
 (Web UI). Auto-discovered and registered via ``BaseTool.__subclasses__()``.
 
 Read-only: it computes IC/IR for the named alphas and ranks them; it writes no

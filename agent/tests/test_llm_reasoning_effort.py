@@ -39,7 +39,7 @@ def _pin_dotenv_guard(monkeypatch: pytest.MonkeyPatch) -> None:
     """Mark the dotenv as loaded so build_llm never reads a real .env.
 
     Without this, ``build_llm()`` under a patched environment can load the
-    developer's own ``~/.vibe-trading/.env`` and leak real provider settings
+    developer's own ``~/.person-trading/.env`` and leak real provider settings
     into the assertions. ``monkeypatch`` restores the module flag afterwards.
     """
     monkeypatch.setattr(llm_mod, "_dotenv_loaded", True)

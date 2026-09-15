@@ -116,7 +116,7 @@ def test_free_mode_execute_is_unavailable(monkeypatch: pytest.MonkeyPatch):
     assert payload == {
         "ok": False,
         "error": (
-            "QVeris paid mode is off; enable it with `vibe-trading data mode paid` "
+            "QVeris paid mode is off; enable it with `person-trading data mode paid` "
             "or Settings -> QVeris to use QVeris tools"
         ),
     }
@@ -129,7 +129,7 @@ def test_unconfigured_execute_names_missing_api_key():
         "ok": False,
         "error": (
             "QVeris is not configured; set QVERIS_API_KEY and enable paid mode "
-            "(`vibe-trading data mode paid` or Settings -> QVeris) to use QVeris tools"
+            "(`person-trading data mode paid` or Settings -> QVeris) to use QVeris tools"
         ),
     }
 

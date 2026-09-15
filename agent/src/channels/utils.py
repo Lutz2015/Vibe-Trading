@@ -16,7 +16,7 @@ _UNSAFE_CHARS = re.compile(r"[/\\:*?\"<>|]")
 def get_media_dir(channel_name: str) -> Path:
     """Return a media directory for *channel_name* under the VT uploads root.
 
-    Inbound media must land inside ``~/.vibe-trading/uploads`` — one of the
+    Inbound media must land inside ``~/.person-trading/uploads`` — one of the
     default allowed file roots — so the agent's file-reading tools can open
     what users send over IM channels without extra configuration (#465).
     """

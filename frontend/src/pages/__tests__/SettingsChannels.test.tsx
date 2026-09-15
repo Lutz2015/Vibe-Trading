@@ -92,7 +92,7 @@ function channelStatus(overrides = {}) {
         loaded: false,
         running: false,
         error: "ModuleNotFoundError",
-        install_hint: "pip install 'vibe-trading-ai[telegram]'",
+        install_hint: "pip install 'person-trading-ai[telegram]'",
       },
     },
     ...overrides,
@@ -120,7 +120,7 @@ describe("Settings IM channels panel", () => {
     expect(await screen.findByText("IM Channels")).toBeInTheDocument();
     expect(screen.getByText("websocket")).toBeInTheDocument();
     expect(screen.getByText("telegram")).toBeInTheDocument();
-    expect(screen.getByText("pip install 'vibe-trading-ai[telegram]'")).toBeInTheDocument();
+    expect(screen.getByText("pip install 'person-trading-ai[telegram]'")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Refresh" }));
 

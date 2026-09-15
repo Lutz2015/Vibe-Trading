@@ -9,7 +9,7 @@ reuse) under the ``"stooq"`` host bucket.
 API format:
   https://stooq.com/q/d/l/?s=aapl.us&d1=20240101&d2=20240131&i=d
 
-Symbol convention (Vibe-Trading -> Stooq):
+Symbol convention (Person-Trading -> Stooq):
   * ``AAPL.US`` -> ``aapl.us`` (Stooq tickers are lowercase; the ``.US`` market
     suffix is kept, just lower-cased).
 
@@ -66,7 +66,7 @@ def _min_interval() -> float:
 
 
 def map_symbol(symbol: str) -> str:
-    """Translate a Vibe-Trading symbol into Stooq's ticker convention.
+    """Translate a Person-Trading symbol into Stooq's ticker convention.
 
     Args:
         symbol: Project-side symbol, e.g. ``AAPL.US``.
@@ -89,7 +89,7 @@ class DataLoader:
     name = "stooq"
     markets = {"us_equity"}
     # Stooq US EOD volume is single shares (universal US convention,
-    # HKUDS/Vibe-Trading#1062).
+    # HKUDS/Person-Trading#1062).
     volume_units = {"us_equity": "shares"}
     requires_auth = False
 

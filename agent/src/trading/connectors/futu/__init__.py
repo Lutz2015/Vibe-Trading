@@ -4,7 +4,7 @@ Read-only account/market access in Layer A via the official ``futu-api`` Python
 SDK talking to a user-owned LOCAL OpenD gateway (default ``127.0.0.1:11111``).
 Like the IBKR connector, this is a local-gateway transport: OpenD runs on the
 operator's machine, holds the Futu login, and the SDK speaks to it over a local
-socket. Vibe-Trading never sees Futu credentials and exposes no order-placement
+socket. Person-Trading never sees Futu credentials and exposes no order-placement
 method (no ``place_order``, no ``unlock_trade``) in this layer; order placement
 (paper, then mandate-gated live) is layered on top later.
 

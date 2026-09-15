@@ -5,10 +5,10 @@ from __future__ import annotations
 from collections.abc import Iterable, Mapping
 from typing import Protocol
 
-SERVICE_NAME = "Vibe-Trading"
+SERVICE_NAME = "Person-Trading"
 _INSTALL_HINT = (
     "OS credential vault support is not installed. Install the optional extra: "
-    'pip install "vibe-trading-ai[keyring]" (or pip install keyring).'
+    'pip install "person-trading-ai[keyring]" (or pip install keyring).'
 )
 
 
@@ -67,7 +67,7 @@ class CredentialStore:
             A ``keyring://`` reference that names where the secret lives; it
             never contains the secret itself.
         """
-        return f"keyring://vibe-trading/{connection_id}"
+        return f"keyring://person-trading/{connection_id}"
 
     @staticmethod
     def _username(connection_id: str, field: str) -> str:

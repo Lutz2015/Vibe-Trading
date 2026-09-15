@@ -76,7 +76,7 @@ def test_interactive_result_prints_english_metrics_and_a_hint(
     assert "Sharpe" in output and "1.08" in output
     assert "run_123" in output
     # The dashboard is named, not started.
-    assert "vibe-trading serve" in output
+    assert "person-trading serve" in output
     assert "/runs/run_123?view=dashboard" in output
     # CLI output is English, per the project's UI default.
     assert "回测" not in output and "报告" not in output
@@ -107,7 +107,7 @@ def test_single_prompt_run_prints_the_hint_without_serving(
     output = test_console.export_text()
 
     assert exit_code == 0
-    assert "vibe-trading serve" in output
+    assert "person-trading serve" in output
     assert "/runs/single-run?view=dashboard" in output
 
 

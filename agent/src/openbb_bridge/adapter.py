@@ -1,12 +1,12 @@
-"""Core adapter bridging OpenBB Workspace ``/v1/query`` to Vibe-Trading.
+"""Core adapter bridging OpenBB Workspace ``/v1/query`` to Person-Trading.
 
 The :class:`OpenBBQueryAdapter` is responsible for:
 
-* creating one **ephemeral** Vibe-Trading session per ``/v1/query`` request and
+* creating one **ephemeral** Person-Trading session per ``/v1/query`` request and
   replaying the full history the request carried into it;
 * injecting workspace context (explicit context items, widget metadata,
   dashboard info) into the user's message;
-* triggering the Vibe-Trading ``AgentLoop`` via ``SessionService.send_message``;
+* triggering the Person-Trading ``AgentLoop`` via ``SessionService.send_message``;
 * consuming the session event bus and translating each event into OpenBB SSE
   objects until the underlying attempt completes or fails.
 
@@ -21,7 +21,7 @@ derived from message *content*, which collides across unrelated conversations
 each other). Deriving nothing and replaying the supplied history instead keeps
 conversations isolated by construction.
 
-The adapter never mutates Vibe-Trading's core components; it only orchestrates
+The adapter never mutates Person-Trading's core components; it only orchestrates
 their public API.
 """
 
@@ -44,18 +44,18 @@ logger = logging.getLogger("openbb_bridge")
 _ROLE_HUMAN = "human"
 _ROLE_AI = "ai"
 
-# OpenBB role -> Vibe-Trading role for history replay. ``tool`` messages are not
+# OpenBB role -> Person-Trading role for history replay. ``tool`` messages are not
 # replayed as turns; their payload is folded into the context prefix instead.
 _ROLE_TO_VIBE = {_ROLE_HUMAN: "user", _ROLE_AI: "assistant"}
 
 _TERMINAL_EVENTS = {"attempt.completed", "attempt.failed", "attempt.cancelled"}
 
-# Session titles surface in the Vibe-Trading UI; keep them short but identifiable.
+# Session titles surface in the Person-Trading UI; keep them short but identifiable.
 _TITLE_MAX_CHARS = 48
 
 
 class OpenBBQueryAdapter:
-    """Adapt an OpenBB ``QueryRequest`` onto the Vibe-Trading agent."""
+    """Adapt an OpenBB ``QueryRequest`` onto the Person-Trading agent."""
 
     def __init__(
         self,
@@ -105,7 +105,7 @@ class OpenBBQueryAdapter:
         try:
             result = await self.session_service.send_message(session_id, enriched)
         except Exception as exc:
-            logger.error("Failed to dispatch message to Vibe-Trading: %s", exc)
+            logger.error("Failed to dispatch message to Person-Trading: %s", exc)
             yield reasoning_step(
                 message=f"Failed to start the agent: {exc}",
                 event_type="ERROR",

@@ -25,8 +25,10 @@ for (const locale of supportedDesktopLocales) {
   }
 }
 
-assert.equal(resolveDesktopLocale(undefined), "en");
-assert.equal(resolveDesktopLocale("fr-FR"), "en");
+assert.equal(resolveDesktopLocale(undefined), "zh-CN");
+assert.equal(resolveDesktopLocale("fr-FR"), "zh-CN");
+assert.equal(resolveDesktopLocale("en-US"), "zh-CN");
+assert.equal(resolveDesktopLocale("en"), "zh-CN");
 assert.equal(resolveDesktopLocale("zh-Hans-CN"), "zh-CN");
 assert.equal(resolveDesktopLocale("ja-JP"), "ja");
 assert.equal(resolveDesktopLocale("ko_KR"), "ko");

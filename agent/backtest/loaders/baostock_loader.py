@@ -37,7 +37,7 @@ class DataLoader:
     markets = {"a_share"}
     # BaoStock natively reports volume in single shares; fetch() normalizes
     # to board lots — the A-share canonical unit shared by tencent/eastmoney/
-    # akshare/mootdx/tushare (HKUDS/Vibe-Trading#1062).
+    # akshare/mootdx/tushare (HKUDS/Person-Trading#1062).
     volume_units = {"a_share": "lots"}
     requires_auth = False
 
@@ -161,7 +161,7 @@ class DataLoader:
 
         # BaoStock reports volume in single shares; normalize to board lots
         # (1 lot = 100 shares) to match every other A-share source
-        # (HKUDS/Vibe-Trading#1062). Fractional lots are valid — odd-lot
+        # (HKUDS/Person-Trading#1062). Fractional lots are valid — odd-lot
         # trades exist — so no rounding is applied.
         df["volume"] = df["volume"] / 100.0
 

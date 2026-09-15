@@ -55,14 +55,14 @@ class ProviderCapabilities:
 
 
 # Distribution name from pyproject.toml [project].name.
-_DISTRIBUTION_NAME = "vibe-trading-ai"
+_DISTRIBUTION_NAME = "person-trading-ai"
 
 
 def _package_version() -> str:
     """Return the installed distribution version for User-Agent headers.
 
     Returns:
-        Installed ``vibe-trading-ai`` version string, or ``"dev"`` when the
+        Installed ``person-trading-ai`` version string, or ``"dev"`` when the
         package metadata is unavailable (e.g. an uninstalled source checkout).
     """
     try:
@@ -71,7 +71,7 @@ def _package_version() -> str:
         return "dev"
 
 
-_VIBE_USER_AGENT = f"Vibe-Trading/{_package_version()}"
+_VIBE_USER_AGENT = f"Person-Trading/{_package_version()}"
 
 
 @lru_cache(maxsize=1)

@@ -159,7 +159,7 @@ export function ConnectionCenter({ open, onClose, onChanged }: Props) {
         <section className="rounded-xl border border-dashed p-4">
           <div className="flex items-center gap-2"><FolderCode className="h-4 w-4" /><h3 className="font-medium">{t("portfolio.connections.codexTitle")}</h3></div>
           <p className="mt-2 text-xs leading-5 text-muted-foreground">{t("portfolio.connections.codexBody")}</p>
-          <code className="mt-3 block overflow-x-auto rounded-md bg-muted p-3 text-xs">{data?.plugin_directory ?? "~/.vibe-trading/connectors"}</code>
+          <code className="mt-3 block overflow-x-auto rounded-md bg-muted p-3 text-xs">{data?.plugin_directory ?? "~/.person-trading/connectors"}</code>
         </section>
       </div>
     </section>

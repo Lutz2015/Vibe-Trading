@@ -40,10 +40,10 @@ except ImportError:
     httpx = None  # type: ignore
 
 DEFAULT_CODEX_URL = "https://chatgpt.com/backend-api/codex/responses"
-DEFAULT_ORIGINATOR = "vibe-trading"
+DEFAULT_ORIGINATOR = "person-trading"
 _CODEX_REFRESH_MARGIN_SECONDS = 300
 _CODEX_FORCE_REFRESH_TTL_SECONDS = 2_147_483_647
-_CODEX_LOGIN_COMMAND = "vibe-trading provider login openai-codex"
+_CODEX_LOGIN_COMMAND = "person-trading provider login openai-codex"
 _CODEX_TOKEN_FILENAME = "openai-codex.json"
 _PERMANENT_REFRESH_ERROR_CODES = {
     "invalid_grant",
@@ -112,7 +112,7 @@ def _build_codex_token_storage(path: Path | None = None) -> Any:
 
     return VibeCodexTokenStorage(
         token_filename=_CODEX_TOKEN_FILENAME,
-        app_name="vibe-trading",
+        app_name="person-trading",
         import_codex_cli=False,
     )
 
@@ -367,7 +367,7 @@ def _get_codex_token(
         except _CodexRefreshError as exc:
             if exc.permanent:
                 _clear_codex_token(storage)
-                raise CodexAuthenticationError("The Vibe-Trading Codex OAuth session was invalidated") from exc
+                raise CodexAuthenticationError("The Person-Trading Codex OAuth session was invalidated") from exc
             if not force_refresh and _token_expiry_ms(token) > now_ms:
                 return token
             raise CodexStreamError(
@@ -402,7 +402,7 @@ def _build_headers(account_id: str, access_token: str) -> dict[str, str]:
         "chatgpt-account-id": account_id,
         "OpenAI-Beta": "responses=experimental",
         "originator": DEFAULT_ORIGINATOR,
-        "User-Agent": "vibe-trading (python)",
+        "User-Agent": "person-trading (python)",
         "accept": "text/event-stream",
         "content-type": "application/json",
     }
@@ -620,7 +620,7 @@ def _message_chunks_from_events(events: Iterable[dict[str, Any]]) -> Iterable[Co
 
 
 class OpenAICodexLLM:
-    """Minimal LangChain-compatible adapter for Vibe-Trading's ChatLLM."""
+    """Minimal LangChain-compatible adapter for Person-Trading's ChatLLM."""
 
     def __init__(
         self,

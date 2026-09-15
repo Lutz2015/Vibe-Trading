@@ -1,6 +1,6 @@
 """W4.a blog patcher: fill TBD placeholders in alpha-191-in-2026.html.
 
-Reads ~/.vibe-trading/reports/bench_summary.json (produced by w4a_run_benches.py)
+Reads ~/.person-trading/reports/bench_summary.json (produced by w4a_run_benches.py)
 and patches the HTML in place.
 
 Substitutions performed:
@@ -26,7 +26,7 @@ from typing import Any
 
 REPO = Path(__file__).resolve().parents[2]
 HTML_PATH = REPO / "wiki" / "research-lab" / "posts" / "alpha-191-in-2026.html"
-SUMMARY_PATH = Path.home() / ".vibe-trading" / "reports" / "bench_summary.json"
+SUMMARY_PATH = Path.home() / ".person-trading" / "reports" / "bench_summary.json"
 
 GTJA_KEY = "gtja191_csi300"
 
@@ -199,7 +199,7 @@ def _patch_dead(text: str, entry: dict[str, Any]) -> str:
 def _patch_bench_failed_note(text: str) -> str:
     """Replace the W4-roadmap placeholder callout with a real timestamp note."""
     return text.replace(
-        "Numbers will be filled in once the full bench finishes (Vibe-Trading\n        roadmap W4.a). "
+        "Numbers will be filled in once the full bench finishes (Person-Trading\n        roadmap W4.a). "
         "This post is published as a methodology preview &mdash; the structure, definitions\n        and caveats are final.",
         "Numbers below are the live W4.a bench output on the bundled gtja191 zoo "
         "(CSI 300, 2018&ndash;2025) &mdash; reproducible via the CLI snippet at the end of the post.",

@@ -59,10 +59,10 @@ RUN pip install --no-cache-dir --no-deps -e .
 FROM python:3.11-slim@sha256:e031123e3d85762b141ad1cbc56452ba69c6e722ebf2f042cc0dc86c47c0d8b3 AS runtime
 # python:3.11-slim digest resolved 2026-07-13
 
-LABEL org.opencontainers.image.title="Vibe-Trading" \
+LABEL org.opencontainers.image.title="Person-Trading" \
     org.opencontainers.image.description="Natural-language finance research AI agent with backtesting" \
     org.opencontainers.image.version="0.1.15" \
-    org.opencontainers.image.source="https://github.com/HKUDS/Vibe-Trading" \
+    org.opencontainers.image.source="https://github.com/HKUDS/Person-Trading" \
     org.opencontainers.image.licenses="MIT"
 
 WORKDIR /app
@@ -103,8 +103,8 @@ COPY --from=frontend-build /app/frontend/dist frontend/dist
 # least privilege — created here by fixed contract, not otherwise used.
 RUN useradd --create-home --shell /usr/sbin/nologin vibe \
     && useradd --system --no-create-home --shell /usr/sbin/nologin --uid 10001 vibe-sandbox \
-    && mkdir -p agent/runs agent/sessions agent/uploads agent/.swarm/runs /home/vibe/.vibe-trading \
-    && chown -R vibe:vibe /app /home/vibe/.vibe-trading
+    && mkdir -p agent/runs agent/sessions agent/uploads agent/.swarm/runs /home/vibe/.person-trading \
+    && chown -R vibe:vibe /app /home/vibe/.person-trading
 USER vibe
 
 # Default port
@@ -115,4 +115,4 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
     CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8899/live')" || exit 1
 
 # Run API server (serves frontend/dist as static files)
-CMD ["vibe-trading", "serve", "--host", "0.0.0.0", "--port", "8899"]
+CMD ["person-trading", "serve", "--host", "0.0.0.0", "--port", "8899"]

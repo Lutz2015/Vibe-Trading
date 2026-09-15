@@ -61,7 +61,7 @@ class AnalyzeImageTool(BaseTool):
         "gemini / qwen-vl); a text-only model may error or answer without "
         "seeing the image. "
         "Supported: jpg/png/gif/bmp/webp under the allowed file roots. "
-        'Example: {"path": "~/.vibe-trading/uploads/weixin/abc.jpg", '
+        'Example: {"path": "~/.person-trading/uploads/weixin/abc.jpg", '
         '"question": "解读这张K线图的走势"}.'
     )
     parameters = {

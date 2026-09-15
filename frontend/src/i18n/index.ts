@@ -134,32 +134,46 @@ i18n
       en: { translation: en },
     },
     initAsync: false,
-    // Default to English for everyone on first visit; only an explicit toggle
-    // (persisted to localStorage) switches language. After a manual choice
-    // the navigator value can act as a fallback when the saved language is
-    // removed.
-    fallbackLng: "en",
+    // Default UI language is Chinese. An explicit toggle (cookie/localStorage)
+    // overrides this; navigator is intentionally not used so a fresh install
+    // on an English OS still opens in Chinese unless the user switches.
+    fallbackLng: "zh-CN",
     supportedLngs: SUPPORTED_LANGUAGES.map((l) => l.code),
     // NOTE: Intentionally NOT using nonExplicitSupportedLngs — it strips
     // region codes from compound language keys like "zh-CN" which causes
     // isSupportedCode to reject them ("zh-CN" → "zh", not in supportedLngs).
     interpolation: { escapeValue: false },
     detection: {
-      // In browsers the navigator.language gives the user's browser locale,
-      // useful as a fallback when no explicit choice is saved. In Node.js
-      // (SSR, tests) navigator.language reflects the *OS* locale which is
-      // meaningless for a browser-only app — skip it there.
+      // Desktop backend restarts pick a new 127.0.0.1 port, which changes the
+      // origin and isolates localStorage. Cookies ignore the port, so cache
+      // the explicit choice there first and keep localStorage as a secondary.
+      // No navigator step: default remains zh-CN.
       order: typeof window !== "undefined"
-        ? ["localStorage", "navigator"]
-        : ["localStorage"],
-      caches: ["localStorage"],
+        ? ["cookie", "localStorage"]
+        : ["cookie", "localStorage"],
+      caches: ["cookie", "localStorage"],
+      lookupCookie: "i18nextLng",
       lookupLocalStorage: "i18nextLng",
+      cookieMinutes: 60 * 24 * 365,
+      cookieOptions: { path: "/", sameSite: "lax" },
     },
   });
 
-applyDocumentDirection(i18n.language || "en");
+applyDocumentDirection(i18n.language || "zh-CN");
 i18n.on("initialized", () => {
   if (i18n.language) applyDocumentDirection(i18n.language);
 });
+
+// Desktop backend restarts change the loopback port (origin). Migrate any
+// language choice saved under the previous origin's localStorage onto a
+// host-wide cookie so the next boot keeps the user's language.
+try {
+  const saved = window.localStorage.getItem(LANGUAGE_STORAGE_KEY);
+  if (saved && !document.cookie.includes(`${LANGUAGE_STORAGE_KEY}=`)) {
+    document.cookie = `${LANGUAGE_STORAGE_KEY}=${encodeURIComponent(saved)};path=/;max-age=${60 * 60 * 24 * 365};SameSite=Lax`;
+  }
+} catch {
+  // Storage unavailable — detector falls back to navigator.
+}
 
 export default i18n;

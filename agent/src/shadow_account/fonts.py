@@ -26,7 +26,7 @@ _FALLBACK_FAMILY = "DejaVu Sans"
 
 def fonts_dir() -> Path:
     """Return the Shadow Account fonts cache dir (auto-created)."""
-    d = Path.home() / ".vibe-trading" / "fonts"
+    d = Path.home() / ".person-trading" / "fonts"
     d.mkdir(parents=True, exist_ok=True)
     return d
 
@@ -82,7 +82,7 @@ def cjk_font_path(*, allow_download: bool = True, timeout: float = 10.0) -> Opti
 
     try:
         import urllib.request
-        req = urllib.request.Request(_NOTO_URL, headers={"User-Agent": "vibe-trading"})
+        req = urllib.request.Request(_NOTO_URL, headers={"User-Agent": "person-trading"})
         with urllib.request.urlopen(req, timeout=timeout) as resp:
             cached.write_bytes(resp.read())
         if cached.stat().st_size > 0:

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Vibe-Trading API Server - RESTful API for finance research and backtesting.
+"""Person-Trading API Server - RESTful API for finance research and backtesting.
 
 Thin assembler: creates the FastAPI app, mounts middleware, registers route
 modules, and re-exports symbols for test compatibility.  All shared
@@ -161,8 +161,8 @@ async def _lifespan(_: FastAPI) -> AsyncIterator[None]:
 
 
 app = FastAPI(
-    title="Vibe-Trading API",
-    description="Vibe-Trading API: natural-language finance research, backtesting, and swarm workflows",
+    title="Person-Trading API",
+    description="Person-Trading API: natural-language finance research, backtesting, and swarm workflows",
     version=APP_VERSION,
     docs_url=None,  # docs/redoc/openapi re-registered behind require_auth
     redoc_url=None,  # in register_system_routes -- see the rationale there
@@ -332,7 +332,7 @@ def serve_main(argv: list[str] | None = None) -> int:
     import uvicorn
     from src.api.spa import SPAStaticFiles
 
-    parser = argparse.ArgumentParser(description="Vibe-Trading Server")
+    parser = argparse.ArgumentParser(description="Person-Trading Server")
     parser.add_argument("--port", type=int, default=8000, help="Listen port (default 8000)")
     parser.add_argument("--host", default="127.0.0.1", help="Bind address")
     parser.add_argument("--dev", action="store_true", help="Dev mode: spawn Vite on :5173")
@@ -372,7 +372,7 @@ def serve_main(argv: list[str] | None = None) -> int:
         print("[warn] Run: cd frontend && npm run build")
 
     print("=" * 50)
-    print("  Vibe-Trading Server")
+    print("  Person-Trading Server")
     print(f"  http://127.0.0.1:{args.port}")
     print("=" * 50)
 

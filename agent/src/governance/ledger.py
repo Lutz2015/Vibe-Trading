@@ -96,7 +96,7 @@ GENESIS_PREV_HASH = "sha256:genesis"
 _CHAIN_FIELDS = frozenset({"seq", "prev_record_hash", "record_hash"})
 
 #: Export envelope format tag (bump on any breaking export-shape change).
-EXPORT_FORMAT = "vibe-trading-governance-ledger-export/v1"
+EXPORT_FORMAT = "person-trading-governance-ledger-export/v1"
 
 _fsync_warned = False
 

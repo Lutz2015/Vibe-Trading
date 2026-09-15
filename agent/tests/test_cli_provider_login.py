@@ -17,5 +17,5 @@ def test_provider_login_explains_docker_tty_requirement(capsys) -> None:
     assert result == _legacy.EXIT_RUN_FAILED
     output = capsys.readouterr().out
     assert "interactive terminal" in output
-    assert "docker compose exec vibe-trading" in output
+    assert "docker compose exec person-trading" in output
     assert "-it" in output

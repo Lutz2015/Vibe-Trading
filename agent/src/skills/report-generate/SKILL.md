@@ -28,7 +28,7 @@ Generate structured, professional-grade financial research reports. Follow the c
 # [Report Title]
 
 > **Rating**: Buy | **Target Price**: ¥XX | **Current Price**: ¥XX
-> **Analyst**: Vibe-Trading | **Date**: 2026-03-28
+> **Analyst**: Person-Trading | **Date**: 2026-03-28
 
 ## Summary
 

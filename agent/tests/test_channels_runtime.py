@@ -174,7 +174,7 @@ def test_registry_marks_lazy_sdk_adapter_unavailable(monkeypatch: pytest.MonkeyP
     status = inspect_channel("discord").to_dict()
 
     assert status["available"] is False
-    assert status["install_hint"] == "pip install 'vibe-trading-ai[discord]'"
+    assert status["install_hint"] == "pip install 'person-trading-ai[discord]'"
 
 
 def test_channel_manager_skips_enabled_adapter_when_lazy_sdk_missing(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -189,7 +189,7 @@ def test_channel_manager_skips_enabled_adapter_when_lazy_sdk_missing(monkeypatch
     assert status["enabled"] is True
     assert status["available"] is False
     assert status["loaded"] is False
-    assert status["install_hint"] == "pip install 'vibe-trading-ai[discord]'"
+    assert status["install_hint"] == "pip install 'person-trading-ai[discord]'"
 
 
 def test_websocket_turn_wall_accepts_optional_chat_id() -> None:

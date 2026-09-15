@@ -13,7 +13,7 @@ Each scheduled fire creates a fresh agent session that runs the configured promp
 The background executor is **off by default**. Start the server with the environment flag:
 
 ```bash
-VIBE_TRADING_ENABLE_SCHEDULER=1 vibe-trading serve --port 8899
+VIBE_TRADING_ENABLE_SCHEDULER=1 person-trading serve --port 8899
 ```
 
 Without this flag, the `/scheduled-runs` endpoints still record jobs but nothing fires.
@@ -30,7 +30,7 @@ curl -X POST http://localhost:8899/scheduled-runs \
   }'
 ```
 
-The API returns a job record with `id`, `status`, `next_run_at`, and the full schedule definition. Jobs persist under `~/.vibe-trading/` and survive server restarts.
+The API returns a job record with `id`, `status`, `next_run_at`, and the full schedule definition. Jobs persist under `~/.person-trading/` and survive server restarts.
 
 ### Create a multi-universe scan
 

@@ -147,7 +147,7 @@ def config_path() -> Path:
 
 
 def load_config() -> IBKRLocalConfig:
-    """Load local IBKR settings from ``~/.vibe-trading/ibkr-local.json``."""
+    """Load local IBKR settings from ``~/.person-trading/ibkr-local.json``."""
     path = config_path()
     if not path.exists():
         return IBKRLocalConfig()
@@ -632,7 +632,7 @@ def _assert_profile(config: IBKRLocalConfig, accounts: Iterable[str]) -> None:
     if account_list and (not has_paper or has_live):
         raise IBKRProfileMismatchError(
             "Configured profile is paper, but connected accounts do not look like IBKR paper accounts. "
-            "Use `vibe-trading connector configure ibkr-live-local-readonly` only if you intend "
+            "Use `person-trading connector configure ibkr-live-local-readonly` only if you intend "
             "read-only live-account access."
         )
 

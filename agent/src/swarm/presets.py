@@ -5,7 +5,7 @@ module and parses them into SwarmRun / SwarmAgentSpec / SwarmTask data models.
 Keeping the YAMLs inside the ``src.swarm`` package guarantees identical
 behavior under editable installs and built wheels.
 
-User-supplied presets are also discovered from ``~/.vibe-trading/swarm/
+User-supplied presets are also discovered from ``~/.person-trading/swarm/
 presets/`` — the same pattern as user skills (``src/agent/skills.py``):
 the user directory is searched first, so a user preset can both add to and
 override the bundled roster by name, and nothing needs to be copied into
@@ -31,7 +31,7 @@ PRESETS_DIR = Path(__file__).resolve().parent / "presets"
 #: User-created presets; searched before the bundled directory so user files
 #: can add to and override the roster by name (mirrors USER_SKILLS_DIR in
 #: ``src/agent/skills.py``). Survives package upgrades.
-USER_PRESETS_DIR = Path.home() / ".vibe-trading" / "swarm" / "presets"
+USER_PRESETS_DIR = Path.home() / ".person-trading" / "swarm" / "presets"
 _INTERNAL_TEMPLATE_VARS = {"upstream_context"}
 
 
@@ -90,7 +90,7 @@ def load_preset(name: str) -> dict:
     Raises:
         ValueError: If the name is empty or contains path separators.
         FileNotFoundError: If the preset file does not exist in either the
-            user directory (``~/.vibe-trading/swarm/presets/``) or the
+            user directory (``~/.person-trading/swarm/presets/``) or the
             bundled package directory.
     """
     path = resolve_preset_path(name)
@@ -111,7 +111,7 @@ def load_preset(name: str) -> dict:
 def list_presets() -> list[dict]:
     """Return summary info for all available presets, sorted by name.
 
-    User presets (``~/.vibe-trading/swarm/presets/``) are listed alongside the
+    User presets (``~/.person-trading/swarm/presets/``) are listed alongside the
     bundled roster; when both directories carry the same file stem, the user
     preset wins — the same override rule as user skills.
 

@@ -130,7 +130,7 @@ _BUILTIN: dict[str, ConnectorOnboarding] = {
             _field("symbol_suffix", "Symbol Suffix", secret=False, required=False),
         ),
         dependency="MetaTrader5",
-        install_command='pip install "vibe-trading-ai[mt5]" keyring',
+        install_command='pip install "person-trading-ai[mt5]" keyring',
         setup_hint="MetaTrader5 is Windows-only and requires a local terminal session.",
     ),
     "okx": ConnectorOnboarding(
@@ -183,7 +183,7 @@ _BUILTIN: dict[str, ConnectorOnboarding] = {
             _field("secret_key", "Secret Key"),
         ),
         dependency="PyJWT",
-        install_command='pip install "vibe-trading-ai[upbit]" keyring',
+        install_command='pip install "person-trading-ai[upbit]" keyring',
         setup_hint="Create a read-only key; do not grant withdrawal permission.",
     ),
     "toss": ConnectorOnboarding(
@@ -222,7 +222,7 @@ def onboarding_for_profile(profile: TradingProfile) -> ConnectorOnboarding:
         return ConnectorOnboarding(
             auth_type="local_session",
             dependency="ib_async",
-            install_command='pip install "vibe-trading-ai[ibkr]"',
+            install_command='pip install "person-trading-ai[ibkr]"',
             setup_hint="Start TWS or IB Gateway and enable its local API socket.",
         )
     return _BUILTIN.get(
