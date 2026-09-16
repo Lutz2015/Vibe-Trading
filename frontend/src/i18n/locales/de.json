@@ -34,7 +34,12 @@
     "mainNavigation": "Hauptnavigation",
     "about": "Über",
     "portfolio": "Portfolio",
-    "brandName": "Personal-Trading"
+    "brandName": "Personal-Trading",
+    "marketOverview": "Marktüberblick",
+    "logicChain": "Logikkette",
+    "sentiment": "Stimmung",
+    "newsRadar": "Nachrichten-Radar",
+    "strategyLibrary": "Strategie-Bibliothek"
   },
   "runtime": {
     "monitorBadge": "Runtime-Monitor",

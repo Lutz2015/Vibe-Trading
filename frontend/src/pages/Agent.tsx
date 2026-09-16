@@ -428,6 +428,24 @@ export function Agent() {
     composerRef.current?.fill(prompt);
   }, []);
 
+  // Module pages hand off an AI draft via ?prompt= so the user can continue
+  // in a full agent session without retyping context.
+  const handoffPrompt = searchParams.get("prompt");
+  const handoffPromptRef = useRef<string | null>(handoffPrompt);
+  useEffect(() => {
+    if (!handoffPrompt || handoffPromptRef.current !== handoffPrompt) return;
+    handoffPromptRef.current = null;
+    fillComposer(handoffPrompt);
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        next.delete("prompt");
+        return next;
+      },
+      { replace: true },
+    );
+  }, [handoffPrompt, fillComposer, setSearchParams]);
+
   useEffect(() => {
     const previous = previousStatusRef.current;
     previousStatusRef.current = status;

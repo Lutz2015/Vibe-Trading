@@ -29,7 +29,12 @@
     "sidebar": "Personal-Trading サイドバー",
     "mainNavigation": "メインナビゲーション",
     "about": "概要",
-    "brandName": "Personal-Trading"
+    "brandName": "Personal-Trading",
+    "marketOverview": "市場概観",
+    "logicChain": "ロジックチェーン",
+    "sentiment": "センチメント",
+    "newsRadar": "ニュースレーダー",
+    "strategyLibrary": "戦略ライブラリ"
   },
   "runtime": {
     "monitorBadge": "取引モニター",

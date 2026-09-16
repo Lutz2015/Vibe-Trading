@@ -29,7 +29,12 @@
     "sidebar": "الشريط الجانبي لـ Personal-Trading",
     "mainNavigation": "التنقل الرئيسي",
     "about": "حول",
-    "brandName": "Personal-Trading"
+    "brandName": "Personal-Trading",
+    "marketOverview": "نظرة عامة على السوق",
+    "logicChain": "سلسلة المنطق",
+    "sentiment": "المزاج",
+    "newsRadar": "رادار الأخبار",
+    "strategyLibrary": "مكتبة الاستراتيجيات"
   },
   "runtime": {
     "monitorBadge": "مراقبة التداول",

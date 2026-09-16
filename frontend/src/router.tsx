@@ -34,6 +34,21 @@ const AlphaZoo = lazy(() =>
 const OptionsLab = lazy(() =>
   import("@/pages/OptionsLab").then((m) => ({ default: m.OptionsLab })),
 );
+const MarketOverview = lazy(() =>
+  import("@/pages/MarketOverview").then((m) => ({ default: m.MarketOverview })),
+);
+const LogicChain = lazy(() =>
+  import("@/pages/LogicChain").then((m) => ({ default: m.LogicChain })),
+);
+const Sentiment = lazy(() =>
+  import("@/pages/Sentiment").then((m) => ({ default: m.Sentiment })),
+);
+const NewsRadar = lazy(() =>
+  import("@/pages/NewsRadar").then((m) => ({ default: m.NewsRadar })),
+);
+const StrategyLibrary = lazy(() =>
+  import("@/pages/StrategyLibrary").then((m) => ({ default: m.StrategyLibrary })),
+);
 
 function PageLoader() {
   return (
@@ -67,6 +82,11 @@ export const router = createBrowserRouter([
       { path: "/compare", element: wrap(Compare) },
       { path: "/correlation", element: wrap(Correlation) },
       { path: "/options", element: wrap(OptionsLab) },
+      { path: "/market", element: wrap(MarketOverview) },
+      { path: "/logic-chain", element: wrap(LogicChain) },
+      { path: "/sentiment", element: wrap(Sentiment) },
+      { path: "/news", element: wrap(NewsRadar) },
+      { path: "/strategies", element: wrap(StrategyLibrary) },
       { path: "/alpha-zoo", element: wrap(AlphaZoo) },
       { path: "/alpha-zoo/bench", element: wrap(AlphaZoo) },
       { path: "/alpha-zoo/compare", element: wrap(AlphaZoo) },

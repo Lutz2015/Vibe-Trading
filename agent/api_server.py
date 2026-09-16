@@ -296,6 +296,18 @@ register_alpha_routes(app)
 from src.api.options_routes import register_options_routes  # noqa: E402
 register_options_routes(app)
 
+# --- Market overview quotes ---
+from src.api.market_routes import register_market_routes  # noqa: E402
+register_market_routes(app, require_local_or_auth=require_local_or_auth)
+
+# --- Agent insights (market / news / sentiment / logic-chain) ---
+from src.api.insight_routes import register_insight_routes  # noqa: E402
+register_insight_routes(app, require_local_or_auth=require_local_or_auth)
+
+# --- Strategy library (user code drafts + AI generate) ---
+from src.api.strategy_library_routes import register_strategy_library_routes  # noqa: E402
+register_strategy_library_routes(app, require_local_or_auth=require_local_or_auth)
+
 # --- Auth helpers (SSE tickets) ---
 from src.api.auth_routes import register_auth_routes  # noqa: E402
 register_auth_routes(app)

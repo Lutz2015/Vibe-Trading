@@ -29,7 +29,12 @@
     "sidebar": "个人交易智能体侧边栏",
     "mainNavigation": "主导航",
     "about": "关于",
-    "brandName": "个人交易智能体"
+    "brandName": "个人交易智能体",
+    "marketOverview": "市场总览",
+    "logicChain": "逻辑链",
+    "sentiment": "情绪温度计",
+    "newsRadar": "新闻雷达",
+    "strategyLibrary": "策略库"
   },
   "runtime": {
     "monitorBadge": "交易监控",

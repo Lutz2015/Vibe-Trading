@@ -542,6 +542,72 @@ export const api = {
     return request<OptionsChainResponse>(`/options/chain?${q.toString()}`);
   },
 
+  // Market overview (real quotes via loader fallback chain)
+  fetchMarketOverview: () => request<MarketOverviewResponse>("/market/overview"),
+
+  // News radar (Eastmoney / Yahoo headlines)
+  fetchNewsRadar: (params: Record<string, string | number> = {}) => {
+    const q = new URLSearchParams();
+    for (const [k, v] of Object.entries(params)) {
+      if (v !== undefined && v !== null && v !== "") q.set(k, String(v));
+    }
+    const qs = q.toString();
+    return request<NewsRadarResponse>(`/news/radar${qs ? `?${qs}` : ""}`);
+  },
+
+  // One-shot Agent insight for overview / news / sentiment / logic-chain pages
+  analyzeInsight: (body: {
+    kind: "market" | "news" | "sentiment" | "logic_chain";
+    payload: Record<string, unknown>;
+    locale?: string;
+  }) =>
+    request<InsightResponse>("/insight/analyze", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+
+  // Strategy library
+  listStrategies: () => request<StrategyListResponse>("/strategies"),
+  getStrategy: (id: string) =>
+    request<StrategyItem>(`/strategies/${encodeURIComponent(id)}`),
+  createStrategy: (body: {
+    name: string;
+    group?: string;
+    kind?: string;
+    language?: string;
+    code?: string;
+  }) =>
+    request<StrategyItem>("/strategies", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+  updateStrategy: (
+    id: string,
+    body: Partial<Pick<StrategyItem, "name" | "group" | "kind" | "language" | "code" | "notes" | "description">>,
+  ) =>
+    request<StrategyItem>(`/strategies/${encodeURIComponent(id)}`, {
+      method: "PUT",
+      body: JSON.stringify(body),
+    }),
+  deleteStrategy: (id: string) =>
+    request<{ ok: boolean }>(`/strategies/${encodeURIComponent(id)}`, {
+      method: "DELETE",
+    }),
+  duplicateStrategy: (id: string) =>
+    request<StrategyItem>(`/strategies/${encodeURIComponent(id)}/duplicate`, {
+      method: "POST",
+    }),
+  strategyAi: (body: {
+    prompt: string;
+    language?: string;
+    current_code?: string;
+    mode?: "generate" | "improve" | "explain";
+  }) =>
+    request<StrategyAiResponse>("/strategies/ai", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+
   // Connector runtime channel — privileged surface actions (NOT agent tools).
   // commit is the ONLY action that writes a mandate; halt trips the kill switch.
   commitMandate: (body: CommitMandateRequest) =>
@@ -1714,4 +1780,82 @@ export interface ToolTrailItem {
   preview?: string;
   call_id?: string;
   timestamp?: number;
+}
+
+export interface MarketQuoteItem {
+  symbol: string;
+  name: string;
+  market?: string | null;
+  sub?: string | null;
+  price?: number | null;
+  change_pct?: number | null;
+  source?: string | null;
+  error?: string | null;
+}
+
+export interface HotBoard {
+  board_code: string;
+  board_name: string;
+  change_pct?: number | null;
+  kind: string;
+  leaders: MarketQuoteItem[];
+}
+
+export interface MarketOverviewResponse {
+  indices: MarketQuoteItem[];
+  hot_boards: HotBoard[];
+  hot_stocks: MarketQuoteItem[];
+  as_of: string;
+  source?: string;
+}
+
+export interface NewsArticle {
+  title: string;
+  url?: string | null;
+  source?: string | null;
+  published?: string | null;
+  snippet?: string | null;
+  topic?: string | null;
+  signal?: string | null;
+}
+
+export interface NewsRadarResponse {
+  articles: NewsArticle[];
+  topics: string[];
+  as_of: string;
+  source_notes: string[];
+}
+
+export interface StrategyItem {
+  id: string;
+  name: string;
+  group: string;
+  kind: string;
+  language: string;
+  code: string;
+  notes: string;
+  description: string;
+  created_at: number;
+  updated_at: number;
+}
+
+export interface StrategyListResponse {
+  items: StrategyItem[];
+  groups: string[];
+}
+
+export interface StrategyAiResponse {
+  ok: boolean;
+  code: string;
+  language: string;
+  model?: string | null;
+  error?: string | null;
+}
+
+export interface InsightResponse {
+  ok: boolean;
+  kind: string;
+  text: string;
+  model?: string | null;
+  error?: string | null;
 }

@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { useEffect, useRef, useState } from "react";
 import { Link, Outlet, useLocation, useSearchParams } from "react-router";
-import { Activity, BarChart3, Bot, CalendarClock, CandlestickChart, Check, ChevronDown, FileText, Languages, Moon, Sun, Plus, Trash2, Pencil, MessageSquare, ChevronsLeft, ChevronsRight, Settings, Layers, Loader2, WalletCards } from "lucide-react";
+import { Activity, BarChart3, Bot, CalendarClock, CandlestickChart, Check, ChevronDown, FileText, Languages, Moon, Sun, Plus, Trash2, Pencil, MessageSquare, ChevronsLeft, ChevronsRight, Settings, Layers, Loader2, WalletCards, LineChart, Network, Thermometer, Newspaper, FileCode2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useDarkMode } from "@/hooks/useDarkMode";
 import { api, type SessionItem } from "@/lib/api";
@@ -21,6 +21,11 @@ export function Layout() {
   // matches both "/" and legacy "/agent" deep links.
   const NAV = [
     { to: "/", icon: Bot, label: t('layout.agent') },
+    { to: "/market", icon: LineChart, label: t('layout.marketOverview') },
+    { to: "/logic-chain", icon: Network, label: t('layout.logicChain') },
+    { to: "/sentiment", icon: Thermometer, label: t('layout.sentiment') },
+    { to: "/news", icon: Newspaper, label: t('layout.newsRadar') },
+    { to: "/strategies", icon: FileCode2, label: t('layout.strategyLibrary') },
     { to: "/runtime", icon: Activity, label: t('layout.runtime') },
     { to: "/scheduled", icon: CalendarClock, label: t('layout.scheduled') },
     { to: "/reports", icon: FileText, label: t('layout.reports') },

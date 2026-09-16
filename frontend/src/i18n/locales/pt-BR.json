@@ -34,7 +34,12 @@
     "sidebar": "Barra lateral Personal-Trading",
     "mainNavigation": "Navegação principal",
     "about": "Sobre",
-    "brandName": "Personal-Trading"
+    "brandName": "Personal-Trading",
+    "marketOverview": "Visão do mercado",
+    "logicChain": "Cadeia lógica",
+    "sentiment": "Sentimento",
+    "newsRadar": "Radar de notícias",
+    "strategyLibrary": "Biblioteca de estratégias"
   },
   "runtime": {
     "monitorBadge": "Monitor de Runtime",
