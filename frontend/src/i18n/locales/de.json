@@ -427,7 +427,11 @@
       "stoppedToast": "IM-Kanäle gestoppt",
       "refreshFailed": "IM-Kanäle konnten nicht aktualisiert werden",
       "startFailed": "IM-Kanäle konnten nicht gestartet werden",
-      "stopFailed": "IM-Kanäle konnten nicht gestoppt werden"
+      "stopFailed": "IM-Kanäle konnten nicht gestoppt werden",
+      "configPath": "Konfigurationsdatei: ~/.person-trading/agent.json",
+      "configHint": "Adapter unter channels aktivieren (telegram, feishu, …), speichern, dann hier Kanäle starten. Pairing: /pairing",
+      "showExample": "Beispiel anzeigen",
+      "hideExample": "Beispiel ausblenden"
     },
     "generation": "Generierung",
     "dataSourceSettings": "Datenquellen-Einstellungen",
@@ -616,7 +620,12 @@
     "resumeConnector": "Connector fortsetzen",
     "resumeConnectorTitle": "Kill-Switch löschen und Connector-Aktivität wieder aktivieren",
     "connectorResumed": "Connector fortgesetzt",
-    "failedToResumeConnector": "Connector konnte nicht fortgesetzt werden."
+    "failedToResumeConnector": "Connector konnte nicht fortgesetzt werden.",
+    "mandateReturnToast": "Mandat bestätigt — zurück zur Strategie-Bibliothek, um die Bereitstellung fortzusetzen"
+  },
+  "strategyLibraryPage": {
+    "mandateCommittedToast": "Mandat bestätigt — Runner unten starten",
+    "openStrategyFailed": "Strategie konnte nicht geöffnet werden — möglicherweise gelöscht"
   },
   "runDetail": {
     "title": "Durchlauf-Details",

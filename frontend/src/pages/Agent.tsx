@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { useEffect, useRef, useState, useMemo, useCallback } from "react";
-import { useSearchParams } from "react-router";
+import { useNavigate, useSearchParams } from "react-router";
 import { ArrowDown, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -220,7 +220,9 @@ function goalContinuePrompt(snapshot: GoalSnapshot): string {
 /* ---------- Component ---------- */
 export function Agent() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+  const returnToRef = useRef<string | null>(searchParams.get("returnTo"));
   const listRef = useRef<HTMLDivElement>(null);
   const composerRef = useRef<ComposerHandle>(null);
   const liveRuntimeRef = useRef<LiveRuntimePanelHandle>(null);
@@ -432,6 +434,21 @@ export function Agent() {
   // in a full agent session without retyping context.
   const handoffPrompt = searchParams.get("prompt");
   const handoffPromptRef = useRef<string | null>(handoffPrompt);
+  const returnToParam = searchParams.get("returnTo");
+  useEffect(() => {
+    if (returnToParam) {
+      returnToRef.current = returnToParam;
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev);
+          next.delete("returnTo");
+          return next;
+        },
+        { replace: true },
+      );
+    }
+  }, [returnToParam, setSearchParams]);
+
   useEffect(() => {
     if (!handoffPrompt || handoffPromptRef.current !== handoffPrompt) return;
     handoffPromptRef.current = null;
@@ -1235,6 +1252,13 @@ export function Agent() {
         // A fresh mandate may bring up the runner; refresh the runtime panel now.
         liveRuntimeRef.current?.handleMandateCommitted();
         scrollToBottom();
+        const returnTo = returnToRef.current;
+        if (returnTo) {
+          returnToRef.current = null;
+          const sep = returnTo.includes("?") ? "&" : "?";
+          toast.success(t("agent.mandateReturnToast"));
+          navigate(`${returnTo}${sep}mandate=committed`);
+        }
       },
 
       "scheduled_research.proposal": (d) => {

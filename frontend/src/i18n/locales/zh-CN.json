@@ -422,7 +422,11 @@
       "stoppedToast": "IM 通道已停止",
       "refreshFailed": "刷新 IM 通道失败",
       "startFailed": "启动 IM 通道失败",
-      "stopFailed": "停止 IM 通道失败"
+      "stopFailed": "停止 IM 通道失败",
+      "configPath": "配置文件：~/.person-trading/agent.json",
+      "configHint": "在 channels 段启用适配器（telegram、feishu、discord 等），保存后在此点击「启动通道」。配对命令：/pairing",
+      "showExample": "查看配置示例",
+      "hideExample": "收起示例"
     },
     "generation": "生成设置",
     "dataSourceSettings": "数据源设置",
@@ -611,7 +615,12 @@
     "resumeConnector": "恢复连接器",
     "resumeConnectorTitle": "清除熔断开关并恢复连接器活动",
     "connectorResumed": "连接器已恢复",
-    "failedToResumeConnector": "恢复连接器失败。"
+    "failedToResumeConnector": "恢复连接器失败。",
+    "mandateReturnToast": "Mandate 已确认，返回策略库继续部署"
+  },
+  "strategyLibraryPage": {
+    "mandateCommittedToast": "Mandate 已确认 — 可在下方启动 Runner",
+    "openStrategyFailed": "无法打开策略，可能已被删除"
   },
   "runDetail": {
     "title": "运行详情",

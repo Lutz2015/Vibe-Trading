@@ -1,0 +1,3 @@
+[console_scripts]
+person-trading = cli:main
+person-trading-mcp = mcp_server:main

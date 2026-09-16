@@ -5,6 +5,7 @@ import {
   app,
   BrowserWindow,
   dialog,
+  globalShortcut,
   ipcMain,
   Menu,
   nativeTheme,
@@ -28,6 +29,12 @@ let desktopMessages = getDesktopMessages(desktopLocale);
 const apiAuthKey = randomBytes(32).toString("base64url");
 const productName = "Person-Trading Desktop (Unofficial Community Build)";
 const windowTitle = "个人交易智能体";
+/** Unofficial community builds ship with DevTools + network console for local debugging. */
+const debugMode =
+  !app.isPackaged ||
+  productName.includes("Unofficial") ||
+  process.env.VIBE_TRADING_DESKTOP_DEBUG === "1" ||
+  app.commandLine.hasSwitch("debug");
 const testUserData = process.env.VIBE_TRADING_DESKTOP_TEST_USER_DATA;
 let credentialStore: SecureCredentialStore | undefined;
 
@@ -59,6 +66,7 @@ async function ready(): Promise<void> {
   createWindow();
   registerIpc();
   createMenu();
+  registerDebugShortcuts();
   await showLoadingPage();
   void boot();
 }
@@ -79,7 +87,7 @@ function createWindow(): void {
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: true,
-      devTools: !app.isPackaged,
+      devTools: debugMode,
       partition: "persist:person-trading-desktop",
     },
   });
@@ -210,6 +218,23 @@ async function reportBootError(message: string): Promise<void> {
   mainWindow.webContents.send("desktop:error", message);
 }
 
+function registerDebugShortcuts(): void {
+  if (!debugMode) return;
+  const toggle = () => {
+    if (!mainWindow || mainWindow.isDestroyed()) return;
+    if (mainWindow.webContents.isDevToolsOpened()) {
+      mainWindow.webContents.closeDevTools();
+    } else {
+      mainWindow.webContents.openDevTools({ mode: "detach" });
+    }
+  };
+  const primary = process.platform === "darwin" ? "Alt+Command+I" : "Control+Shift+I";
+  if (!globalShortcut.register(primary, toggle)) {
+    console.warn(`DevTools shortcut unavailable: ${primary}`);
+  }
+  globalShortcut.register("F12", toggle);
+}
+
 function createMenu(): void {
   Menu.setApplicationMenu(Menu.buildFromTemplate([
     {
@@ -239,8 +264,12 @@ function createMenu(): void {
       label: desktopMessages.menuView,
       submenu: [
         { role: "reload", label: desktopMessages.menuReload },
-        ...(!app.isPackaged
-          ? [{ role: "toggleDevTools" as const, label: desktopMessages.menuDeveloperTools }]
+        ...(debugMode
+          ? [{
+              role: "toggleDevTools" as const,
+              label: desktopMessages.menuDeveloperTools,
+              accelerator: process.platform === "darwin" ? "Alt+Command+I" : "Control+Shift+I",
+            }]
           : []),
         { type: "separator" },
         { role: "resetZoom", label: desktopMessages.menuActualSize },
@@ -292,6 +321,10 @@ function errorText(error: unknown): string {
 
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") void shutdownAndQuit();
+});
+
+app.on("will-quit", () => {
+  globalShortcut.unregisterAll();
 });
 
 process.on("uncaughtException", (error) => {

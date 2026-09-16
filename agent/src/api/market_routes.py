@@ -46,7 +46,18 @@ _em_lock = threading.Lock()
 _em_last_at = 0.0
 _cache_lock = threading.Lock()
 _overview_cache: Tuple[float, Optional["MarketOverviewResponse"]] = (0.0, None)
+_overview_refreshing = False
 _news_cache: Dict[str, Tuple[float, "NewsRadarResponse"]] = {}
+
+# Topic chip → keyword filters for fast sources (Sina roll has no native topic API).
+_TOPIC_FILTER_KEYWORDS: Dict[str, List[str]] = {
+    "global": ["宏观", "经济", "政策", "央行", "GDP", "通胀", "美联储", "财政"],
+    "ai": ["人工智能", "AI", "算力", "大模型", "芯片", "GPU", "DeepSeek"],
+    "crypto": ["比特币", "加密", "区块链", "BTC", "以太坊", "数字货币"],
+    "robot": ["机器人", "人形", "减速器", "具身"],
+    "semiconductor": ["半导体", "芯片", "晶圆", "光刻", "存储"],
+    "newenergy": ["新能源", "光伏", "锂电", "储能", "电动车", "电池"],
+}
 
 
 class QuoteItem(BaseModel):
@@ -103,6 +114,50 @@ _NEG_WORDS = (
     "下跌", "大跌", "跌停", "破位", "新低", "低于预期", "利空", "下滑", "处罚", "调查",
     "暴跌", "plunge", "selloff", "miss", "downgrade", "bearish", "probe",
 )
+
+
+def _normalize_published(value: Any) -> Optional[str]:
+    """Format unix timestamps / numeric strings from Sina et al. for UI display."""
+    if value is None:
+        return None
+    from datetime import datetime
+
+    if isinstance(value, (int, float)):
+        ts = float(value)
+        if ts > 1e12:
+            ts /= 1000.0
+        try:
+            return datetime.fromtimestamp(ts).strftime("%Y-%m-%d %H:%M")
+        except (OSError, OverflowError, ValueError):
+            return str(value)
+    text = str(value).strip()
+    if not text:
+        return None
+    if text.isdigit():
+        ts = int(text)
+        if ts > 1e12:
+            ts //= 1000
+        try:
+            return datetime.fromtimestamp(ts).strftime("%Y-%m-%d %H:%M")
+        except (OSError, OverflowError, ValueError):
+            return text
+    return text[:19] if len(text) > 19 else text
+
+
+def _topic_filter_keywords(topic: Optional[str]) -> List[str]:
+    if not topic:
+        return []
+    return list(_TOPIC_FILTER_KEYWORDS.get(topic.strip(), ()))
+
+
+def _row_matches_topic(row: Dict[str, Any], topic: Optional[str]) -> bool:
+    if not topic:
+        return True
+    keywords = _topic_filter_keywords(topic)
+    if not keywords:
+        return True
+    hay = f"{row.get('title') or ''} {row.get('snippet') or ''}".lower()
+    return any(kw.lower() in hay for kw in keywords)
 
 
 def _strip_tags(text: str) -> str:
@@ -378,9 +433,9 @@ def _build_overview() -> MarketOverviewResponse:
     industries = _fetch_board_list("industry", 5)
     concepts = _fetch_board_list("concept", 3)
     boards = industries + concepts
-    # Leaders only for top 2 boards — keeps EM call count low under throttle.
-    for board in boards[:2]:
-        board.leaders = _fetch_board_leaders(board.board_code, 4)
+    # Leaders for the top board only — one extra EM round-trip under throttle.
+    if boards:
+        boards[0].leaders = _fetch_board_leaders(boards[0].board_code, 4)
     hot_stocks = _fetch_hot_stocks(10)
     return MarketOverviewResponse(
         indices=indices,
@@ -426,7 +481,7 @@ def _fetch_sina_roll(limit: int = 20) -> List[Dict[str, Any]]:
                 "title": title,
                 "url": row.get("url"),
                 "source": row.get("media_name") or "新浪财经",
-                "published": row.get("ctime") or row.get("create_time"),
+                "published": _normalize_published(row.get("ctime") or row.get("create_time")),
                 "snippet": _strip_tags(str(row.get("intro") or row.get("summary") or "")),
                 "topic": "新浪财经",
             }
@@ -501,8 +556,8 @@ def _fetch_parallel_news(limit: int, q: Optional[str], topic: Optional[str]) -> 
         return _fetch_tushare_news(limit)
 
     jobs = {"sina": _sina, "tushare": _ts}
-    # Eastmoney only when user asked for a specific query (slower path).
-    if q:
+    # Eastmoney when searching or when a topic chip needs keyword-specific headlines.
+    if q or topic:
         jobs["eastmoney"] = _east
 
     with ThreadPoolExecutor(max_workers=3) as pool:
@@ -527,6 +582,8 @@ def _fetch_parallel_news(limit: int, q: Optional[str], topic: Optional[str]) -> 
             for r in raw
             if needle in f"{r.get('title')} {r.get('snippet')}".lower()
         ]
+    elif topic:
+        raw = [r for r in raw if _row_matches_topic(r, topic)]
 
     articles: List[NewsArticle] = []
     seen: set[str] = set()
@@ -656,12 +713,45 @@ def get_overview_snapshot() -> Dict[str, Any]:
     return overview.model_dump()
 
 
-def _get_overview_cached() -> MarketOverviewResponse:
+def _refresh_overview_background() -> None:
+    """Rebuild overview cache without blocking request handlers."""
+    global _overview_refreshing, _overview_cache
+    with _cache_lock:
+        if _overview_refreshing:
+            return
+        _overview_refreshing = True
+    try:
+        fresh = _build_overview()
+        with _cache_lock:
+            _overview_cache = (time.monotonic(), fresh)
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("overview background refresh failed: %s", exc)
+    finally:
+        with _cache_lock:
+            _overview_refreshing = False
+
+
+def warmup_market_caches() -> None:
+    """Kick off background overview prefetch (non-blocking startup helper)."""
+    threading.Thread(target=_refresh_overview_background, daemon=True, name="market-warmup").start()
+
+
+def _get_overview_cached(*, allow_stale: bool = True) -> MarketOverviewResponse:
     global _overview_cache
+    stale: Optional[MarketOverviewResponse] = None
     with _cache_lock:
         ts, cached = _overview_cache
         if cached is not None and time.monotonic() - ts < _OVERVIEW_TTL_S:
             return cached.model_copy(update={"cached": True})
+        if cached is not None:
+            stale = cached
+    if stale is not None and allow_stale:
+        threading.Thread(
+            target=_refresh_overview_background,
+            daemon=True,
+            name="market-overview-refresh",
+        ).start()
+        return stale.model_copy(update={"cached": True})
     fresh = _build_overview()
     with _cache_lock:
         _overview_cache = (time.monotonic(), fresh)
@@ -677,7 +767,9 @@ def register_market_routes(
     @app.get("/market/overview", response_model=MarketOverviewResponse, dependencies=deps)
     async def market_overview() -> MarketOverviewResponse:
         """Live indices + hot industry/concept boards + hot A-share gainers."""
-        return _get_overview_cached()
+        import asyncio
+
+        return await asyncio.to_thread(_get_overview_cached)
 
     @app.get("/news/radar", response_model=NewsRadarResponse, dependencies=deps)
     async def news_radar(
@@ -697,10 +789,15 @@ def register_market_routes(
             if entry and time.monotonic() - entry[0] < _news_TTL_S:
                 return entry[1].model_copy(update={"cached": True})
 
-        # Try a fast first pass (sina+tushare, ~1-2s). Fall back to Eastmoney.
-        fresh = _fetch_parallel_news(limit, q, topic)
-        if not fresh.articles:
-            fresh = _build_news(limit, q, topic)
+        import asyncio
+
+        def _load_news() -> NewsRadarResponse:
+            fresh = _fetch_parallel_news(limit, q, topic)
+            if not fresh.articles:
+                fresh = _build_news(limit, q, topic)
+            return fresh
+
+        fresh = await asyncio.to_thread(_load_news)
         with _cache_lock:
             _news_cache[cache_key] = (time.monotonic(), fresh)
             if len(_news_cache) > 32:

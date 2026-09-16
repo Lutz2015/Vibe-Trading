@@ -427,7 +427,11 @@
       "stoppedToast": "Canais de IM parados",
       "refreshFailed": "Falha ao atualizar canais de mensagens instantâneas",
       "startFailed": "Falha ao iniciar canais de IM",
-      "stopFailed": "Falha ao parar canais de mensagens instantâneas"
+      "stopFailed": "Falha ao parar canais de mensagens instantâneas",
+      "configPath": "Arquivo de config: ~/.person-trading/agent.json",
+      "configHint": "Ative adaptadores em channels (telegram, feishu, …), salve e clique Iniciar canais aqui. Pareamento: /pairing",
+      "showExample": "Ver exemplo",
+      "hideExample": "Ocultar exemplo"
     },
     "generation": "Geração",
     "dataSourceSettings": "Configurações de fonte de dados",
@@ -616,7 +620,12 @@
     "resumeConnector": "Retomar conector",
     "resumeConnectorTitle": "Limpe o kill switch e reative a atividade do conector",
     "connectorResumed": "Conector retomado",
-    "failedToResumeConnector": "Falha ao retomar o conector."
+    "failedToResumeConnector": "Falha ao retomar o conector.",
+    "mandateReturnToast": "Mandato confirmado — voltando à biblioteca de estratégias para continuar a implantação"
+  },
+  "strategyLibraryPage": {
+    "mandateCommittedToast": "Mandato confirmado — você pode iniciar o Runner abaixo",
+    "openStrategyFailed": "Não foi possível abrir a estratégia — ela pode ter sido excluída"
   },
   "runDetail": {
     "title": "Detalhes da execução",

@@ -126,6 +126,8 @@ from src.api.scheduled_routes import (  # noqa: E402
 
 async def _run_startup_preflight() -> None:
     """Run preflight checks on server startup."""
+    import asyncio
+
     from src.preflight import run_preflight
 
     from src.config import migrate as _migrate
@@ -134,8 +136,19 @@ async def _run_startup_preflight() -> None:
         _migrate.migrate_legacy_state()  # one-time pre-#904 state move; must never block startup
     except Exception:  # pragma: no cover — best-effort
         logging.getLogger(__name__).warning("Legacy state migration failed", exc_info=True)
-    run_preflight(console)
+
+    # Preflight probes (LLM ping, OKX, yfinance…) can take 10s+ each — run off
+    # the critical path so Desktop /health becomes ready immediately.
+    asyncio.create_task(asyncio.to_thread(run_preflight, console))
+
     _start_scheduled_research_executor()
+    try:
+        from src.api.market_routes import warmup_market_caches
+
+        warmup_market_caches()
+    except Exception:  # pragma: no cover — best-effort
+        logging.getLogger(__name__).debug("market cache warmup skipped", exc_info=True)
+
     from src.config.accessor import get_env_config
 
     if get_env_config().agent_tuning.vibe_trading_channels_auto_start:
@@ -307,6 +320,10 @@ register_insight_routes(app, require_local_or_auth=require_local_or_auth)
 # --- Strategy library (user code drafts + AI generate) ---
 from src.api.strategy_library_routes import register_strategy_library_routes  # noqa: E402
 register_strategy_library_routes(app, require_local_or_auth=require_local_or_auth)
+
+# --- Sentiment thermometer (Polymarket macro expectations) ---
+from src.api.sentiment_routes import register_sentiment_routes  # noqa: E402
+register_sentiment_routes(app, require_local_or_auth=require_local_or_auth)
 
 # --- Auth helpers (SSE tickets) ---
 from src.api.auth_routes import register_auth_routes  # noqa: E402

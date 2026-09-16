@@ -427,7 +427,11 @@
       "stoppedToast": "Canales de mensajería detenidos",
       "refreshFailed": "Error al actualizar los canales de mensajería",
       "startFailed": "Error al iniciar los canales de mensajería",
-      "stopFailed": "Error al detener los canales de mensajería"
+      "stopFailed": "Error al detener los canales de mensajería",
+      "configPath": "Archivo de config: ~/.person-trading/agent.json",
+      "configHint": "Habilita adaptadores en channels (telegram, feishu, …), guarda y pulsa Iniciar canales aquí. Emparejamiento: /pairing",
+      "showExample": "Ver ejemplo",
+      "hideExample": "Ocultar ejemplo"
     },
     "generation": "Generación",
     "dataSourceSettings": "Configuración de fuentes de datos",
@@ -616,7 +620,12 @@
     "resumeConnector": "Reanudar conector",
     "resumeConnectorTitle": "Desactivar el interruptor de emergencia y reanudar la actividad del conector",
     "connectorResumed": "Conector reanudado",
-    "failedToResumeConnector": "Error al reanudar el conector."
+    "failedToResumeConnector": "Error al reanudar el conector.",
+    "mandateReturnToast": "Mandato confirmado — volviendo a la biblioteca de estrategias para continuar el despliegue"
+  },
+  "strategyLibraryPage": {
+    "mandateCommittedToast": "Mandato confirmado — puedes iniciar el Runner abajo",
+    "openStrategyFailed": "No se pudo abrir la estrategia — puede haber sido eliminada"
   },
   "runDetail": {
     "title": "Detalle de ejecución",

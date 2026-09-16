@@ -1,77 +1,8 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Activity, RefreshCw } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { api, type SentimentItem } from "@/lib/api";
 import { AiInsightPanel } from "@/components/common/AiInsightPanel";
-
-type SentimentItem = {
-  id: string;
-  title: string;
-  source: "Polymarket" | "Kalshi";
-  category: string;
-  probability: number; // 0-100
-  delta24h: number; // percentage points
-  horizon: string;
-  note?: string;
-};
-
-const SEED: SentimentItem[] = [
-  {
-    id: "fed_cut",
-    title: "美联储年内至少再降息一次",
-    source: "Polymarket",
-    category: "货币政策",
-    probability: 68,
-    delta24h: 3.2,
-    horizon: "2026 年内",
-    note: "通胀路径与就业数据共同定价",
-  },
-  {
-    id: "us_recession",
-    title: "美国未来 12 个月陷入衰退",
-    source: "Kalshi",
-    category: "增长",
-    probability: 22,
-    delta24h: -1.4,
-    horizon: "未来 12 个月",
-  },
-  {
-    id: "cn_stimulus",
-    title: "中国出台超预期稳增长一揽子",
-    source: "Polymarket",
-    category: "中国政策",
-    probability: 41,
-    delta24h: 2.1,
-    horizon: "未来 2 个季度",
-  },
-  {
-    id: "ai_capex",
-    title: "全球 AI 资本开支同比增速 >30%",
-    source: "Kalshi",
-    category: "科技",
-    probability: 57,
-    delta24h: 4.8,
-    horizon: "2026 全年",
-    note: "云厂商 CapEx 指引隐含概率",
-  },
-  {
-    id: "oil_90",
-    title: "布伦特原油年内触及 90 美元",
-    source: "Polymarket",
-    category: "大宗",
-    probability: 33,
-    delta24h: -0.6,
-    horizon: "2026 年内",
-  },
-  {
-    id: "btc_ath",
-    title: "比特币再创历史新高",
-    source: "Kalshi",
-    category: "加密",
-    probability: 61,
-    delta24h: 5.5,
-    horizon: "未来 6 个月",
-  },
-];
 
 function heat(probability: number): { label: string; color: string; bar: string } {
   if (probability >= 70) {
@@ -142,53 +73,60 @@ function Gauge({ value }: { value: number }) {
 }
 
 export function Sentiment() {
-  const [items, setItems] = useState(SEED);
-  const [updatedAt, setUpdatedAt] = useState(() => new Date());
+  const [items, setItems] = useState<SentimentItem[]>([]);
+  const [composite, setComposite] = useState(50);
+  const [source, setSource] = useState("polymarket");
+  const [mode, setMode] = useState<string>("prediction");
+  const [updatedAt, setUpdatedAt] = useState<Date | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const composite = useMemo(() => {
-    if (items.length === 0) return 50;
-    // Weight risk-on proxies higher: AI capex, BTC ATH, stimulus; recession inverted.
-    const weights: Record<string, number> = {
-      ai_capex: 1.4,
-      btc_ath: 1.2,
-      cn_stimulus: 1.2,
-      us_recession: -1.3,
-      fed_cut: 1.0,
-      oil_90: 0.6,
-    };
-    let sum = 0;
-    let weightSum = 0;
-    for (const item of items) {
-      const w = weights[item.id] ?? 1;
-      const value = w < 0 ? 100 - item.probability : item.probability;
-      sum += value * Math.abs(w);
-      weightSum += Math.abs(w);
-    }
-    return Math.round((sum / Math.max(weightSum, 1)) * 10) / 10;
-  }, [items]);
-
-  const refresh = () => {
+  const load = useCallback(async () => {
     setRefreshing(true);
-    setItems((prev) =>
-      prev.map((item) => {
-        const delta = (Math.random() - 0.5) * 2.4;
-        const next = Math.max(2, Math.min(98, item.probability + delta));
-        return {
-          ...item,
-          probability: Math.round(next * 10) / 10,
-          delta24h: Math.round((item.delta24h + delta * 0.4) * 10) / 10,
-        };
-      }),
-    );
-    setUpdatedAt(new Date());
-    window.setTimeout(() => setRefreshing(false), 350);
-  };
+    try {
+      const res = await api.fetchSentiment();
+      setItems(res.items || []);
+      setComposite(res.composite ?? 50);
+      setSource(res.source || "polymarket");
+      setMode(res.mode || "prediction");
+      setError(null);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "情绪数据获取失败");
+    } finally {
+      setUpdatedAt(new Date());
+      setRefreshing(false);
+    }
+  }, []);
 
   useEffect(() => {
-    const id = window.setInterval(refresh, 60_000);
+    void load();
+  }, [load]);
+
+  useEffect(() => {
+    const id = window.setInterval(() => void load(), 120_000);
     return () => window.clearInterval(id);
-  }, []);
+  }, [load]);
+
+  const stamp = useMemo(
+    () => (updatedAt ? updatedAt.toLocaleString("zh-CN", { hour12: false }) : "—"),
+    [updatedAt],
+  );
+
+  const insightPayload = useMemo(
+    () => ({
+      composite,
+      items: items
+        .filter((i) => !i.error && i.probability > 0)
+        .map((i) => ({
+          title: i.title,
+          probability: i.probability,
+          delta24h: i.delta24h,
+          source: i.source,
+          category: i.category,
+        })),
+    }),
+    [composite, items],
+  );
 
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-6 p-6">
@@ -199,12 +137,16 @@ export function Sentiment() {
             <h1 className="text-2xl font-bold">情绪温度计</h1>
           </div>
           <p className="mt-1 text-sm text-muted-foreground">
-            把全球宏观的预期概率，融入投研体系 · 参考 Polymarket / Kalshi 公开预期
+            {mode === "market_proxy"
+              ? "东财热点板块 / 指数代理 · 预测市场不可达时自动切换 · 5 分钟缓存"
+              : mode === "hybrid"
+                ? "Polymarket 可用项 + A 股行情代理补全 · 5 分钟缓存"
+                : "Polymarket / Kalshi 公开预测市场 · 宏观预期概率 · 5 分钟缓存"}
           </p>
         </div>
         <button
           type="button"
-          onClick={refresh}
+          onClick={() => void load()}
           disabled={refreshing}
           className="inline-flex items-center gap-2 rounded-md border px-3 py-2 text-sm text-muted-foreground hover:bg-muted disabled:opacity-60"
         >
@@ -213,16 +155,33 @@ export function Sentiment() {
         </button>
       </div>
 
+      {error ? (
+        <div className="rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-600 dark:text-amber-300">
+          {error}
+        </div>
+      ) : null}
+
+      {mode === "market_proxy" ? (
+        <div className="rounded-md border border-sky-500/25 bg-sky-500/5 px-3 py-2 text-xs text-sky-700 dark:text-sky-300">
+          当前网络无法访问 Polymarket/Kalshi，已改用 A 股热点板块涨跌幅作为宏观情绪代理（非真实预测市场报价）。
+        </div>
+      ) : null}
+
+      {mode === "hybrid" ? (
+        <div className="rounded-md border border-amber-500/20 bg-amber-500/5 px-3 py-2 text-xs text-muted-foreground">
+          部分主题已用 A 股行情代理补全。
+        </div>
+      ) : null}
+
       <section className="rounded-2xl border bg-card p-6 shadow-sm">
         <div className="grid items-center gap-6 md:grid-cols-[280px_1fr]">
           <Gauge value={composite} />
           <div className="space-y-3">
             <h2 className="text-sm font-semibold">解读</h2>
             <p className="text-sm leading-relaxed text-muted-foreground">
-              综合温度由多项宏观预期概率加权得到：降息、衰退、中国政策、AI
-              资本开支、原油与加密等。数值越高代表市场对「风险资产友好」情景的定价越充分；
-              过热时需警惕拥挤交易，冰冷时则可能是逆向观察窗口。本页数据为界面演示，可对接公开
-              预测市场 API 后替换。
+              {mode === "market_proxy"
+                ? "综合温度由六项代理指标加权：指数/板块强弱映射到降息、衰退、政策、AI、能源与风险偏好等维度。数值越高代表短线市场风险偏好越强。"
+                : "综合温度由多项宏观预期概率加权得到：降息、衰退（反向）、中国政策、AI 资本开支、原油与加密等。数值越高代表市场对「风险资产友好」情景定价越充分。"}
             </p>
             <div className="flex flex-wrap gap-2 text-[11px]">
               <span className="rounded-full bg-sky-500/15 px-2 py-1 text-sky-300">冰冷 0–24</span>
@@ -236,71 +195,74 @@ export function Sentiment() {
       </section>
 
       <section className="grid gap-3 md:grid-cols-2">
-        {items.map((item) => {
-          const h = heat(item.probability);
-          const up = item.delta24h >= 0;
-          return (
-            <article key={item.id} className="rounded-xl border bg-card p-4 shadow-sm">
-              <div className="flex items-start justify-between gap-2">
-                <div>
-                  <div className="text-sm font-semibold leading-snug">{item.title}</div>
-                  <div className="mt-1 text-[11px] text-muted-foreground">
-                    {item.source} · {item.category} · {item.horizon}
+        {refreshing && items.length === 0
+          ? [1, 2, 3, 4].map((i) => (
+              <div key={i} className="h-32 animate-pulse rounded-xl bg-muted/40" />
+            ))
+          : items.map((item) => {
+              const ok = !item.error && item.probability > 0;
+              const h = heat(ok ? item.probability : 50);
+              const up = item.delta24h >= 0;
+              return (
+                <article key={item.id} className="rounded-xl border bg-card p-4 shadow-sm">
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <div className="text-sm font-semibold leading-snug">{item.title}</div>
+                      <div className="mt-1 text-[11px] text-muted-foreground">
+                        {item.source} · {item.category} · {item.horizon}
+                      </div>
+                    </div>
+                    <span className="shrink-0 rounded-full border px-2 py-0.5 text-[10px] text-muted-foreground">
+                      {item.source}
+                    </span>
                   </div>
-                </div>
-                <span className="shrink-0 rounded-full border px-2 py-0.5 text-[10px] text-muted-foreground">
-                  {item.source}
-                </span>
-              </div>
-              <div className="mt-3 flex items-end justify-between">
-                <div className={cn("text-3xl font-bold tabular-nums", h.color)}>
-                  {item.probability.toFixed(1)}
-                  <span className="text-sm font-medium text-muted-foreground">%</span>
-                </div>
-                <div
-                  className={cn(
-                    "text-xs tabular-nums",
-                    up ? "text-rose-400" : "text-emerald-400",
+                  {ok ? (
+                    <>
+                      <div className="mt-3 flex items-end justify-between">
+                        <div className={cn("text-3xl font-bold tabular-nums", h.color)}>
+                          {item.probability.toFixed(1)}
+                          <span className="text-sm font-medium text-muted-foreground">%</span>
+                        </div>
+                        <div
+                          className={cn(
+                            "text-xs tabular-nums",
+                            up ? "text-rose-400" : "text-emerald-400",
+                          )}
+                        >
+                          24h {up ? "+" : ""}
+                          {item.delta24h.toFixed(1)} pp
+                        </div>
+                      </div>
+                      <div className="mt-3 h-2 overflow-hidden rounded-full bg-muted">
+                        <div
+                          className={cn("h-full rounded-full transition-all", h.bar)}
+                          style={{ width: `${item.probability}%` }}
+                        />
+                      </div>
+                    </>
+                  ) : (
+                    <p className="mt-3 text-xs text-muted-foreground">
+                      {item.error || "暂无报价"}
+                    </p>
                   )}
-                >
-                  24h {up ? "+" : ""}
-                  {item.delta24h.toFixed(1)} pp
-                </div>
-              </div>
-              <div className="mt-3 h-2 overflow-hidden rounded-full bg-muted">
-                <div
-                  className={cn("h-full rounded-full transition-all", h.bar)}
-                  style={{ width: `${item.probability}%` }}
-                />
-              </div>
-              {item.note ? (
-                <p className="mt-2 text-[11px] text-muted-foreground">{item.note}</p>
-              ) : null}
-            </article>
-          );
-        })}
+                  {item.note ? (
+                    <p className="mt-2 text-[11px] text-muted-foreground">{item.note}</p>
+                  ) : null}
+                </article>
+              );
+            })}
       </section>
 
       <AiInsightPanel
         kind="sentiment"
         title="AI 情绪解读"
-        autoRun={items.length > 0}
-        runKey={updatedAt.toISOString()}
-        payload={{
-          composite,
-          items: items.map((i) => ({
-            title: i.title,
-            probability: i.probability,
-            delta24h: i.delta24h,
-            source: i.source,
-            category: i.category,
-          })),
-        }}
+        autoRun={false}
+        payload={insightPayload}
       />
 
       <p className="text-center text-[11px] text-muted-foreground">
-        更新：{updatedAt.toLocaleString("zh-CN", { hour12: false })} ·
-        免责：演示数据不构成任何投资建议，市场有风险，决策需独立判断
+        更新：{stamp} · 数据源：{source}
+        {mode === "market_proxy" ? "（行情代理）" : ""} · 不构成投资建议
       </p>
     </div>
   );

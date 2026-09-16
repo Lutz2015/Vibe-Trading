@@ -27,6 +27,24 @@ function signalLabel(signal?: string | null): string {
   return "中性";
 }
 
+/** Sina ctime / ISO / plain text → localized display. */
+function formatPublished(value?: string | null): string {
+  if (!value?.trim()) return "—";
+  const raw = value.trim();
+  if (/^\d{10,13}$/.test(raw)) {
+    const ts = raw.length >= 13 ? Number(raw) / 1000 : Number(raw);
+    const d = new Date(ts * 1000);
+    if (!Number.isNaN(d.getTime())) {
+      return d.toLocaleString("zh-CN", { hour12: false, month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" });
+    }
+  }
+  const parsed = Date.parse(raw);
+  if (!Number.isNaN(parsed)) {
+    return new Date(parsed).toLocaleString("zh-CN", { hour12: false, month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" });
+  }
+  return raw.length > 16 ? raw.slice(0, 16) : raw;
+}
+
 export function NewsRadar() {
   const [topic, setTopic] = useState<string>("");
   const [query, setQuery] = useState("");
@@ -196,7 +214,7 @@ export function NewsRadar() {
                     ) : null}
                     <span className="text-[11px] text-muted-foreground">{item.source || "—"}</span>
                     <span className="text-[11px] text-muted-foreground">
-                      {item.published || ""}
+                      {formatPublished(item.published)}
                     </span>
                     <span className="text-[10px] text-muted-foreground/80">
                       {signalLabel(item.signal)}
@@ -232,8 +250,7 @@ export function NewsRadar() {
       <AiInsightPanel
         kind="news"
         title="AI 资讯扫描"
-        autoRun={articles.length > 0}
-        runKey={stamp}
+        autoRun={false}
         payload={{ articles }}
       />
 

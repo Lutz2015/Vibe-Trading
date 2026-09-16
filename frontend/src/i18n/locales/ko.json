@@ -422,7 +422,11 @@
       "stoppedToast": "IM 채널이 중지되었습니다",
       "refreshFailed": "IM 채널 새로 고침 실패",
       "startFailed": "IM 채널 시작 실패",
-      "stopFailed": "IM 채널 중지 실패"
+      "stopFailed": "IM 채널 중지 실패",
+      "configPath": "설정 파일: ~/.person-trading/agent.json",
+      "configHint": "channels에서 어댑터(telegram, feishu 등)를 활성화한 뒤 저장하고 여기서「채널 시작」을 클릭하세요. 페어링: /pairing",
+      "showExample": "예시 보기",
+      "hideExample": "예시 숨기기"
     },
     "generation": "생성 설정",
     "dataSourceSettings": "데이터 소스 설정",
@@ -611,7 +615,12 @@
     "resumeConnector": "커넥터 재개",
     "resumeConnectorTitle": "킬 스위치를 해제하고 커넥터 활동을 재개",
     "connectorResumed": "커넥터가 재개되었습니다",
-    "failedToResumeConnector": "커넥터 재개에 실패했습니다."
+    "failedToResumeConnector": "커넥터 재개에 실패했습니다.",
+    "mandateReturnToast": "Mandate가 확인되었습니다 — 전략 라이브러리로 돌아가 배포를 계속합니다"
+  },
+  "strategyLibraryPage": {
+    "mandateCommittedToast": "Mandate가 확인되었습니다 — 아래에서 Runner를 시작할 수 있습니다",
+    "openStrategyFailed": "전략을 열 수 없습니다 — 삭제되었을 수 있습니다"
   },
   "runDetail": {
     "title": "실행 상세",

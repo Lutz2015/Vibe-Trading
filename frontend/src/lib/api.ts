@@ -438,7 +438,10 @@ export const api = {
       method: "POST",
       body: JSON.stringify(body),
     }),
-  getGoal: (sid: string) => request<GoalSnapshot>(`/sessions/${sid}/goal`),
+  getGoal: async (sid: string): Promise<GoalSnapshot | null> => {
+    const data = await request<GoalSnapshot>(`/sessions/${sid}/goal`);
+    return data?.goal ? data : null;
+  },
   updateGoal: (sid: string, body: UpdateGoalRequest) =>
     request<UpdateGoalResponse>(`/sessions/${sid}/goal`, {
       method: "PATCH",
@@ -555,6 +558,8 @@ export const api = {
     return request<NewsRadarResponse>(`/news/radar${qs ? `?${qs}` : ""}`);
   },
 
+  fetchSentiment: () => request<SentimentResponse>("/sentiment/thermometer"),
+
   // One-shot Agent insight for overview / news / sentiment / logic-chain pages
   analyzeInsight: (body: {
     kind: "market" | "news" | "sentiment" | "logic_chain";
@@ -602,6 +607,7 @@ export const api = {
     language?: string;
     current_code?: string;
     mode?: "generate" | "improve" | "explain";
+    history?: Array<{ role: "user" | "assistant"; content: string }>;
   }) =>
     request<StrategyAiResponse>("/strategies/ai", {
       method: "POST",
@@ -1824,6 +1830,31 @@ export interface NewsRadarResponse {
   topics: string[];
   as_of: string;
   source_notes: string[];
+}
+
+export interface SentimentItem {
+  id: string;
+  title: string;
+  source: string;
+  category: string;
+  probability: number;
+  delta24h: number;
+  horizon: string;
+  note?: string | null;
+  event_id?: string | null;
+  market_id?: string | null;
+  error?: string | null;
+}
+
+export interface SentimentResponse {
+  items: SentimentItem[];
+  composite: number;
+  as_of: string;
+  source: string;
+  mode?: "prediction" | "market_proxy" | "hybrid" | string;
+  cached?: boolean;
+  partial?: boolean;
+  source_notes?: string[];
 }
 
 export interface StrategyItem {

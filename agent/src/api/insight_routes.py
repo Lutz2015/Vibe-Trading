@@ -124,12 +124,11 @@ def _logic_chain_brief(payload: Dict[str, Any]) -> str:
 
 
 def _live_market_news_context() -> str:
-    """Pull a short live snapshot (hot boards/stocks + headlines) for chain gen."""
+    """Pull a short snapshot from in-process caches (no slow EM news rebuild)."""
     try:
-        from src.api.market_routes import _build_news, get_overview_snapshot
+        from src.api.market_routes import _fetch_sina_roll, get_overview_snapshot
 
         overview = get_overview_snapshot()
-        news = _build_news(limit=12, q=None, topic=None)
         lines: List[str] = []
         for row in (overview.get("hot_boards") or [])[:6]:
             leaders = row.get("leaders") or []
@@ -144,8 +143,13 @@ def _live_market_news_context() -> str:
             )
         for row in (overview.get("hot_stocks") or [])[:8]:
             lines.append(f"个股 {row.get('name')} {row.get('change_pct')}%")
-        for row in (news.articles or [])[:8]:
-            lines.append(f"新闻 {row.title}")
+        try:
+            for row in (_fetch_sina_roll(8) or [])[:8]:
+                title = row.get("title") if isinstance(row, dict) else None
+                if title:
+                    lines.append(f"新闻 {title}")
+        except Exception:  # noqa: BLE001 — headlines are optional context
+            pass
         return "\n".join(lines)[:1500]
     except Exception as exc:  # noqa: BLE001
         logger.warning("live context failed: %s", exc)
@@ -280,8 +284,6 @@ def register_insight_routes(
             ) from exc
 
         def _run() -> InsightResponse:
-            from src.providers.chat import ChatLLM
-
             # Align process env with the configured provider (Moonshot etc.) so
             # ChatOpenAI does not require a bare OPENAI_API_KEY when another
             # provider is selected. Desktop injects provider keys via env; this
@@ -295,7 +297,16 @@ def register_insight_routes(
             except Exception:  # noqa: BLE001 — still attempt ChatLLM
                 logger.debug("provider env sync skipped", exc_info=True)
 
-            llm = ChatLLM()
+            from src.providers.chat import try_chat_llm
+
+            llm, init_error = try_chat_llm()
+            if init_error or llm is None:
+                return InsightResponse(
+                    ok=False,
+                    kind=kind,
+                    text="",
+                    error=init_error or "LLM 未就绪",
+                )
             try:
                 response = llm.chat(messages, timeout=90)
                 text = (getattr(response, "content", None) or str(response) or "").strip()

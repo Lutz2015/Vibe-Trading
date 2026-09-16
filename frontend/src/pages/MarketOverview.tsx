@@ -208,8 +208,7 @@ export function MarketOverview() {
       <AiInsightPanel
         kind="market"
         title="AI 市场解读"
-        autoRun={Boolean(data && (data.hot_boards?.length || data.hot_stocks?.length))}
-        runKey={stamp}
+        autoRun={false}
         payload={{
           indices: data?.indices || [],
           hot_boards: data?.hot_boards || [],

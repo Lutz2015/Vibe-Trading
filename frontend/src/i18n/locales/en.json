@@ -427,7 +427,11 @@
       "stoppedToast": "IM channels stopped",
       "refreshFailed": "Failed to refresh IM channels",
       "startFailed": "Failed to start IM channels",
-      "stopFailed": "Failed to stop IM channels"
+      "stopFailed": "Failed to stop IM channels",
+      "configPath": "Config file: ~/.person-trading/agent.json",
+      "configHint": "Enable adapters under channels (telegram, feishu, discord, …), save, then click Start channels here. Pairing: /pairing",
+      "showExample": "Show example",
+      "hideExample": "Hide example"
     },
     "generation": "Generation",
     "dataSourceSettings": "Data Source Settings",
@@ -616,7 +620,12 @@
     "resumeConnector": "Resume connector",
     "resumeConnectorTitle": "Clear the kill switch and re-enable connector activity",
     "connectorResumed": "Connector resumed",
-    "failedToResumeConnector": "Failed to resume connector."
+    "failedToResumeConnector": "Failed to resume connector.",
+    "mandateReturnToast": "Mandate confirmed — returning to Strategy Library to continue deployment"
+  },
+  "strategyLibraryPage": {
+    "mandateCommittedToast": "Mandate confirmed — you can start the Runner below",
+    "openStrategyFailed": "Could not open strategy — it may have been deleted"
   },
   "runDetail": {
     "title": "Run Detail",

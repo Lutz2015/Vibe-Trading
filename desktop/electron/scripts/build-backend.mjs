@@ -214,7 +214,13 @@ async function main() {
   await cp(frontendDist, path.join(runtimeFrontendParent, "dist"), { recursive: true });
 
   await cp(path.join(repoRoot, "LICENSE"), path.join(runtimeRoot, "Person-Trading-LICENSE.txt"));
-  await cp(path.join(repoRoot, "NOTICE"), path.join(runtimeRoot, "Person-Trading-NOTICE.txt"));
+  const noticeSrc = path.join(repoRoot, "NOTICE");
+  try {
+    await access(noticeSrc);
+    await cp(noticeSrc, path.join(runtimeRoot, "Person-Trading-NOTICE.txt"));
+  } catch {
+    console.warn("NOTICE missing at repo root; skipping Person-Trading-NOTICE.txt");
+  }
 
   // Prune packaged test suites (same policy as the Windows runtime).
   const testDirNames = new Set(["test", "tests"]);

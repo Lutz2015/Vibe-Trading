@@ -244,26 +244,48 @@ export function LogicChain() {
     dragRef.current = null;
   };
 
+  const [editNodeState, setEditNodeState] = useState<ChainNode | null>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editBody, setEditBody] = useState("");
+
   const editNode = (node: ChainNode) => {
-    const title = window.prompt("节点标题", node.title);
-    if (title == null) return;
-    const body = window.prompt("节点描述", node.body);
+    setEditNodeState(node);
+    setEditTitle(node.title);
+    setEditBody(node.body);
+  };
+
+  const saveEditNode = () => {
+    if (!editNodeState) return;
     updateActive((c) => ({
       ...c,
       nodes: c.nodes.map((n) =>
-        n.id === node.id
-          ? { ...n, title: title.trim() || n.title, body: body ?? n.body }
+        n.id === editNodeState.id
+          ? {
+              ...n,
+              title: editTitle.trim() || n.title,
+              body: editBody,
+            }
           : n,
       ),
     }));
+    setEditNodeState(null);
   };
 
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
+  const [aiModalOpen, setAiModalOpen] = useState(false);
+  const [aiTopic, setAiTopic] = useState("");
 
-  const generateWithAi = async () => {
-    const topic = window.prompt("逻辑链主题", active.name || "今日热点");
-    if (!topic?.trim()) return;
+  const openAiModal = () => {
+    setAiTopic(active.name || "今日热点");
+    setAiError(null);
+    setAiModalOpen(true);
+  };
+
+  const generateWithAi = async (topicInput?: string) => {
+    const topic = (topicInput ?? aiTopic).trim();
+    if (!topic) return;
+    setAiModalOpen(false);
     setAiLoading(true);
     setAiError(null);
     try {
@@ -348,7 +370,7 @@ export function LogicChain() {
         </div>
         <button
           type="button"
-          onClick={() => void generateWithAi()}
+          onClick={openAiModal}
           disabled={aiLoading}
           className="inline-flex items-center gap-1.5 rounded-md border border-primary/40 bg-primary/10 px-2.5 py-1.5 text-xs text-primary hover:bg-primary/20 disabled:opacity-60"
         >
@@ -369,9 +391,106 @@ export function LogicChain() {
         </button>
       </div>
 
+      {aiLoading ? (
+        <div className="flex items-center gap-2 rounded-md border border-primary/30 bg-primary/5 px-3 py-2 text-xs text-primary">
+          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+          AI 正在生成逻辑链（约 15–60 秒，依赖 LLM 与热点缓存）…
+        </div>
+      ) : null}
+
       {aiError ? (
         <div className="rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-600 dark:text-amber-300">
           {aiError}
+        </div>
+      ) : null}
+
+      {editNodeState ? (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="logic-chain-edit-title"
+        >
+          <div className="w-full max-w-md rounded-xl border bg-card p-4 shadow-lg">
+            <h2 id="logic-chain-edit-title" className="text-sm font-semibold">
+              编辑节点
+            </h2>
+            <label className="mt-3 block text-xs text-muted-foreground">标题</label>
+            <input
+              value={editTitle}
+              onChange={(e) => setEditTitle(e.target.value)}
+              autoFocus
+              className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm outline-none focus:border-primary"
+            />
+            <label className="mt-3 block text-xs text-muted-foreground">描述</label>
+            <textarea
+              value={editBody}
+              onChange={(e) => setEditBody(e.target.value)}
+              rows={3}
+              className="mt-1 w-full resize-y rounded-md border bg-background px-3 py-2 text-sm outline-none focus:border-primary"
+            />
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setEditNodeState(null)}
+                className="rounded-md border px-3 py-1.5 text-xs text-muted-foreground hover:bg-muted"
+              >
+                取消
+              </button>
+              <button
+                type="button"
+                onClick={saveEditNode}
+                className="rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground"
+              >
+                保存
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {aiModalOpen ? (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="logic-chain-ai-title"
+        >
+          <div className="w-full max-w-md rounded-xl border bg-card p-4 shadow-lg">
+            <h2 id="logic-chain-ai-title" className="text-sm font-semibold">
+              AI 生成逻辑链
+            </h2>
+            <p className="mt-1 text-xs text-muted-foreground">
+              输入主题，AI 将结合缓存中的热点板块/个股与快讯生成节点。
+            </p>
+            <input
+              value={aiTopic}
+              onChange={(e) => setAiTopic(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") void generateWithAi();
+              }}
+              autoFocus
+              placeholder="例如：算力国产化、人形机器人量产"
+              className="mt-3 w-full rounded-md border bg-background px-3 py-2 text-sm outline-none focus:border-primary"
+            />
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setAiModalOpen(false)}
+                className="rounded-md border px-3 py-1.5 text-xs text-muted-foreground hover:bg-muted"
+              >
+                取消
+              </button>
+              <button
+                type="button"
+                onClick={() => void generateWithAi()}
+                disabled={!aiTopic.trim()}
+                className="rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground disabled:opacity-50"
+              >
+                开始生成
+              </button>
+            </div>
+          </div>
         </div>
       ) : null}
 

@@ -422,7 +422,11 @@
       "stoppedToast": "تم إيقاف قنوات IM",
       "refreshFailed": "فشل تحديث قنوات IM",
       "startFailed": "فشل بدء قنوات IM",
-      "stopFailed": "فشل إيقاف قنوات IM"
+      "stopFailed": "فشل إيقاف قنوات IM",
+      "configPath": "ملف الإعداد: ~/.person-trading/agent.json",
+      "configHint": "فعّل المحولات ضمن channels (telegram وfeishu وغيرها)، احفظ، ثم اضغط «بدء القنوات» هنا. الاقتران: /pairing",
+      "showExample": "عرض مثال",
+      "hideExample": "إخفاء المثال"
     },
     "generation": "إعدادات التوليد",
     "dataSourceSettings": "إعدادات مصادر البيانات",
@@ -611,7 +615,12 @@
     "resumeConnector": "استئناف الموصل",
     "resumeConnectorTitle": "مسح مفتاح الإيقاف واستئناف نشاط الموصل",
     "connectorResumed": "تم استئناف الموصل",
-    "failedToResumeConnector": "فشل استئناف الموصل."
+    "failedToResumeConnector": "فشل استئناف الموصل.",
+    "mandateReturnToast": "تم تأكيد التفويض — العودة إلى مكتبة الاستراتيجيات لمتابعة النشر"
+  },
+  "strategyLibraryPage": {
+    "mandateCommittedToast": "تم تأكيد التفويض — يمكنك تشغيل Runner أدناه",
+    "openStrategyFailed": "تعذّر فتح الاستراتيجية — ربما تم حذفها"
   },
   "runDetail": {
     "title": "تفاصيل التشغيل",

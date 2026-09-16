@@ -47,6 +47,17 @@ npm run installer:mac:review # unsigned dmg + zip + SHA256SUMS-mac-arm64.txt
 
 Artifacts land in `desktop/electron/release/`.
 
+## Debug console (unofficial builds)
+
+The community Mac build includes a debug mode for inspecting network requests and
+JavaScript errors:
+
+- **⌘ + Option + I** — toggle Chromium DevTools (Network / Console tabs)
+- **F12** — same toggle
+- Menu: **View → Developer tools**
+
+Force-enable on any build with `--debug` or `VIBE_TRADING_DESKTOP_DEBUG=1`.
+
 ## Opening the unsigned app
 
 Gatekeeper will block a downloaded unsigned `.app`. On a machine you control:

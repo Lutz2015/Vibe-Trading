@@ -32,6 +32,8 @@ interface Props {
   halted?: boolean;
   /** Forces the parent to re-poll immediately (e.g. after a runner start/stop). */
   onRefresh: () => void;
+  /** Expand the broker list on first render (e.g. strategy deploy page). */
+  defaultOpen?: boolean;
 }
 
 function formatUsd(value: number | undefined): string {
@@ -336,8 +338,14 @@ export function isVisibleRuntimeConnector(broker: LiveBrokerStatus): boolean {
   return auth.connection_state === "connected" || auth.connection_state === "ready";
 }
 
-export const RunnerStatus = memo(function RunnerStatus({ status, unavailable, halted, onRefresh }: Props) {
-  const [open, setOpen] = useState(false);
+export const RunnerStatus = memo(function RunnerStatus({
+  status,
+  unavailable,
+  halted,
+  onRefresh,
+  defaultOpen = false,
+}: Props) {
+  const [open, setOpen] = useState(defaultOpen);
   const [, setVisibilityRefresh] = useState(0);
   const visibleBrokers = status?.brokers.filter(isVisibleRuntimeConnector) ?? [];
 

@@ -321,6 +321,19 @@ def _parse_dsml_tool_calls(content: Any) -> list[ToolCallRequest]:
     return tool_calls
 
 
+def try_chat_llm(model_name: Optional[str] = None) -> tuple["ChatLLM | None", str | None]:
+    """Construct ChatLLM or return a user-facing error string (never raises)."""
+    try:
+        return ChatLLM(model_name=model_name), None
+    except Exception as exc:  # noqa: BLE001 — surface to API callers as ok=false
+        raw = str(exc)
+        if "LANGCHAIN_MODEL_NAME" in raw or "LANGCHAIN_PROVIDER" in raw:
+            return None, "未配置 LLM：请在「设置」中填写提供商、模型与 API 密钥后重试。"
+        if "api_key" in raw.lower() or "OPENAI_API_KEY" in raw:
+            return None, "未配置 LLM API 密钥，请先在「设置」中保存。"
+        return None, raw[:300]
+
+
 class ChatLLM:
     """LLM chat client with function calling support.
 

@@ -73,11 +73,17 @@ class StrategyListResponse(BaseModel):
     groups: List[str] = Field(default_factory=list)
 
 
+class StrategyAiMessage(BaseModel):
+    role: str = Field(..., pattern=r"^(user|assistant)$")
+    content: str = Field(..., min_length=1)
+
+
 class StrategyAiRequest(BaseModel):
     prompt: str = Field(..., min_length=1)
     language: str = "python"
     current_code: str = ""
     mode: str = "generate"  # generate | improve | explain
+    history: List[StrategyAiMessage] = Field(default_factory=list)
 
 
 class StrategyAiResponse(BaseModel):
@@ -240,22 +246,31 @@ def register_strategy_library_routes(
             "generate": "请根据需求生成完整策略代码：",
         }.get(body.mode, "请根据需求生成完整策略代码：")
 
-        messages = [
-            {"role": "system", "content": _SYSTEM},
-            {
-                "role": "user",
-                "content": (
-                    f"{lang_hint}\n{mode_hint}\n"
-                    f"需求：{body.prompt.strip()}\n"
-                    + (f"现有代码：\n```\n{body.current_code[:4000]}\n```" if body.current_code else "")
-                ),
-            },
-        ]
+        user_content = (
+            f"{lang_hint}\n{mode_hint}\n"
+            f"需求：{body.prompt.strip()}\n"
+            + (f"现有代码：\n```\n{body.current_code[:4000]}\n```" if body.current_code else "")
+        )
+        messages: List[Dict[str, str]] = [{"role": "system", "content": _SYSTEM}]
+        for entry in (body.history or [])[-10:]:
+            messages.append({"role": entry.role, "content": entry.content[:2000]})
+        messages.append({"role": "user", "content": user_content})
 
         def _run() -> StrategyAiResponse:
-            from src.providers.chat import ChatLLM
+            try:
+                from src.providers.llm import _sync_provider_env
+                from src.config.accessor import reset_env_config
 
-            llm = ChatLLM()
+                reset_env_config()
+                _sync_provider_env()
+            except Exception:  # noqa: BLE001
+                logger.debug("provider env sync skipped", exc_info=True)
+
+            from src.providers.chat import try_chat_llm
+
+            llm, init_error = try_chat_llm()
+            if init_error or llm is None:
+                return StrategyAiResponse(ok=False, error=init_error or "LLM 未就绪", language=lang)
             try:
                 response = llm.chat(messages, timeout=90)
                 text = (getattr(response, "content", None) or str(response) or "").strip()

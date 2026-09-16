@@ -54,6 +54,7 @@ export function Settings() {
   const [saving, setSaving] = useState(false);
   const [dataSaving, setDataSaving] = useState(false);
   const [channelRefreshing, setChannelRefreshing] = useState(false);
+  const [channelExampleOpen, setChannelExampleOpen] = useState(false);
   const [channelAction, setChannelAction] = useState<"start" | "stop" | null>(null);
   const [settingsLoadError, setSettingsLoadError] = useState<string | null>(null);
 
@@ -380,6 +381,30 @@ export function Settings() {
             <h2 className="text-base font-semibold">{t("settings.channels.title")}</h2>
           </div>
           <p className="max-w-3xl text-sm text-muted-foreground">{t("settings.channels.description")}</p>
+          <p className="max-w-3xl text-xs text-muted-foreground">{t("settings.channels.configPath")}</p>
+          <p className="max-w-3xl text-xs text-muted-foreground">{t("settings.channels.configHint")}</p>
+          <button
+            type="button"
+            onClick={() => setChannelExampleOpen((v) => !v)}
+            className="text-xs text-primary hover:underline"
+          >
+            {channelExampleOpen ? t("settings.channels.hideExample") : t("settings.channels.showExample")}
+          </button>
+          {channelExampleOpen ? (
+            <pre className="max-w-3xl overflow-x-auto rounded-md border bg-muted/30 p-3 text-[11px] leading-relaxed text-muted-foreground">
+{`{
+  "channels": {
+    "operators": ["YOUR_TELEGRAM_USER_ID"],
+    "telegram": {
+      "enabled": true,
+      "token": "BOT_TOKEN",
+      "allow_from": ["YOUR_TELEGRAM_USER_ID"],
+      "group_policy": "mention"
+    }
+  }
+}`}
+            </pre>
+          ) : null}
         </div>
         <div className="flex flex-wrap gap-2">
           <button
