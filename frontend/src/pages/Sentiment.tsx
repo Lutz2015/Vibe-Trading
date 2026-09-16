@@ -1,29 +1,31 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Activity, RefreshCw } from "lucide-react";
+import { Activity, RefreshCw, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { api, type SentimentItem } from "@/lib/api";
 import { AiInsightPanel } from "@/components/common/AiInsightPanel";
+import { useTranslation } from "react-i18next";
+import type { TFunction } from "i18next";
 
-function heat(probability: number): { label: string; color: string; bar: string } {
+function heat(probability: number, t: TFunction): { label: string; color: string; bar: string } {
   if (probability >= 70) {
-    return { label: "过热", color: "text-rose-400", bar: "bg-rose-500" };
+    return { label: t("sentimentPage.overheated"), color: "text-rose-400", bar: "bg-rose-500" };
   }
   if (probability >= 55) {
-    return { label: "偏热", color: "text-orange-400", bar: "bg-orange-500" };
+    return { label: t("sentimentPage.hot"), color: "text-orange-400", bar: "bg-orange-500" };
   }
   if (probability >= 40) {
-    return { label: "中性", color: "text-amber-300", bar: "bg-amber-400" };
+    return { label: t("sentimentPage.neutral"), color: "text-amber-300", bar: "bg-amber-400" };
   }
   if (probability >= 25) {
-    return { label: "偏冷", color: "text-sky-400", bar: "bg-sky-500" };
+    return { label: t("sentimentPage.cool"), color: "text-sky-400", bar: "bg-sky-500" };
   }
-  return { label: "冰冷", color: "text-cyan-300", bar: "bg-cyan-400" };
+  return { label: t("sentimentPage.cold"), color: "text-cyan-300", bar: "bg-cyan-400" };
 }
 
-function Gauge({ value }: { value: number }) {
+function Gauge({ value, t }: { value: number; t: TFunction }) {
   const clamped = Math.max(0, Math.min(100, value));
   const angle = -90 + (clamped / 100) * 180;
-  const h = heat(clamped);
+  const h = heat(clamped, t);
   return (
     <div className="flex flex-col items-center">
       <div className="relative h-36 w-56">
@@ -65,7 +67,7 @@ function Gauge({ value }: { value: number }) {
           <div className={cn("text-3xl font-bold tabular-nums", h.color)}>
             {clamped.toFixed(0)}
           </div>
-          <div className="text-xs text-muted-foreground">综合预期温度 · {h.label}</div>
+          <div className="text-xs text-muted-foreground">{t("sentimentPage.composite") } · {h.label}</div>
         </div>
       </div>
     </div>
@@ -73,6 +75,7 @@ function Gauge({ value }: { value: number }) {
 }
 
 export function Sentiment() {
+  const { t } = useTranslation();
   const [items, setItems] = useState<SentimentItem[]>([]);
   const [composite, setComposite] = useState(50);
   const [source, setSource] = useState("polymarket");
@@ -134,14 +137,14 @@ export function Sentiment() {
         <div>
           <div className="flex items-center gap-2">
             <Activity className="h-6 w-6 text-primary" />
-            <h1 className="text-2xl font-bold">情绪温度计</h1>
+          <h1 className="text-2xl font-bold">{t("sentimentPage.title")}</h1>
           </div>
           <p className="mt-1 text-sm text-muted-foreground">
             {mode === "market_proxy"
-              ? "东财热点板块 / 指数代理 · 预测市场不可达时自动切换 · 5 分钟缓存"
+              ? t("sentimentPage.subtitleProxy")
               : mode === "hybrid"
-                ? "Polymarket 可用项 + A 股行情代理补全 · 5 分钟缓存"
-                : "Polymarket / Kalshi 公开预测市场 · 宏观预期概率 · 5 分钟缓存"}
+                ? t("sentimentPage.subtitleHybrid")
+                : t("sentimentPage.subtitlePrediction")}
           </p>
         </div>
         <button
@@ -151,7 +154,7 @@ export function Sentiment() {
           className="inline-flex items-center gap-2 rounded-md border px-3 py-2 text-sm text-muted-foreground hover:bg-muted disabled:opacity-60"
         >
           <RefreshCw className={cn("h-4 w-4", refreshing && "animate-spin")} />
-          刷新
+           {t("common.refresh", { defaultValue: "Refresh" })}
         </button>
       </div>
 
@@ -173,11 +176,23 @@ export function Sentiment() {
         </div>
       ) : null}
 
+      {source && items.length ? (
+        <div className="flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
+          <span className="inline-flex items-center gap-1 rounded-full border px-2 py-1">
+            <Info className="h-3 w-3" /> {t("sentimentPage.validTopics", { valid: items.filter((item) => !item.error && item.probability > 0).length, total: items.length })}
+          </span>
+          {source.split("+").map((item) => (
+            <span key={item} className="rounded-full bg-muted px-2 py-1">{item}</span>
+          ))}
+          {residualSourceNotes(items).map((note) => <span key={note}>{note}</span>)}
+        </div>
+      ) : null}
+
       <section className="rounded-2xl border bg-card p-6 shadow-sm">
         <div className="grid items-center gap-6 md:grid-cols-[280px_1fr]">
-          <Gauge value={composite} />
+          <Gauge value={composite} t={t} />
           <div className="space-y-3">
-            <h2 className="text-sm font-semibold">解读</h2>
+            <h2 className="text-sm font-semibold">{t("sentimentPage.interpretation")}</h2>
             <p className="text-sm leading-relaxed text-muted-foreground">
               {mode === "market_proxy"
                 ? "综合温度由六项代理指标加权：指数/板块强弱映射到降息、衰退、政策、AI、能源与风险偏好等维度。数值越高代表短线市场风险偏好越强。"
@@ -201,7 +216,7 @@ export function Sentiment() {
             ))
           : items.map((item) => {
               const ok = !item.error && item.probability > 0;
-              const h = heat(ok ? item.probability : 50);
+              const h = heat(ok ? item.probability : 50, t);
               const up = item.delta24h >= 0;
               return (
                 <article key={item.id} className="rounded-xl border bg-card p-4 shadow-sm">
@@ -255,7 +270,7 @@ export function Sentiment() {
 
       <AiInsightPanel
         kind="sentiment"
-        title="AI 情绪解读"
+        title={t("sentimentPage.aiInsight")}
         autoRun={false}
         payload={insightPayload}
       />
@@ -266,4 +281,9 @@ export function Sentiment() {
       </p>
     </div>
   );
+}
+
+function residualSourceNotes(items: SentimentItem[]): string[] {
+  const notes = new Set(items.flatMap((item) => (item.note ? [item.note] : [])));
+  return [...notes].slice(0, 2);
 }

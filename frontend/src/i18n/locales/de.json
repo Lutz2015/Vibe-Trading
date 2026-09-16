@@ -39,7 +39,8 @@
     "logicChain": "Logikkette",
     "sentiment": "Stimmung",
     "newsRadar": "Nachrichten-Radar",
-    "strategyLibrary": "Strategie-Bibliothek"
+    "strategyLibrary": "Strategie-Bibliothek",
+    "quantDesk": "Quant Desk"
   },
   "runtime": {
     "monitorBadge": "Runtime-Monitor",
@@ -1642,5 +1643,9 @@
       "delete": "Löschen",
       "configured": "Erforderliche Zugangsdaten konfiguriert"
     }
-  }
+  },
+  "marketPage": {"title":"Marktüberblick","subtitle":"Live-Indizes · heiße Sektoren · Gewinner · öffentliche Marktdaten (60-Sekunden-Update)","noData":"Keine Daten","name":"Name","price":"Preis","change":"Änderung","concept":"Thema","industry":"Branche","cached":"Gecachte Daten","source":"Quelle: {{source}}","indices":"Indizes","up":"Steigend","down":"Fallend","flat":"Unverändert","hotBoards":"Heiße Sektoren und Themen","noBoards":"Keine Branchendaten","hotStocks":"Top-Gewinner","hotStocksNote":"Führende A-Aktien (ST ausgeschlossen)","aiInsight":"KI-Marktinterpretation","snapshotNote":"Öffentlicher Marktsnapshot, kein handelbarer Kurs"},
+  "sentimentPage": {"title":"Stimmungsthermometer","subtitleProxy":"Marktproxy · Prognosemärkte nicht erreichbar · 5-Minuten-Cache","subtitleHybrid":"Prognosemärkte plus A-Aktien-Proxy · 5-Minuten-Cache","subtitlePrediction":"Öffentliche Prognosemärkte · Makroerwartungen · 5-Minuten-Cache","composite":"Gesamttemperatur","validTopics":"{{valid}}/{{total}} Themen gültig","interpretation":"Interpretation","aiInsight":"KI-Stimmungsanalyse","overheated":"Überhitzt","hot":"Warm","neutral":"Neutral","cool":"Kühl","cold":"Kalt"}
+  ,"logicPage":{"title":"Logikkette","subtitle":"Auslöser → Übertragung → Sektor → Aktie","generate":"Mit KI generieren","restore":"Beispiel wiederherstellen","draft":"Strategieentwurf erstellen","addNode":"Knoten hinzufügen","delete":"Auswahl löschen","linking":"Verknüpfen: Zielknoten anklicken","edit":"Knoten bearbeiten","save":"Speichern","cancel":"Abbrechen","newChain":"Neue Kette","aiTitle":"Logikkette generieren","aiHint":"Live-Nachrichten und Marktthemen verbinden","start":"Generierung starten","empty":"Auslöser-, Logik-, Sektor- oder Aktienknoten hinzufügen"}
+  ,"strategyPage":{"title":"Strategie-Bibliothek","subtitle":"Von Idee und Code bis Backtest und Paper Runner","new":"Neue Strategie","refresh":"Aktualisieren","all":"Alle","allKinds":"Alle Typen","search":"Name, Beschreibung oder Code suchen","name":"Name","updated":"Zuletzt geändert","created":"Erstellt","actions":"Aktionen","edit":"Bearbeiten","duplicate":"Duplizieren","remove":"Löschen","backtest":"Backtest","register":"Qbit registrieren","empty":"Keine Strategien","backtestTitle":"Qbit-Parameter-Backtest","run":"Ausführen","history":"Backtest-Verlauf","hideHistory":"Verlauf ausblenden","noHistory":"Kein Verlauf","back":"Zur Strategieliste","editor":"Strategieeditor","simulate":"Simulation","saving":"Speichern…","save":"Speichern","code":"Code","notes":"Notizen","description":"Beschreibung","assistant":"Quant-Strategieassistent","assistantHint":"Dialogbearbeitung · Code wird live aktualisiert","generating":"Generieren…","strategyName":"Strategiename","notePlaceholder":"Notizen, Tuning und Risiken…","descriptionPlaceholder":"Beschreibung und Einsatzszenarien…","runnerStart":"Runner starten","runnerStop":"Runner stoppen"}
 }

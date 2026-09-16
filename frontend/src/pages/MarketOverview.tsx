@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { RefreshCw, TrendingUp, TrendingDown, Flame } from "lucide-react";
+import { RefreshCw, TrendingUp, TrendingDown, Flame, Activity, Clock3 } from "lucide-react";
 import { AiInsightPanel } from "@/components/common/AiInsightPanel";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
+import type { TFunction } from "i18next";
 import {
   api,
   type HotBoard as HotBoardItem,
@@ -33,10 +35,10 @@ function ChangeBadge({ value }: { value?: number | null }) {
   );
 }
 
-function QuoteTable({ rows, dense }: { rows: MarketQuoteItem[]; dense?: boolean }) {
+function QuoteTable({ rows, dense, t }: { rows: MarketQuoteItem[]; dense?: boolean; t: TFunction }) {
   if (!rows.length) {
     return (
-      <p className="px-4 py-3 text-xs text-muted-foreground">暂无数据</p>
+      <p className="px-4 py-3 text-xs text-muted-foreground">{t("marketPage.noData")}</p>
     );
   }
   return (
@@ -44,9 +46,9 @@ function QuoteTable({ rows, dense }: { rows: MarketQuoteItem[]; dense?: boolean 
       <table className="w-full text-sm">
         <thead>
           <tr className="text-xs text-muted-foreground">
-            <th className="px-3 py-1.5 text-start font-medium">名称</th>
-            <th className="px-2 py-1.5 text-end font-medium">现价</th>
-            <th className="px-3 py-1.5 text-end font-medium">涨跌</th>
+            <th className="px-3 py-1.5 text-start font-medium">{t("marketPage.name")}</th>
+            <th className="px-2 py-1.5 text-end font-medium">{t("marketPage.price")}</th>
+            <th className="px-3 py-1.5 text-end font-medium">{t("marketPage.change")}</th>
           </tr>
         </thead>
         <tbody>
@@ -73,6 +75,7 @@ function QuoteTable({ rows, dense }: { rows: MarketQuoteItem[]; dense?: boolean 
 }
 
 function BoardCard({ board }: { board: HotBoardItem }) {
+  const { t } = useTranslation();
   return (
     <article className="rounded-xl border bg-card shadow-sm">
       <header className="flex items-start justify-between gap-2 border-b px-4 py-3">
@@ -82,18 +85,19 @@ function BoardCard({ board }: { board: HotBoardItem }) {
             <h3 className="text-sm font-semibold">{board.board_name}</h3>
           </div>
           <p className="mt-0.5 text-[11px] text-muted-foreground">
-            {board.kind === "concept" ? "概念板块" : "行业板块"}
+            {board.kind === "concept" ? t("marketPage.concept") : t("marketPage.industry")}
             {board.board_code ? ` · ${board.board_code}` : ""}
           </p>
         </div>
         <ChangeBadge value={board.change_pct} />
       </header>
-      <QuoteTable rows={board.leaders || []} dense />
+      <QuoteTable rows={board.leaders || []} dense t={t} />
     </article>
   );
 }
 
 export function MarketOverview() {
+  const { t } = useTranslation();
   const [data, setData] = useState<MarketOverviewResponse | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -126,6 +130,14 @@ export function MarketOverview() {
     () => (updatedAt ? updatedAt.toLocaleString("zh-CN", { hour12: false }) : "—"),
     [updatedAt],
   );
+  const breadth = useMemo(() => {
+    const valid = (data?.indices || []).filter((item) => item.change_pct != null);
+    return {
+      up: valid.filter((item) => (item.change_pct ?? 0) > 0).length,
+      down: valid.filter((item) => (item.change_pct ?? 0) < 0).length,
+      flat: valid.filter((item) => (item.change_pct ?? 0) === 0).length,
+    };
+  }, [data]);
 
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-5 p-6">
@@ -133,11 +145,18 @@ export function MarketOverview() {
         <div>
           <div className="flex items-center gap-2">
             <TrendingUp className="h-6 w-6 text-primary" />
-            <h1 className="text-2xl font-bold">市场总览</h1>
+            <h1 className="text-2xl font-bold">{t("marketPage.title")}</h1>
           </div>
           <p className="mt-1 text-sm text-muted-foreground">
-            实时大盘 · 热点行业/概念板块 · 涨幅榜个股 · 东方财富公开源（60s 刷新）
+            {t("marketPage.subtitle")}
           </p>
+          <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
+            <span className="inline-flex items-center gap-1 rounded-full border px-2 py-1">
+              <Clock3 className="h-3 w-3" /> {data?.as_of || stamp}
+            </span>
+            {data?.cached ? <span className="rounded-full bg-amber-500/10 px-2 py-1 text-amber-600">{t("marketPage.cached")}</span> : null}
+            {data?.source ? <span className="rounded-full bg-muted px-2 py-1">{t("marketPage.source", { source: data.source })}</span> : null}
+          </div>
         </div>
         <button
           type="button"
@@ -157,7 +176,19 @@ export function MarketOverview() {
       ) : null}
 
       <section>
-        <h2 className="mb-2 text-sm font-medium text-muted-foreground">大盘指数</h2>
+          <h2 className="mb-2 text-sm font-medium text-muted-foreground">{t("marketPage.indices")}</h2>
+        <div className="mb-3 grid grid-cols-3 gap-2 sm:max-w-md">
+          {[
+            [t("marketPage.up"), breadth.up, "text-rose-500"],
+            [t("marketPage.down"), breadth.down, "text-emerald-500"],
+            [t("marketPage.flat"), breadth.flat, "text-muted-foreground"],
+          ].map(([label, value, color]) => (
+            <div key={String(label)} className="rounded-lg border bg-card px-3 py-2 shadow-sm">
+              <div className="text-[10px] text-muted-foreground">{label}</div>
+              <div className={cn("mt-0.5 text-lg font-semibold tabular-nums", color)}>{value}</div>
+            </div>
+          ))}
+        </div>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7">
           {(data?.indices || []).map((idx) => (
             <article key={idx.symbol} className="rounded-xl border bg-card px-3 py-3 shadow-sm">
@@ -179,13 +210,13 @@ export function MarketOverview() {
       </section>
 
       <section className="flex flex-col gap-3">
-        <h2 className="text-sm font-medium text-muted-foreground">热点板块（涨幅居前）</h2>
+          <h2 className="text-sm font-medium text-muted-foreground">{t("marketPage.hotBoards")}</h2>
         <div className="grid gap-4 md:grid-cols-2">
           {(data?.hot_boards || []).map((board) => (
             <BoardCard key={board.board_code || board.board_name} board={board} />
           ))}
           {data && (data.hot_boards || []).length === 0 ? (
-            <p className="text-sm text-muted-foreground">暂无板块数据</p>
+            <p className="text-sm text-muted-foreground">{t("marketPage.noBoards")}</p>
           ) : null}
           {!data && !error
             ? [1, 2, 3, 4].map((i) => (
@@ -197,17 +228,17 @@ export function MarketOverview() {
 
       <section className="rounded-xl border bg-card shadow-sm">
         <header className="border-b px-4 py-3">
-          <h2 className="text-sm font-semibold">涨幅榜热门个股</h2>
+          <h2 className="text-sm font-semibold">{t("marketPage.hotStocks")}</h2>
           <p className="mt-0.5 text-xs text-muted-foreground">
-            A 股涨幅居前（已过滤 ST）
+            {t("marketPage.hotStocksNote")}
           </p>
         </header>
-        <QuoteTable rows={data?.hot_stocks || []} />
+        <QuoteTable rows={data?.hot_stocks || []} t={t} />
       </section>
 
       <AiInsightPanel
         kind="market"
-        title="AI 市场解读"
+        title={t("marketPage.aiInsight")}
         autoRun={false}
         payload={{
           indices: data?.indices || [],
@@ -215,6 +246,10 @@ export function MarketOverview() {
           hot_stocks: data?.hot_stocks || [],
         }}
       />
+
+      <div className="flex items-center justify-center gap-1 text-[11px] text-muted-foreground">
+        <Activity className="h-3 w-3" /> {t("marketPage.snapshotNote")}
+      </div>
 
       <p className="text-center text-[11px] text-muted-foreground">
         更新：{stamp} · 数据源：东方财富公开接口 · AI 解读依赖已配置的 LLM · 非投资建议

@@ -325,6 +325,10 @@ register_strategy_library_routes(app, require_local_or_auth=require_local_or_aut
 from src.api.sentiment_routes import register_sentiment_routes  # noqa: E402
 register_sentiment_routes(app, require_local_or_auth=require_local_or_auth)
 
+# --- Qbit quant platform (paper trading, risk, automation) ---
+from src.api.qbit_routes import register_qbit_routes  # noqa: E402
+register_qbit_routes(app, require_local_or_auth=require_local_or_auth)
+
 # --- Auth helpers (SSE tickets) ---
 from src.api.auth_routes import register_auth_routes  # noqa: E402
 register_auth_routes(app)

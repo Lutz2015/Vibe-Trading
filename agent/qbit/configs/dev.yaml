@@ -1,0 +1,13 @@
+env: "dev"
+
+service:
+  host: "127.0.0.1"
+  strategy_port: 8001
+  risk_port: 8002
+  execution_port: 8003
+  market_data_port: 8004
+  platform_port: 8000
+
+market_data:
+  provider: "joinquant"
+  fallback_provider: "sina"

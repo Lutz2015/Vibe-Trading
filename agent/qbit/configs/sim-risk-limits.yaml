@@ -1,0 +1,15 @@
+global:
+  trading_enabled: true
+  kill_switch: false
+  max_daily_loss_pct: 0.02
+  max_drawdown_pct: 0.08
+
+position:
+  max_single_symbol_weight: 0.25
+  max_total_exposure: 0.95
+
+order:
+  max_orders_per_minute: 20
+  max_slippage_bps: 30
+  submit_timeout_ms: 1500
+  cancel_retry_limit: 3

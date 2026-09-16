@@ -49,6 +49,9 @@ const NewsRadar = lazy(() =>
 const StrategyLibrary = lazy(() =>
   import("@/pages/StrategyLibrary").then((m) => ({ default: m.StrategyLibrary })),
 );
+const QuantDesk = lazy(() =>
+  import("@/pages/QuantDesk").then((m) => ({ default: m.QuantDesk })),
+);
 
 function PageLoader() {
   return (
@@ -87,6 +90,7 @@ export const router = createBrowserRouter([
       { path: "/sentiment", element: wrap(Sentiment) },
       { path: "/news", element: wrap(NewsRadar) },
       { path: "/strategies", element: wrap(StrategyLibrary) },
+      { path: "/quant-desk", element: wrap(QuantDesk) },
       { path: "/alpha-zoo", element: wrap(AlphaZoo) },
       { path: "/alpha-zoo/bench", element: wrap(AlphaZoo) },
       { path: "/alpha-zoo/compare", element: wrap(AlphaZoo) },

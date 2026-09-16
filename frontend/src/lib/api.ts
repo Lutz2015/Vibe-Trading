@@ -560,6 +560,69 @@ export const api = {
 
   fetchSentiment: () => request<SentimentResponse>("/sentiment/thermometer"),
 
+  // Qbit quant desk (embedded paper-trading stack at /qbit)
+  qbitHealth: () => request<QbitHealthResponse>("/qbit/health"),
+  qbitAutomationStatus: () => request<QbitAutomationStatus>("/qbit/automation/status"),
+  qbitLedgerSnapshot: () => request<QbitLedgerSnapshot>("/qbit/ledger/snapshot"),
+  qbitLedgerTrades: (limit = 50) =>
+    request<QbitTradeRecord[]>(`/qbit/ledger/trades?limit=${limit}`),
+  qbitRunCycle: (force = false) =>
+    request<QbitRunCycleResponse>("/qbit/automation/run-cycle", {
+      method: "POST",
+      body: JSON.stringify({ force, rebalance: true }),
+    }),
+  qbitResetLedger: (initialCash: number) =>
+    request<QbitLedgerSnapshot>("/qbit/ledger/reset", {
+      method: "POST",
+      body: JSON.stringify({ initial_cash: initialCash }),
+    }),
+  qbitStartAutomation: () =>
+    request<{ status: string }>("/qbit/automation/start", { method: "POST" }),
+  qbitStopAutomation: () =>
+    request<{ status: string }>("/qbit/automation/stop", { method: "POST" }),
+  qbitOpsStatus: () => request<QbitOpsStatus>("/qbit/ops/status"),
+  qbitKillSwitch: (enabled: boolean) =>
+    request<QbitOpsStatus>("/qbit/ops/kill-switch", {
+      method: "POST",
+      body: JSON.stringify({ enabled }),
+    }),
+  qbitTradingToggle: (enabled: boolean) =>
+    request<QbitOpsStatus>("/qbit/ops/trading-toggle", {
+      method: "POST",
+      body: JSON.stringify({ enabled }),
+    }),
+  qbitQuickBacktest: (body: {
+    symbol: string;
+    start: string;
+    end: string;
+    short_window?: number;
+    long_window?: number;
+  }) =>
+    request<Record<string, unknown>>("/qbit/backtest/quick", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+  qbitMonitoringMetrics: () =>
+    request<Record<string, number>>("/qbit/monitoring/metrics"),
+  qbitMonitoringAlerts: () =>
+    request<{
+      has_alerts: boolean;
+      alerts: Array<{
+        metric: string;
+        current_value: number;
+        threshold: number;
+        triggered: boolean;
+      }>;
+      metrics?: Record<string, number>;
+    }>("/qbit/monitoring/alerts"),
+  qbitStrategyRepository: () =>
+    request<Array<Record<string, unknown>>>("/qbit/strategy/repository"),
+  qbitReconcile: () =>
+    request<Record<string, unknown>>("/qbit/reconcile/run", {
+      method: "POST",
+      body: JSON.stringify({}),
+    }),
+
   // One-shot Agent insight for overview / news / sentiment / logic-chain pages
   analyzeInsight: (body: {
     kind: "market" | "news" | "sentiment" | "logic_chain";
@@ -581,6 +644,8 @@ export const api = {
     kind?: string;
     language?: string;
     code?: string;
+    notes?: string;
+    description?: string;
   }) =>
     request<StrategyItem>("/strategies", {
       method: "POST",
@@ -602,6 +667,20 @@ export const api = {
     request<StrategyItem>(`/strategies/${encodeURIComponent(id)}/duplicate`, {
       method: "POST",
     }),
+  registerStrategyWithQbit: (id: string) =>
+    request<StrategyItem>(`/strategies/${encodeURIComponent(id)}/qbit/register`, { method: "POST" }),
+  backtestStrategyWithQbit: (id: string) =>
+    request<StrategyItem>(`/strategies/${encodeURIComponent(id)}/backtest`, { method: "POST", body: JSON.stringify({}) }),
+  runStrategyBacktest: (id: string, body: StrategyBacktestRequest) =>
+    request<StrategyItem>(`/strategies/${encodeURIComponent(id)}/backtest`, { method: "POST", body: JSON.stringify(body) }),
+  listStrategyBacktests: (id: string) =>
+    request<StrategyBacktestRecord[]>(`/strategies/${encodeURIComponent(id)}/backtests`),
+  listStrategyVersions: (id: string) =>
+    request<StrategyVersion[]>(`/strategies/${encodeURIComponent(id)}/versions`),
+  restoreStrategyVersion: (id: string, version: number) =>
+    request<StrategyItem>(`/strategies/${encodeURIComponent(id)}/versions/${version}/restore`, { method: "POST" }),
+  updateStrategyRunner: (id: string, body: { broker?: string | null; status: "running" | "stopped" | "error" | "unknown"; started_at?: number; mandate_id?: string | null }) =>
+    request<StrategyItem>(`/strategies/${encodeURIComponent(id)}/runner`, { method: "PUT", body: JSON.stringify(body) }),
   strategyAi: (body: {
     prompt: string;
     language?: string;
@@ -1813,6 +1892,7 @@ export interface MarketOverviewResponse {
   hot_stocks: MarketQuoteItem[];
   as_of: string;
   source?: string;
+  cached?: boolean;
 }
 
 export interface NewsArticle {
@@ -1846,6 +1926,59 @@ export interface SentimentItem {
   error?: string | null;
 }
 
+export interface QbitHealthResponse {
+  status: string;
+  service: string;
+  auto_trading_enabled?: boolean;
+  auto_trading_scheduler?: boolean;
+  mounted_services?: string[];
+}
+
+export interface QbitAutomationStatus {
+  enabled: boolean;
+  scheduler_running: boolean;
+  mode: string;
+  execution_mode: string;
+  poll_interval_sec: number;
+  last_run_at: string | null;
+  last_rebalance_date: string | null;
+  last_run_status: string | null;
+  last_run_detail: string | null;
+}
+
+export interface QbitLedgerSnapshot {
+  initial_cash: number;
+  cash: number;
+  positions: { symbol: string; quantity: number }[];
+  position_value: number;
+  portfolio_value: number;
+  as_of: string;
+}
+
+export interface QbitTradeRecord {
+  symbol: string;
+  side: string;
+  quantity: number;
+  price: number;
+  fee: number;
+  cash_after: number;
+  ts: string;
+}
+
+export interface QbitRunCycleResponse {
+  skipped: boolean;
+  skip_reason: string;
+  rebalance_executed: boolean;
+  orders_submitted: number;
+  orders_filled: number;
+  as_of: string;
+}
+
+export interface QbitOpsStatus {
+  tradingEnabled: boolean;
+  killSwitch: boolean;
+}
+
 export interface SentimentResponse {
   items: SentimentItem[];
   composite: number;
@@ -1868,6 +2001,48 @@ export interface StrategyItem {
   description: string;
   created_at: number;
   updated_at: number;
+  lifecycle?: "draft" | "validated" | "paper" | "archived" | string;
+  qbit_strategy_id?: string | null;
+  qbit_version?: string | null;
+  qbit_registry_status?: string | null;
+  last_backtest?: Record<string, unknown> | null;
+  backtest_history?: StrategyBacktestRecord[];
+  runner_broker?: string | null;
+  runner_status?: string | null;
+  runner_started_at?: number | null;
+  runner_updated_at?: number | null;
+  mandate_id?: string | null;
+}
+
+export interface StrategyVersion {
+  version: number;
+  strategy_id: string;
+  name: string;
+  code: string;
+  notes: string;
+  description: string;
+  language: string;
+  lifecycle: string;
+  created_at: number;
+  change_note: string;
+}
+
+export interface StrategyBacktestRequest {
+  symbol: string;
+  start: string;
+  end: string;
+  short_window: number;
+  long_window: number;
+  initial_cash: number;
+}
+
+export interface StrategyBacktestRecord {
+  run_at: number;
+  symbol: string;
+  start: string;
+  end: string;
+  params: StrategyBacktestRequest;
+  result: Record<string, unknown>;
 }
 
 export interface StrategyListResponse {

@@ -15,6 +15,11 @@ include agent/.env.example
 # Alpha Zoo factor metadata and per-zoo LICENSE / NOTICE files
 recursive-include agent/src/factors *.yaml *.md
 
+# Embedded Qbit quant platform (services loaded at runtime via importlib)
+recursive-include agent/qbit/configs *.yaml
+recursive-include agent/qbit/strategies *.json *.py
+recursive-include agent/qbit/services *.py
+
 # Tests shipped so dev installs can run `pytest` against the package.
 # Files prefixed with `_` are local debug scripts kept untracked — keep
 # them out of the sdist even if present in the working tree.

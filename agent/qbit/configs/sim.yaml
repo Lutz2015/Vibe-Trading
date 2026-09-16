@@ -1,0 +1,7 @@
+env: "sim"
+
+trading:
+  broker_mode: "paper"
+  trading_enabled: true
+  auto_trading_config: "backend/configs/auto-trading.yaml"
+  risk_limits: "backend/configs/sim-risk-limits.yaml"

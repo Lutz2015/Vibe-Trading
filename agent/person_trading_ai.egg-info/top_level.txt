@@ -3,4 +3,5 @@ backtest
 cli
 evals
 mcp_server
+qbit
 src

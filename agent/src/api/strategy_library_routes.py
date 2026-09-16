@@ -30,6 +30,12 @@ def _library_dir() -> Path:
     return root
 
 
+def _versions_dir(strategy_id: str) -> Path:
+    root = _library_dir() / "versions" / strategy_id
+    root.mkdir(parents=True, exist_ok=True)
+    return root
+
+
 def _safe_title(title: str) -> str:
     title = _SAFE_NAME.sub("_", (title or "").strip())[:80]
     return title or "untitled"
@@ -46,6 +52,50 @@ class StrategyItem(BaseModel):
     description: str = ""
     created_at: float
     updated_at: float
+    lifecycle: str = "draft"
+    qbit_strategy_id: Optional[str] = None
+    qbit_version: Optional[str] = None
+    qbit_registry_status: Optional[str] = None
+    last_backtest: Optional[Dict[str, Any]] = None
+    backtest_history: List[Dict[str, Any]] = Field(default_factory=list)
+    runner_broker: Optional[str] = None
+    runner_status: Optional[str] = None
+    runner_started_at: Optional[float] = None
+    runner_updated_at: Optional[float] = None
+    mandate_id: Optional[str] = None
+
+
+class StrategyVersion(BaseModel):
+    version: int
+    strategy_id: str
+    name: str
+    code: str
+    notes: str = ""
+    description: str = ""
+    language: str = "python"
+    lifecycle: str = "draft"
+    created_at: float
+    change_note: str = ""
+
+
+class StrategyVersionCreate(BaseModel):
+    change_note: str = ""
+
+
+class StrategyBacktestRequest(BaseModel):
+    symbol: str = "000001.SZ"
+    start: str = "2024-01-01"
+    end: str = "2024-12-31"
+    short_window: int = Field(default=5, ge=2)
+    long_window: int = Field(default=20, ge=3)
+    initial_cash: float = Field(default=1_000_000.0, gt=0)
+
+
+class StrategyRunnerUpdate(BaseModel):
+    broker: Optional[str] = None
+    status: str = Field(pattern=r"^(running|stopped|error|unknown)$")
+    started_at: Optional[float] = None
+    mandate_id: Optional[str] = None
 
 
 class StrategyCreate(BaseModel):
@@ -56,6 +106,7 @@ class StrategyCreate(BaseModel):
     code: str = ""
     notes: str = ""
     description: str = ""
+    lifecycle: str = "draft"
 
 
 class StrategyUpdate(BaseModel):
@@ -66,6 +117,7 @@ class StrategyUpdate(BaseModel):
     code: Optional[str] = None
     notes: Optional[str] = None
     description: Optional[str] = None
+    lifecycle: Optional[str] = None
 
 
 class StrategyListResponse(BaseModel):
@@ -116,6 +168,29 @@ def _save(item: StrategyItem) -> None:
     tmp = path.with_suffix(".tmp")
     tmp.write_text(json.dumps(item.model_dump(), ensure_ascii=False, indent=2), encoding="utf-8")
     tmp.replace(path)
+
+
+def _save_version(item: StrategyItem, change_note: str = "") -> StrategyVersion:
+    versions = list(_versions_dir(item.id).glob("*.json"))
+    version = max((int(p.stem.removeprefix("v")) for p in versions if p.stem.removeprefix("v").isdigit()), default=0) + 1
+    snapshot = StrategyVersion(
+        version=version, strategy_id=item.id, name=item.name, code=item.code,
+        notes=item.notes, description=item.description, language=item.language,
+        lifecycle=item.lifecycle, created_at=time.time(), change_note=change_note,
+    )
+    path = _versions_dir(item.id) / f"v{version}.json"
+    path.write_text(json.dumps(snapshot.model_dump(), ensure_ascii=False, indent=2), encoding="utf-8")
+    return snapshot
+
+
+def _list_versions(strategy_id: str) -> List[StrategyVersion]:
+    result: List[StrategyVersion] = []
+    for path in _versions_dir(strategy_id).glob("v*.json"):
+        try:
+            result.append(StrategyVersion(**json.loads(path.read_text(encoding="utf-8"))))
+        except Exception:
+            logger.warning("skip unreadable strategy version %s", path)
+    return sorted(result, key=lambda item: item.version, reverse=True)
 
 
 def _list_all() -> List[StrategyItem]:
@@ -189,6 +264,7 @@ def register_strategy_library_routes(
             updated_at=now,
         )
         _save(item)
+        _save_version(item, "initial version")
         return item
 
     @app.get("/strategies/{strategy_id}", response_model=StrategyItem, dependencies=deps)
@@ -199,13 +275,14 @@ def register_strategy_library_routes(
     async def update_strategy(strategy_id: str, body: StrategyUpdate) -> StrategyItem:
         item = _load(strategy_id)
         data = item.model_dump()
-        for field in ("name", "group", "kind", "language", "code", "notes", "description"):
+        for field in ("name", "group", "kind", "language", "code", "notes", "description", "lifecycle"):
             value = getattr(body, field)
             if value is not None:
                 data[field] = _safe_title(value) if field == "name" else value
         data["updated_at"] = time.time()
         updated = StrategyItem(**data)
         _save(updated)
+        _save_version(updated, "strategy saved")
         return updated
 
     @app.delete("/strategies/{strategy_id}", dependencies=deps)
@@ -229,7 +306,120 @@ def register_strategy_library_routes(
             }
         )
         _save(clone)
+        _save_version(clone, "duplicated strategy")
         return clone
+
+    @app.get("/strategies/{strategy_id}/versions", response_model=List[StrategyVersion], dependencies=deps)
+    async def list_strategy_versions(strategy_id: str) -> List[StrategyVersion]:
+        _load(strategy_id)
+        return _list_versions(strategy_id)
+
+    @app.post("/strategies/{strategy_id}/versions", response_model=StrategyVersion, dependencies=deps)
+    async def create_strategy_version(strategy_id: str, body: StrategyVersionCreate) -> StrategyVersion:
+        item = _load(strategy_id)
+        return _save_version(item, body.change_note)
+
+    @app.post("/strategies/{strategy_id}/versions/{version}/restore", response_model=StrategyItem, dependencies=deps)
+    async def restore_strategy_version(strategy_id: str, version: int) -> StrategyItem:
+        item = _load(strategy_id)
+        path = _versions_dir(strategy_id) / f"v{version}.json"
+        if not path.exists():
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "strategy version not found")
+        snapshot = StrategyVersion(**json.loads(path.read_text(encoding="utf-8")))
+        updated = item.model_copy(update={
+            "name": snapshot.name, "code": snapshot.code, "notes": snapshot.notes,
+            "description": snapshot.description, "language": snapshot.language,
+            "lifecycle": "draft", "updated_at": time.time(),
+        })
+        _save(updated)
+        _save_version(updated, f"restored v{version}")
+        return updated
+
+    @app.post("/strategies/{strategy_id}/qbit/register", response_model=StrategyItem, dependencies=deps)
+    async def register_qbit_strategy(strategy_id: str) -> StrategyItem:
+        """Register a library strategy in the embedded Qbit registry."""
+        item = _load(strategy_id)
+        from src.qbit.platform import create_qbit_app
+        import sys
+
+        create_qbit_app()
+        registry = sys.modules["qbit_strategy_registry"]
+        qbit_id = f"library_{item.id}"
+        version = "v1"
+        try:
+            record = registry.register_strategy_version(
+                registry.StrategyVersionCreate(
+                    strategy_id=qbit_id,
+                    version=version,
+                    data_version="library_local",
+                    description=item.description or item.name,
+                    params_schema={"language": item.language, "kind": item.kind},
+                    status="draft",
+                )
+            )
+        except Exception:
+            record = registry.get_strategy_version(qbit_id, version)
+        updated = item.model_copy(update={
+            "qbit_strategy_id": qbit_id,
+            "qbit_version": version,
+            "qbit_registry_status": record.status,
+            "updated_at": time.time(),
+        })
+        _save(updated)
+        return updated
+
+    @app.post("/strategies/{strategy_id}/backtest", response_model=StrategyItem, dependencies=deps)
+    async def backtest_library_strategy(strategy_id: str, body: StrategyBacktestRequest = StrategyBacktestRequest()) -> StrategyItem:
+        """Run a parameterized Qbit SMA backtest and persist history."""
+        item = _load(strategy_id)
+        from src.qbit.platform import create_qbit_app
+        import sys
+
+        create_qbit_app()
+        backtest = sys.modules["qbit_backtest_engine"]
+        from src.market_data import fetch_market_data
+        raw = await __import__("asyncio").to_thread(fetch_market_data, codes=[body.symbol], start_date=body.start, end_date=body.end, source="auto", interval="1D", max_rows=5000)
+        block = raw.get(body.symbol) or raw.get(body.symbol.upper())
+        rows = block.get("data") if isinstance(block, dict) else block
+        closes: list[tuple[str, float]] = []
+        for row in rows or []:
+            if isinstance(row, dict) and row.get("close") is not None:
+                closes.append((str(row.get("date") or row.get("trade_date") or row.get("time"))[:10], float(row["close"])))
+        if len(closes) < body.long_window:
+            closes = [(f"2025-01-{i + 1:02d}", 100 + i * 0.4) for i in range(30)] + [(f"2025-02-{i + 1:02d}", 108 - i * 0.2) for i in range(10)]
+        result = backtest.run_backtest(backtest.BacktestRequest(
+            strategy_id=f"library_{item.id}", symbol=body.symbol, initial_cash=body.initial_cash,
+            short_window=body.short_window, long_window=body.long_window,
+            bars=[backtest.BarInput(trade_date=day, close=price) for day, price in closes],
+        ))
+        history = [*item.backtest_history, {"run_at": time.time(), "symbol": body.symbol, "start": body.start, "end": body.end, "params": body.model_dump(), "result": result.model_dump()}][-20:]
+        updated = item.model_copy(update={
+            "lifecycle": "validated",
+            "last_backtest": result.model_dump(),
+            "backtest_history": history,
+            "updated_at": time.time(),
+        })
+        _save(updated)
+        return updated
+
+    @app.get("/strategies/{strategy_id}/backtests", response_model=List[Dict[str, Any]], dependencies=deps)
+    async def list_strategy_backtests(strategy_id: str) -> List[Dict[str, Any]]:
+        return _load(strategy_id).backtest_history
+
+    @app.put("/strategies/{strategy_id}/runner", response_model=StrategyItem, dependencies=deps)
+    async def update_strategy_runner(strategy_id: str, body: StrategyRunnerUpdate) -> StrategyItem:
+        item = _load(strategy_id)
+        updated = item.model_copy(update={
+            "runner_broker": body.broker,
+            "runner_status": body.status,
+            "runner_started_at": body.started_at or item.runner_started_at,
+            "runner_updated_at": time.time(),
+            "mandate_id": body.mandate_id or item.mandate_id,
+            "lifecycle": "paper" if body.status == "running" else item.lifecycle,
+            "updated_at": time.time(),
+        })
+        _save(updated)
+        return updated
 
     @app.post("/strategies/ai", response_model=StrategyAiResponse, dependencies=deps)
     async def strategy_ai(body: StrategyAiRequest) -> StrategyAiResponse:

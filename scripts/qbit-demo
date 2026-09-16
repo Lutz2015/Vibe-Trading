@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Safe paper-only demo. It never enables live execution or changes the kill switch.
+base_url="${PERSON_TRADING_URL:-http://127.0.0.1:8000}"
+initial_cash="${QBIT_DEMO_INITIAL_CASH:-1000000}"
+
+curl --fail --silent --show-error \
+  -X POST "${base_url}/qbit/ledger/reset" \
+  -H 'Content-Type: application/json' \
+  --data "{\"initial_cash\":${initial_cash}}"
+printf '\n'
+
+curl --fail --silent --show-error \
+  -X POST "${base_url}/qbit/automation/run-cycle" \
+  -H 'Content-Type: application/json' \
+  --data '{"force":true,"rebalance":true}'
+printf '\n'
+
+curl --fail --silent --show-error "${base_url}/qbit/ledger/snapshot"
+printf '\n'

@@ -19,7 +19,7 @@ import {
 import { useNavigate, useSearchParams } from "react-router";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
-import { ApiError, api, type LiveStatus, type StrategyItem } from "@/lib/api";
+import { ApiError, api, type LiveStatus, type StrategyBacktestRecord, type StrategyItem, type StrategyVersion } from "@/lib/api";
 import { RunnerStatus } from "@/components/chat/RunnerStatus";
 
 type AiChatMessage = {
@@ -79,6 +79,7 @@ function StrategyDeployBar({
   onSave: (item: StrategyItem) => Promise<StrategyItem>;
   onFlash: (msg: string) => void;
 }) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [liveStatus, setLiveStatus] = useState<LiveStatus | null>(null);
   const [liveUnavailable, setLiveUnavailable] = useState(false);
@@ -143,10 +144,32 @@ function StrategyDeployBar({
     setRunnerBusy(true);
     try {
       await api.startLiveRunner(broker);
-      onFlash(`Runner 已启动（${broker}）`);
+      await api.updateStrategyRunner(draft.id, {
+        broker,
+        status: "running",
+        started_at: Date.now() / 1000,
+        mandate_id: targetBroker?.mandate?.mandate_id,
+      });
+      onSave({ ...draft, lifecycle: "paper", runner_broker: broker, runner_status: "running" });
+      onFlash(t("strategyPage.runnerStarted", { broker, defaultValue: `Runner started (${broker})` }));
       await refreshLive();
     } catch (e) {
       onFlash(e instanceof Error ? e.message : "Runner 启动失败");
+    } finally {
+      setRunnerBusy(false);
+    }
+  };
+
+  const stopRunner = async () => {
+    if (!broker) return;
+    setRunnerBusy(true);
+    try {
+      await api.stopLiveRunner(broker);
+      await api.updateStrategyRunner(draft.id, { broker, status: "stopped" });
+      onFlash(t("strategyPage.runnerStopped", { broker, defaultValue: `Runner stopped (${broker})` }));
+      await refreshLive();
+    } catch (e) {
+      onFlash(e instanceof Error ? e.message : "Runner 停止失败");
     } finally {
       setRunnerBusy(false);
     }
@@ -217,6 +240,7 @@ function StrategyDeployBar({
             )}
             {runnerAlive ? "Runner 运行中" : "启动 Runner"}
           </button>
+          {runnerAlive ? <button type="button" disabled={runnerBusy} onClick={() => void stopRunner()} className="mt-2 ms-2 rounded-md border px-2 py-1 text-[11px]">停止 Runner</button> : null}
         </div>
       </div>
 
@@ -248,6 +272,9 @@ export function StrategyLibrary() {
   const [editing, setEditing] = useState<StrategyItem | null>(null);
   const [menuFor, setMenuFor] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
+  const [busyStrategy, setBusyStrategy] = useState<string | null>(null);
+  const [versions, setVersions] = useState<StrategyVersion[]>([]);
+  const [backtests, setBacktests] = useState<StrategyBacktestRecord[]>([]);
 
   const flash = (msg: string) => {
     setToast(msg);
@@ -323,10 +350,16 @@ export function StrategyLibrary() {
     return items.filter((s) => {
       if (activeGroup !== "全部" && (s.group || "默认") !== activeGroup) return false;
       if (kindFilter !== "全部种类" && s.kind !== kindFilter) return false;
-      if (q && !`${s.name} ${s.description}`.toLowerCase().includes(q)) return false;
+      if (q && !`${s.name} ${s.description} ${s.notes} ${s.code}`.toLowerCase().includes(q)) return false;
       return true;
     });
   }, [items, activeGroup, kindFilter, search]);
+
+  const strategyStats = useMemo(() => {
+    const languages = new Set(items.map((item) => item.language)).size;
+    const editedRecently = items.filter((item) => Date.now() / 1000 - item.updated_at < 7 * 86400).length;
+    return { total: items.length, languages, editedRecently };
+  }, [items]);
 
   const createStrategy = async () => {
     try {
@@ -367,6 +400,32 @@ export function StrategyLibrary() {
     setMenuFor(null);
   };
 
+  const registerQbit = async (strategy: StrategyItem) => {
+    setBusyStrategy(strategy.id);
+    try {
+      const updated = await api.registerStrategyWithQbit(strategy.id);
+      setItems((prev) => prev.map((s) => (s.id === updated.id ? updated : s)));
+      flash("已注册到 Qbit 策略中心");
+    } catch (e) {
+      flash(e instanceof Error ? e.message : "注册失败");
+    } finally {
+      setBusyStrategy(null);
+    }
+  };
+
+  const runQbitBacktest = async (strategy: StrategyItem) => {
+    setBusyStrategy(strategy.id);
+    try {
+      const updated = await api.backtestStrategyWithQbit(strategy.id);
+      setItems((prev) => prev.map((s) => (s.id === updated.id ? updated : s)));
+      flash("Qbit 回测完成，结果已写入策略档案");
+    } catch (e) {
+      flash(e instanceof Error ? e.message : "回测失败");
+    } finally {
+      setBusyStrategy(null);
+    }
+  };
+
   const saveItem = async (item: StrategyItem) => {
     try {
       const updated = await api.updateStrategy(item.id, {
@@ -399,16 +458,34 @@ export function StrategyLibrary() {
         }}
         onSave={saveItem}
         onFlash={flash}
+        versions={versions}
+        backtests={backtests}
+        onLoadHistory={async () => {
+          const [versionRows, backtestRows] = await Promise.all([api.listStrategyVersions(editing.id), api.listStrategyBacktests(editing.id)]);
+          setVersions(versionRows);
+          setBacktests(backtestRows);
+        }}
+        onRestoreVersion={async (version) => {
+          const restored = await api.restoreStrategyVersion(editing.id, version);
+          setEditing(restored);
+          setItems((prev) => prev.map((s) => (s.id === restored.id ? restored : s)));
+          flash(t("strategyLibraryPage.versionRestored", { defaultValue: "Version restored" }));
+        }}
       />
     );
   }
 
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-4 p-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <FileCode2 className="h-6 w-6 text-primary" />
-          <h1 className="text-2xl font-bold">策略库</h1>
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-2">
+            <FileCode2 className="h-6 w-6 text-primary" />
+            <h1 className="text-2xl font-bold">策略库</h1>
+          </div>
+          <p className="mt-1 text-sm text-muted-foreground">
+            从想法、代码到回测与 Paper Runner 的单一工作台
+          </p>
         </div>
         <div className="flex flex-wrap gap-2">
           <button
@@ -430,10 +507,23 @@ export function StrategyLibrary() {
         </div>
       </div>
 
+      <div className="grid grid-cols-3 gap-2 sm:gap-3">
+        {[
+          ["策略总数", strategyStats.total],
+          ["近 7 天更新", strategyStats.editedRecently],
+          ["代码语言", strategyStats.languages],
+        ].map(([label, value]) => (
+          <div key={String(label)} className="rounded-xl border bg-card px-3 py-3 shadow-sm">
+            <div className="text-[11px] text-muted-foreground">{label}</div>
+            <div className="mt-1 text-xl font-semibold tabular-nums">{value}</div>
+          </div>
+        ))}
+      </div>
+
       <div className="rounded-xl border bg-card shadow-sm">
         {/* Group tabs */}
         <div className="flex flex-wrap items-center gap-2 border-b px-4 py-3">
-          {groups.map((g) => {
+          {["全部", ...groups.filter((g) => g !== "全部")].map((g) => {
             const count = items.filter((s) => (s.group || "默认") === g).length;
             return (
               <button
@@ -467,10 +557,10 @@ export function StrategyLibrary() {
             </select>
             <div className="relative">
               <Search className="pointer-events-none absolute start-2 top-2 h-3.5 w-3.5 text-muted-foreground" />
-              <input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="搜索"
+                <input
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="搜索名称、描述或代码"
                 className="w-40 rounded-md border bg-background py-1.5 pe-2 ps-7 text-xs outline-none focus:border-primary"
               />
             </div>
@@ -499,7 +589,10 @@ export function StrategyLibrary() {
                     >
                       <FileCode2 className="h-4 w-4 text-muted-foreground" />
                       <span className="font-medium">{s.name}</span>
-                      <span className="text-[11px] text-muted-foreground">{s.kind}</span>
+                       <span className="text-[11px] text-muted-foreground">{s.kind}</span>
+                       <span className={cn("rounded-full px-1.5 py-0.5 text-[10px]", s.lifecycle === "validated" ? "bg-emerald-500/10 text-emerald-600" : "bg-muted text-muted-foreground")}>
+                         {s.lifecycle}
+                       </span>
                     </button>
                   </td>
                   <td className="px-3 py-3 text-end text-xs text-muted-foreground">
@@ -510,7 +603,7 @@ export function StrategyLibrary() {
                   </td>
                   <td className="px-4 py-3 text-end">
                     <div className="inline-flex items-center gap-1">
-                      <button
+                       <button
                         type="button"
                         onClick={() => setEditing(s)}
                         className="rounded px-2 py-1 text-xs text-sky-500 hover:bg-sky-500/10"
@@ -529,8 +622,24 @@ export function StrategyLibrary() {
                         onClick={() => void remove(s.id)}
                         className="rounded px-2 py-1 text-xs text-danger hover:bg-danger/10"
                       >
-                        删除
-                      </button>
+                         删除
+                       </button>
+                       <button
+                         type="button"
+                         disabled={busyStrategy === s.id}
+                         onClick={() => void runQbitBacktest(s)}
+                         className="rounded px-2 py-1 text-xs text-amber-600 hover:bg-amber-500/10 disabled:opacity-50"
+                       >
+                         回测
+                       </button>
+                       <button
+                         type="button"
+                         disabled={busyStrategy === s.id}
+                         onClick={() => void registerQbit(s)}
+                         className="rounded px-2 py-1 text-xs text-primary hover:bg-primary/10 disabled:opacity-50"
+                       >
+                         注册 Qbit
+                       </button>
                       <div className="relative">
                         <button
                           type="button"
@@ -600,12 +709,20 @@ function StrategyEditor({
   onBack,
   onSave,
   onFlash,
+  versions,
+  backtests,
+  onLoadHistory,
+  onRestoreVersion,
 }: {
   item: StrategyItem;
   groups: string[];
   onBack: () => void;
   onSave: (item: StrategyItem) => Promise<StrategyItem>;
   onFlash: (msg: string) => void;
+  versions: StrategyVersion[];
+  backtests: StrategyBacktestRecord[];
+  onLoadHistory: () => Promise<void>;
+  onRestoreVersion: (version: number) => Promise<void>;
 }) {
   const navigate = useNavigate();
   const chatEndRef = useRef<HTMLDivElement | null>(null);
@@ -616,6 +733,8 @@ function StrategyEditor({
   const [aiLoading, setAiLoading] = useState(false);
   const [aiMessages, setAiMessages] = useState<AiChatMessage[]>([]);
   const [saving, setSaving] = useState(false);
+  const [bt, setBt] = useState({ symbol: "000001.SZ", start: "2024-01-01", end: "2024-12-31", short_window: 5, long_window: 20, initial_cash: 1000000 });
+  const [historyOpen, setHistoryOpen] = useState(false);
 
   useEffect(() => setDraft(item), [item]);
 
@@ -692,6 +811,13 @@ function StrategyEditor({
     setSaving(false);
   };
 
+  const runParameterizedBacktest = async () => {
+    const updated = await api.runStrategyBacktest(draft.id, bt);
+    setDraft(updated);
+    await onLoadHistory();
+    onFlash("Qbit 参数化回测完成");
+  };
+
   return (
     <div className="flex h-full flex-col">
       <div className="flex items-center gap-3 border-b px-4 py-3">
@@ -764,6 +890,19 @@ function StrategyEditor({
       </div>
 
       <StrategyDeployBar draft={draft} onSave={onSave} onFlash={onFlash} />
+
+      <div className="border-b bg-muted/10 px-4 py-3">
+        <div className="flex flex-wrap items-center gap-2 text-xs">
+          <span className="font-medium">Qbit 参数化回测</span>
+          {(["symbol", "start", "end"] as const).map((key) => <input key={key} value={bt[key]} onChange={(e) => setBt({ ...bt, [key]: e.target.value })} className="w-28 rounded border bg-background px-2 py-1" />)}
+          <input type="number" value={bt.short_window} onChange={(e) => setBt({ ...bt, short_window: Number(e.target.value) })} className="w-14 rounded border bg-background px-2 py-1" />
+          <input type="number" value={bt.long_window} onChange={(e) => setBt({ ...bt, long_window: Number(e.target.value) })} className="w-14 rounded border bg-background px-2 py-1" />
+          <button type="button" onClick={() => void runParameterizedBacktest()} className="rounded bg-amber-500 px-2 py-1 text-white">运行</button>
+          <button type="button" onClick={() => { setHistoryOpen(!historyOpen); if (!historyOpen) void onLoadHistory(); }} className="rounded border px-2 py-1">{historyOpen ? "隐藏历史" : "回测历史"}</button>
+        </div>
+        {historyOpen ? <div className="mt-2 space-y-1 text-[11px] text-muted-foreground">{backtests.map((row) => <div key={row.run_at}>{new Date(row.run_at * 1000).toLocaleString()} · {row.symbol} · {String((row.result.metrics as Record<string, unknown> | undefined)?.total_return_pct ?? "—")}%</div>)}{!backtests.length ? "暂无回测记录" : null}</div> : null}
+        {versions.length ? <div className="mt-2 flex flex-wrap gap-1 text-[11px]">{versions.map((version) => <button key={version.version} type="button" onClick={() => void onRestoreVersion(version.version)} className="rounded border px-1.5 py-0.5">v{version.version}</button>)}</div> : null}
+      </div>
 
       <div className="flex min-h-0 flex-1">
         <div className="flex min-w-0 flex-1 flex-col">

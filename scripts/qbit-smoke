@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Minimal POSIX smoke check for the embedded Qbit platform.
+base_url="${PERSON_TRADING_URL:-http://127.0.0.1:8000}"
+
+check() {
+  local path="$1"
+  local body
+  body="$(curl --fail --silent --show-error "${base_url}${path}")"
+  printf '%s %s\n' "$path" "$body"
+}
+
+check /qbit/health
+check /qbit/ops/status
+check /qbit/ledger/snapshot
+check /qbit/automation/status
+check /qbit/strategy/repository

@@ -34,7 +34,8 @@
     "logicChain": "ロジックチェーン",
     "sentiment": "センチメント",
     "newsRadar": "ニュースレーダー",
-    "strategyLibrary": "戦略ライブラリ"
+    "strategyLibrary": "戦略ライブラリ",
+    "quantDesk": "クオンデスク"
   },
   "runtime": {
     "monitorBadge": "取引モニター",
@@ -1642,5 +1643,9 @@
       "delete": "削除",
       "configured": "必要な認証情報は設定済みです"
     }
-  }
+  },
+  "marketPage": {"title":"市場概観","subtitle":"リアルタイム指数・注目セクター・上昇銘柄・公開市場データ（60秒更新）","noData":"データなし","name":"名称","price":"価格","change":"変化","concept":"テーマ","industry":"業種","cached":"キャッシュデータ","source":"データソース：{{source}}","indices":"指数","up":"上昇","down":"下落","flat":"横ばい","hotBoards":"注目セクターとテーマ","noBoards":"セクターデータなし","hotStocks":"上昇率上位銘柄","hotStocksNote":"A株の上昇率上位（ST除外）","aiInsight":"AI市場分析","snapshotNote":"公開市場スナップショットであり、取引可能な価格ではありません"},
+  "sentimentPage": {"title":"センチメント温度計","subtitleProxy":"市場代理・予測市場 unavailable・5分キャッシュ","subtitleHybrid":"予測市場とA株代理・5分キャッシュ","subtitlePrediction":"公開予測市場・マクロ期待・5分キャッシュ","composite":"総合期待温度","validTopics":"{{valid}}/{{total}}件のテーマが有効","interpretation":"解説","aiInsight":"AIセンチメント分析","overheated":"過熱","hot":"やや強気","neutral":"中立","cool":"やや弱気","cold":"冷え込み"}
+  ,"logicPage":{"title":"ロジックチェーン","subtitle":"トリガー → 伝播 → セクター → 銘柄","generate":"AIで生成","restore":"例を復元","draft":"戦略ドラフトを作成","addNode":"ノードを追加","delete":"選択を削除","linking":"接続中：対象ノードをクリック","edit":"ノードを編集","save":"保存","cancel":"キャンセル","newChain":"新しいチェーン","aiTitle":"ロジックチェーンを生成","aiHint":"ライブニュースと市場テーマを統合","start":"生成開始","empty":"トリガー、ロジック、セクター、銘柄を追加"}
+  ,"strategyPage":{"title":"戦略ライブラリ","subtitle":"アイデアとコードからバックテスト、Paper Runnerまで","new":"新しい戦略","refresh":"更新","all":"すべて","allKinds":"すべての種類","search":"名前・説明・コードを検索","name":"名前","updated":"最終更新","created":"作成日","actions":"操作","edit":"編集","duplicate":"複製","remove":"削除","backtest":"バックテスト","register":"Qbitに登録","empty":"戦略はありません","backtestTitle":"Qbitパラメータバックテスト","run":"実行","history":"バックテスト履歴","hideHistory":"履歴を隠す","noHistory":"履歴なし","back":"戦略一覧へ","editor":"戦略エディター","simulate":"シミュレーション","saving":"保存中…","save":"保存","code":"コード","notes":"メモ","description":"説明","assistant":"クオンツ戦略アシスタント","assistantHint":"対話編集 · コードを即時更新","generating":"生成中…","strategyName":"戦略名","notePlaceholder":"メモ、調整履歴、リスク…","descriptionPlaceholder":"戦略の説明と適用場面…","runnerStart":"Runnerを開始","runnerStop":"Runnerを停止"}
 }

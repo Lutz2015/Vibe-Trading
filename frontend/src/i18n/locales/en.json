@@ -39,7 +39,8 @@
     "logicChain": "Logic Chain",
     "sentiment": "Sentiment",
     "newsRadar": "News Radar",
-    "strategyLibrary": "Strategy Library"
+    "strategyLibrary": "Strategy Library",
+    "quantDesk": "Quant Desk"
   },
   "runtime": {
     "monitorBadge": "Runtime Monitor",
@@ -1642,5 +1643,9 @@
       "delete": "Delete",
       "configured": "Required credentials configured"
     }
-  }
+  },
+  "marketPage": {"title":"Market Overview","subtitle":"Live indices · hot sectors · top movers · public market data (60s refresh)","noData":"No data","name":"Name","price":"Price","change":"Change","concept":"Concept","industry":"Industry","cached":"Cached data","source":"Source: {{source}}","indices":"Indices","up":"Up","down":"Down","flat":"Flat","hotBoards":"Hot sectors and concepts","noBoards":"No sector data","hotStocks":"Top movers","hotStocksNote":"Leading A-share movers (ST excluded)","aiInsight":"AI market insight","snapshotNote":"Public market snapshot, not a tradable quote"},
+  "sentimentPage": {"title":"Sentiment Thermometer","subtitleProxy":"Market proxy · prediction markets unavailable · 5-minute cache","subtitleHybrid":"Prediction markets plus A-share proxy · 5-minute cache","subtitlePrediction":"Public prediction markets · macro expectations · 5-minute cache","composite":"Composite temperature","validTopics":"{{valid}}/{{total}} topics valid","interpretation":"Interpretation","aiInsight":"AI sentiment insight","overheated":"Overheated","hot":"Warm","neutral":"Neutral","cool":"Cool","cold":"Cold"}
+  ,"logicPage":{"title":"Logic Chain","subtitle":"Trigger → transmission → sector → ticker","generate":"Generate with AI","restore":"Restore example","draft":"Create strategy draft","addNode":"Add node","delete":"Delete selected","linking":"Linking: click a target node","edit":"Edit node","save":"Save","cancel":"Cancel","newChain":"New chain","aiTitle":"Generate logic chain","aiHint":"Combine live headlines and market themes","start":"Start generation","empty":"Add a trigger, logic, sector, or ticker node"}
+  ,"strategyPage":{"title":"Strategy Library","subtitle":"One workspace from idea and code to backtest and Paper Runner","new":"New strategy","refresh":"Refresh","all":"All","allKinds":"All types","search":"Search name, description, or code","name":"Name","updated":"Last modified","created":"Created","actions":"Actions","edit":"Edit","duplicate":"Duplicate","remove":"Delete","backtest":"Backtest","register":"Register Qbit","empty":"No strategies yet","backtestTitle":"Qbit parameterized backtest","run":"Run","history":"Backtest history","hideHistory":"Hide history","noHistory":"No backtest history","back":"Back to strategies","editor":"Strategy editor","simulate":"Simulate backtest","saving":"Saving…","save":"Save","code":"Code","notes":"Notes","description":"Description","assistant":"Quant strategy assistant","assistantHint":"Multi-turn editing · code updates live","generating":"Generating…","strategyName":"Strategy name","notePlaceholder":"Notes, tuning log, and risk notes…","descriptionPlaceholder":"Strategy description and applicable scenarios…","runnerStart":"Start Runner","runnerStop":"Stop Runner"}
 }

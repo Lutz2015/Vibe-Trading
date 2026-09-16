@@ -1,0 +1,8 @@
+app:
+  timezone: "Asia/Shanghai"
+  log_level: "INFO"
+
+trading:
+  market: "CN_A"
+  calendar: "SSE_SZSE"
+  currency: "CNY"

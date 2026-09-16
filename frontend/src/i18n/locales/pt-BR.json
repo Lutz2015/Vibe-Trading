@@ -39,7 +39,8 @@
     "logicChain": "Cadeia lógica",
     "sentiment": "Sentimento",
     "newsRadar": "Radar de notícias",
-    "strategyLibrary": "Biblioteca de estratégias"
+    "strategyLibrary": "Biblioteca de estratégias",
+    "quantDesk": "Mesa quantitativa"
   },
   "runtime": {
     "monitorBadge": "Monitor de Runtime",
@@ -1642,5 +1643,9 @@
       "delete": "Excluir",
       "configured": "Credenciais necessárias configuradas"
     }
-  }
+  },
+  "marketPage": {"title":"Visão do mercado","subtitle":"Índices ao vivo · setores em destaque · maiores altas · dados públicos (atualização de 60 s)","noData":"Sem dados","name":"Nome","price":"Preço","change":"Variação","concept":"Tema","industry":"Setor","cached":"Dados em cache","source":"Fonte: {{source}}","indices":"Índices","up":"Alta","down":"Baixa","flat":"Estável","hotBoards":"Setores e temas em destaque","noBoards":"Sem dados de setores","hotStocks":"Maiores altas","hotStocksNote":"Ações A em alta (ST excluídas)","aiInsight":"Leitura de mercado por IA","snapshotNote":"Instantâneo público do mercado, não é uma cotação negociável"},
+  "sentimentPage": {"title":"Termômetro de sentimento","subtitleProxy":"Proxy de mercado · mercados de previsão indisponíveis · cache de 5 minutos","subtitleHybrid":"Mercados de previsão e proxy de ações A · cache de 5 minutos","subtitlePrediction":"Mercados de previsão públicos · expectativas macro · cache de 5 minutos","composite":"Temperatura composta","validTopics":"{{valid}}/{{total}} temas válidos","interpretation":"Interpretação","aiInsight":"Leitura de sentimento por IA","overheated":"Superaquecido","hot":"Quente","neutral":"Neutro","cool":"Frio","cold":"Muito frio"}
+  ,"logicPage":{"title":"Cadeia lógica","subtitle":"Gatilho → transmissão → setor → ação","generate":"Gerar com IA","restore":"Restaurar exemplo","draft":"Criar rascunho de estratégia","addNode":"Adicionar nó","delete":"Excluir seleção","linking":"Vinculando: clique no nó alvo","edit":"Editar nó","save":"Salvar","cancel":"Cancelar","newChain":"Nova cadeia","aiTitle":"Gerar cadeia lógica","aiHint":"Combine notícias e temas de mercado","start":"Iniciar geração","empty":"Adicione um nó de gatilho, lógica, setor ou ação"}
+  ,"strategyPage":{"title":"Biblioteca de estratégias","subtitle":"Um espaço da ideia e código ao backtest e Paper Runner","new":"Nova estratégia","refresh":"Atualizar","all":"Todas","allKinds":"Todos os tipos","search":"Buscar nome, descrição ou código","name":"Nome","updated":"Última alteração","created":"Criada em","actions":"Ações","edit":"Editar","duplicate":"Duplicar","remove":"Excluir","backtest":"Backtest","register":"Registrar no Qbit","empty":"Nenhuma estratégia","backtestTitle":"Backtest parametrizado do Qbit","run":"Executar","history":"Histórico de backtests","hideHistory":"Ocultar histórico","noHistory":"Sem histórico","back":"Voltar às estratégias","editor":"Editor de estratégias","simulate":"Simular backtest","saving":"Salvando…","save":"Salvar","code":"Código","notes":"Notas","description":"Descrição","assistant":"Assistente de estratégias quantitativas","assistantHint":"Edição em várias rodadas · código atualizado ao vivo","generating":"Gerando…","strategyName":"Nome da estratégia","notePlaceholder":"Notas, ajustes e riscos…","descriptionPlaceholder":"Descrição e cenários de uso…","runnerStart":"Iniciar Runner","runnerStop":"Parar Runner"}
 }

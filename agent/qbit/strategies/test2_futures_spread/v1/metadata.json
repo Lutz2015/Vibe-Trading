@@ -1,0 +1,16 @@
+﻿{
+  "strategy_id": "test2_futures_spread",
+  "version": "v1",
+  "template_id": "test2_futures_spread",
+  "asset_class": "futures",
+  "params_schema": {
+    "start_date": "string(YYYY-MM-DD)",
+    "end_date": "string(YYYY-MM-DD)",
+    "initial_cash": "float",
+    "yb": "int",
+    "z_open_threshold": "float",
+    "z_close_threshold": "float"
+  },
+  "status": "active",
+  "description": "JoinQuant index futures calendar spread strategy migrated into local strategy repository."
+}

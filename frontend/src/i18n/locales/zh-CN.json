@@ -34,7 +34,8 @@
     "logicChain": "逻辑链",
     "sentiment": "情绪温度计",
     "newsRadar": "新闻雷达",
-    "strategyLibrary": "策略库"
+    "strategyLibrary": "策略库",
+    "quantDesk": "量化交易台"
   },
   "runtime": {
     "monitorBadge": "交易监控",
@@ -1642,5 +1643,9 @@
       "delete": "删除",
       "configured": "所需凭证已配置"
     }
-  }
+  },
+  "marketPage": {"title":"市场总览","subtitle":"实时指数 · 热点板块 · 涨幅榜 · 公开行情数据（60 秒刷新）","noData":"暂无数据","name":"名称","price":"现价","change":"涨跌","concept":"概念板块","industry":"行业板块","cached":"缓存数据","source":"数据源：{{source}}","indices":"大盘指数","up":"上涨","down":"下跌","flat":"平盘","hotBoards":"热点行业与概念","noBoards":"暂无板块数据","hotStocks":"涨幅榜热门个股","hotStocksNote":"A 股涨幅居前（已过滤 ST）","aiInsight":"AI 市场解读","snapshotNote":"公开行情快照，不代表可交易报价"},
+  "sentimentPage": {"title":"情绪温度计","subtitleProxy":"行情代理 · 预测市场不可达 · 5 分钟缓存","subtitleHybrid":"预测市场 + A 股行情代理 · 5 分钟缓存","subtitlePrediction":"公开预测市场 · 宏观预期 · 5 分钟缓存","composite":"综合预期温度","validTopics":"{{valid}}/{{total}} 个主题有效","interpretation":"解读","aiInsight":"AI 情绪解读","overheated":"过热","hot":"偏热","neutral":"中性","cool":"偏冷","cold":"冰冷"}
+  ,"logicPage":{"title":"逻辑链图谱","subtitle":"触发因素 → 传导逻辑 → 受益板块 → 具体标的","generate":"AI 生成逻辑链","restore":"恢复示例","draft":"生成策略草稿","addNode":"添加节点","delete":"删除选中","linking":"连线中：再点击目标节点","edit":"编辑节点","save":"保存","cancel":"取消","newChain":"新建链","aiTitle":"AI 生成逻辑链","aiHint":"结合实时快讯与市场主题","start":"开始生成","empty":"添加触发因素、传导逻辑、受益板块或具体标的"}
+  ,"strategyPage":{"title":"策略库","subtitle":"从想法、代码到回测与 Paper Runner 的单一工作台","new":"新建策略","refresh":"刷新","all":"全部","allKinds":"全部种类","search":"搜索名称、描述或代码","name":"名称","updated":"最后修改","created":"创建日期","actions":"操作项","edit":"编辑","duplicate":"复制","remove":"删除","backtest":"回测","register":"注册 Qbit","empty":"暂无策略","backtestTitle":"Qbit 参数化回测","run":"运行","history":"回测历史","hideHistory":"隐藏历史","noHistory":"暂无回测记录","back":"返回策略列表","editor":"策略编辑","simulate":"模拟回测","saving":"保存中…","save":"保存","code":"代码","notes":"笔记","description":"描述","assistant":"量化策略助手","assistantHint":"多轮对话 · 代码实时更新","generating":"生成中…","strategyName":"策略名称","notePlaceholder":"策略笔记、调参记录、风险说明…","descriptionPlaceholder":"策略描述与适用场景…","runnerStart":"启动 Runner","runnerStop":"停止 Runner"}
 }

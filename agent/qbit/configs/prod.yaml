@@ -1,0 +1,5 @@
+env: "prod"
+
+trading:
+  broker_mode: "live"
+  trading_enabled: false

@@ -1,0 +1,47 @@
+enabled: true
+mode: paper
+execution_mode: paper
+poll_interval_sec: 60
+
+trading_hours:
+  start: "09:30"
+  end: "15:00"
+
+rebalance:
+  time_local: "14:50"
+  window_minutes: 30
+  rebalance_every_trading_days: 15
+
+portfolio:
+  initial_cash: 1000000
+  total_exposure: 1.0
+  max_single_weight: 0.5
+  risk_aversion: 1.0
+  min_trade_lot: 100
+  fee_bps: 3.0
+
+strategies:
+  - strategy_id: test1_multifactor
+    enabled: true
+    expected_return_pct: 18.0
+    risk_volatility_pct: 12.0
+    max_weight: 0.7
+    params:
+      top_n: 5
+      universe_symbols:
+        - "000001.SZ"
+        - "600519.SH"
+        - "000858.SZ"
+        - "601318.SH"
+        - "600036.SH"
+        - "000333.SZ"
+        - "601166.SH"
+        - "600900.SH"
+
+  - strategy_id: test2_futures_spread
+    enabled: false
+    expected_return_pct: 10.0
+    risk_volatility_pct: 6.0
+    max_weight: 0.3
+    params:
+      note: "futures automation deferred; enable after broker adapter is ready"

@@ -1,0 +1,16 @@
+﻿{
+  "strategy_id": "test1_multifactor",
+  "version": "v1",
+  "template_id": "test1_multifactor",
+  "asset_class": "equity",
+  "params_schema": {
+    "start_date": "string(YYYY-MM-DD)",
+    "end_date": "string(YYYY-MM-DD)",
+    "initial_cash": "float",
+    "index_symbol": "string",
+    "rebalance_every": "int",
+    "top_n": "int"
+  },
+  "status": "active",
+  "description": "JoinQuant multifactor strategy migrated into local strategy repository."
+}

@@ -3,6 +3,7 @@ import { Network, Plus, Trash2, RotateCcw, Sparkles, Loader2 } from "lucide-reac
 import { cn } from "@/lib/utils";
 import { safeGet, safeSet } from "@/lib/storage";
 import { api } from "@/lib/api";
+import { useNavigate } from "react-router";
 
 type NodeKind = "trigger" | "logic" | "sector" | "ticker";
 
@@ -133,6 +134,7 @@ function loadChains(): Chain[] {
 }
 
 export function LogicChain() {
+  const navigate = useNavigate();
   const [chains, setChains] = useState<Chain[]>(loadChains);
   const [activeId, setActiveId] = useState(() => loadChains()[0].id);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -351,6 +353,24 @@ export function LogicChain() {
     }
   };
 
+  const createStrategyFromChain = async () => {
+    const source = active.nodes.map((node) => `${KIND_META[node.kind].label}: ${node.title}\n${node.body}`).join("\n\n");
+    try {
+      const strategy = await api.createStrategy({
+        name: active.name,
+        group: "逻辑链生成",
+        kind: "通用策略",
+        language: "python",
+        code: `"""由逻辑链生成：${active.name}"""\n\n# 研究假设\n${source}\n\ndef on_bar(ctx):\n    # TODO: 将逻辑链中的触发条件转化为可执行信号\n    pass\n`,
+        description: `逻辑链：${active.name}\n\n${source}`,
+        notes: "请在回测验证后再进入 Paper Runner。",
+      });
+      navigate(`/strategies?edit=${encodeURIComponent(strategy.id)}`);
+    } catch (error) {
+      setAiError(error instanceof Error ? error.message : "创建策略失败");
+    }
+  };
+
   const nodeCenter = (id: string) => {
     const n = active.nodes.find((x) => x.id === id);
     return n ? { x: n.x + 90, y: n.y + 40 } : { x: 0, y: 0 };
@@ -388,6 +408,14 @@ export function LogicChain() {
         >
           <RotateCcw className="h-3.5 w-3.5" />
           恢复示例
+        </button>
+        <button
+          type="button"
+          onClick={() => void createStrategyFromChain()}
+          className="inline-flex items-center gap-1.5 rounded-md border border-emerald-500/40 bg-emerald-500/10 px-2.5 py-1.5 text-xs text-emerald-600 hover:bg-emerald-500/20"
+        >
+          <Sparkles className="h-3.5 w-3.5" />
+          生成策略草稿
         </button>
       </div>
 
