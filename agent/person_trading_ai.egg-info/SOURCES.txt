@@ -205,6 +205,7 @@ agent/src/api/attribution_routes.py
 agent/src/api/auth_routes.py
 agent/src/api/channels_routes.py
 agent/src/api/connection_routes.py
+agent/src/api/data_routes.py
 agent/src/api/helpers.py
 agent/src/api/insight_routes.py
 agent/src/api/live_routes.py
@@ -274,6 +275,12 @@ agent/src/config/schema.py
 agent/src/core/__init__.py
 agent/src/core/runner.py
 agent/src/core/state.py
+agent/src/data/__init__.py
+agent/src/data/cache_store.py
+agent/src/data/gateway.py
+agent/src/data/intelligence.py
+agent/src/data/market_desk.py
+agent/src/data/tushare_probe.py
 agent/src/entities/__init__.py
 agent/src/entities/cashflow.py
 agent/src/entities/ingest.py
@@ -771,6 +778,9 @@ agent/src/governance/manifest.py
 agent/src/hypotheses/__init__.py
 agent/src/hypotheses/cli_handlers.py
 agent/src/hypotheses/registry.py
+agent/src/insight/__init__.py
+agent/src/insight/module_copilot.py
+agent/src/insight/trading_cycle_agent.py
 agent/src/live/__init__.py
 agent/src/live/audit.py
 agent/src/live/classification.py
@@ -780,6 +790,8 @@ agent/src/live/halt.py
 agent/src/live/order_guard.py
 agent/src/live/paths.py
 agent/src/live/pending_action.py
+agent/src/live/qbit_gate.py
+agent/src/live/qbit_halt_bridge.py
 agent/src/live/registry.py
 agent/src/live/sdk_order_gate.py
 agent/src/live/advisory/__init__.py
@@ -1328,6 +1340,11 @@ agent/src/strategy_store/metrics.py
 agent/src/strategy_store/models.py
 agent/src/strategy_store/sqlite_store.py
 agent/src/strategy_store/store.py
+agent/src/strategy_yaml/__init__.py
+agent/src/strategy_yaml/exporter.py
+agent/src/strategy_yaml/importer.py
+agent/src/strategy_yaml/models.py
+agent/src/strategy_yaml/python_module.py
 agent/src/swarm/__init__.py
 agent/src/swarm/grounding.py
 agent/src/swarm/models.py
@@ -1615,6 +1632,7 @@ agent/tests/test_binance_tolerance_calibration.py
 agent/tests/test_binance_usdm_readonly.py
 agent/tests/test_block_trades_bare_code.py
 agent/tests/test_block_trades_tool.py
+agent/tests/test_cache_store.py
 agent/tests/test_cashflow_analytics_tool.py
 agent/tests/test_ccxt_interval_map.py
 agent/tests/test_ccxt_loader_bounded.py
@@ -1675,6 +1693,7 @@ agent/tests/test_cross_market_annualization.py
 agent/tests/test_cross_market_strategy_template.py
 agent/tests/test_crypto_engine.py
 agent/tests/test_daily_count.py
+agent/tests/test_data_capabilities.py
 agent/tests/test_data_routing_sources_subset.py
 agent/tests/test_default_deny_unknown_robinhood_tool.py
 agent/tests/test_dhan_period_reject.py
@@ -1814,6 +1833,7 @@ agent/tests/test_margin_trading_prefix_symbol.py
 agent/tests/test_margin_trading_tool.py
 agent/tests/test_market_data.py
 agent/tests/test_market_data_tool.py
+agent/tests/test_market_desk.py
 agent/tests/test_market_detection.py
 agent/tests/test_market_hooks_liquidation.py
 agent/tests/test_market_overview_indices.py
@@ -1848,6 +1868,7 @@ agent/tests/test_metrics_inf_zero_equity.py
 agent/tests/test_metrics_tracking_error.py
 agent/tests/test_ml_strategy_skill.py
 agent/tests/test_models.py
+agent/tests/test_module_copilot.py
 agent/tests/test_module_os_helpers.py
 agent/tests/test_mootdx_loader.py
 agent/tests/test_msteams_inbound_body_limit.py
@@ -1914,6 +1935,8 @@ agent/tests/test_progress.py
 agent/tests/test_provider_diagnostics.py
 agent/tests/test_provider_header_isolation.py
 agent/tests/test_pykrx_loader.py
+agent/tests/test_qbit_halt_bridge.py
+agent/tests/test_qbit_live_mandate_gate.py
 agent/tests/test_quantlib_tool.py
 agent/tests/test_qveris_loader.py
 agent/tests/test_qveris_mcp.py
@@ -2044,6 +2067,8 @@ agent/tests/test_strategy_discovery_store.py
 agent/tests/test_strategy_discovery_tools.py
 agent/tests/test_strategy_store.py
 agent/tests/test_strategy_store_adaptation.py
+agent/tests/test_strategy_yaml_export.py
+agent/tests/test_strategy_yaml_import.py
 agent/tests/test_stream_retry_escalation.py
 agent/tests/test_swarm_cancel_mid_flight_worker.py
 agent/tests/test_swarm_dag_gating.py
@@ -2103,6 +2128,7 @@ agent/tests/test_trade_journal_parser_slash_crypto.py
 agent/tests/test_trade_journal_parser_to_float_nan.py
 agent/tests/test_trading212_connector.py
 agent/tests/test_trading_connections.py
+agent/tests/test_trading_cycle_agent.py
 agent/tests/test_turnover_aware_optimizer.py
 agent/tests/test_tushare_daily_alias_1d.py
 agent/tests/test_tushare_fallbacks.py

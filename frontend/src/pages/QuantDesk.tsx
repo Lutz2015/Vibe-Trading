@@ -17,6 +17,10 @@ import {
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
+import { ModuleCopilot } from "@/components/common/ModuleCopilot";
+import { TradingCycleAgentLog } from "@/components/trading/TradingCycleAgentLog";
+import { formatHaltDetail, isHaltActive } from "@/lib/haltStatus";
+import { formatLiveGateReasons, isLiveGateBlocked } from "@/lib/liveGate";
 import {
   api,
   type QbitAutomationStatus,
@@ -78,6 +82,11 @@ export function QuantDesk() {
   >([]);
   const [strategies, setStrategies] = useState<Array<Record<string, unknown>>>([]);
   const [selectingStrategy, setSelectingStrategy] = useState<string | null>(null);
+  const [topNDraft, setTopNDraft] = useState<number>(4);
+  const [modeDraft, setModeDraft] = useState<string>("momentum");
+  const [genIntent, setGenIntent] = useState("");
+  const [genText, setGenText] = useState("");
+  const [genLoading, setGenLoading] = useState(false);
 
   const pnl = useMemo(() => {
     if (!snapshot) return 0;
@@ -88,6 +97,18 @@ export function QuantDesk() {
     if (!snapshot || snapshot.initial_cash <= 0) return 0;
     return (pnl / snapshot.initial_cash) * 100;
   }, [pnl, snapshot]);
+
+  const liveGateBlocked = useMemo(() => isLiveGateBlocked(automation), [automation]);
+  const liveGateReasonText = useMemo(
+    () => formatLiveGateReasons(automation?.live_gate?.reasons, t),
+    [automation?.live_gate?.reasons, t],
+  );
+
+  const haltActive = useMemo(() => isHaltActive(ops), [ops]);
+  const haltDetailText = useMemo(
+    () => formatHaltDetail(ops?.halt, t),
+    [ops?.halt, t],
+  );
 
   const positionValue = useMemo(() => {
     if (!snapshot) return 0;
@@ -169,7 +190,7 @@ export function QuantDesk() {
 
   const handleKillSwitch = async () => {
     try {
-      const next = !(ops?.killSwitch ?? false);
+      const next = !haltActive;
       setOps(await api.qbitKillSwitch(next));
       await loadAll();
     } catch (e) {
@@ -231,6 +252,53 @@ export function QuantDesk() {
     [automation],
   );
 
+  const selectedStrategy = useMemo(
+    () => (automation?.strategies ?? []).find((s) => s.enabled) ?? automation?.strategies?.[0],
+    [automation],
+  );
+
+  useEffect(() => {
+    if (!selectedStrategy) return;
+    setTopNDraft(Number(selectedStrategy.top_n ?? 4));
+    setModeDraft(String(selectedStrategy.mode ?? "momentum"));
+  }, [selectedStrategy]);
+
+  const handleSaveParams = async () => {
+    if (!selectedStrategy) return;
+    const id = String(selectedStrategy.strategy_id);
+    try {
+      const status = await api.qbitPatchStrategy(id, {
+        top_n: topNDraft,
+        mode: modeDraft,
+      });
+      setAutomation(status);
+      setNotice(
+        t("quant.paramsSaved", { defaultValue: `已更新 ${id} 参数` }),
+      );
+      await loadAll();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "保存参数失败");
+    }
+  };
+
+  const handleGenerateStrategy = async () => {
+    if (!genIntent.trim()) return;
+    setGenLoading(true);
+    setGenText("");
+    try {
+      const res = await api.analyzeInsight({
+        kind: "strategy_gen",
+        payload: { intent: genIntent },
+        locale: navigator.language || "zh-CN",
+      });
+      setGenText(res.text || res.error || "生成失败");
+    } catch (e) {
+      setGenText(e instanceof Error ? e.message : "生成失败");
+    } finally {
+      setGenLoading(false);
+    }
+  };
+
   const panes: { id: Pane; label: string; icon: typeof Gauge }[] = [
     { id: "cockpit", label: t("quant.paneCockpit", { defaultValue: "策略驾驶舱" }), icon: Gauge },
     { id: "strategies", label: t("quant.paneStrategies", { defaultValue: "策略仓库" }), icon: Zap },
@@ -251,15 +319,15 @@ export function QuantDesk() {
             <span
               className={cn(
                 "rounded-full px-2 py-0.5 text-[11px] font-medium",
-                ops?.killSwitch
+                haltActive
                   ? "bg-rose-500/15 text-rose-500"
                   : automation?.scheduler_running
                     ? "bg-emerald-500/15 text-emerald-500"
                     : "bg-muted text-muted-foreground",
               )}
             >
-              {ops?.killSwitch
-                ? t("quant.halted", { defaultValue: "已急停" })
+              {haltActive
+                ? t("tradingCenter.halted", { defaultValue: "已熔断" })
                 : automation?.scheduler_running
                   ? t("quant.autoOn", { defaultValue: "自动运行中" })
                   : t("quant.manualOnly", { defaultValue: "仅手动" })}
@@ -285,7 +353,7 @@ export function QuantDesk() {
           <button
             type="button"
             onClick={() => void handleRunCycle()}
-            disabled={runningCycle}
+            disabled={runningCycle || liveGateBlocked}
             className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm hover:opacity-90 disabled:opacity-60"
           >
             {runningCycle ? (
@@ -297,6 +365,21 @@ export function QuantDesk() {
           </button>
         </div>
       </header>
+
+      {liveGateBlocked ? (
+        <div className="flex items-start gap-2 rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm text-amber-700 dark:text-amber-300">
+          <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0" />
+          <div>
+            <div className="font-medium">{t("liveGate.blockedTitle", { defaultValue: "实盘门禁未通过" })}</div>
+            <div className="mt-0.5 text-xs">{liveGateReasonText}</div>
+            <div className="mt-1 text-xs opacity-80">
+              {t("liveGate.blockedHint", {
+                defaultValue: "请先提交 mandate、配置 live_broker，并设置 EXECUTION_LIVE_ENABLED=true。",
+              })}
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       {error ? (
         <div className="flex items-start gap-2 rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm text-amber-700 dark:text-amber-300">
@@ -349,14 +432,17 @@ export function QuantDesk() {
         </div>
         <div className="rounded-xl border bg-card px-4 py-3">
           <div className="text-[11px] text-muted-foreground">
-            {t("quant.mode", { defaultValue: "模式" })}
+            {t("quant.accountType", { defaultValue: "账户类型" })}
           </div>
           <div className="mt-0.5 text-sm font-semibold">
             {automation?.execution_mode === "live"
-              ? t("quant.live", { defaultValue: "实盘" })
-              : t("quant.paper", { defaultValue: "模拟盘" })}
+              ? t("quant.live", { defaultValue: "A股实盘" })
+              : t("quant.paper", { defaultValue: "A股实盘" })}
           </div>
-          <div className="text-[11px] text-muted-foreground">
+          <div className="mt-1 text-[11px] text-muted-foreground">
+            <span className="text-muted-foreground/80">
+              {t("quant.tradingSession", { defaultValue: "交易时段" })}
+            </span>{" "}
             {automation?.trading_hours?.start ?? "09:30"}–{automation?.trading_hours?.end ?? "15:00"}
           </div>
         </div>
@@ -373,17 +459,30 @@ export function QuantDesk() {
             {automation?.last_run_status ?? "—"}
           </div>
         </div>
-        <div className="rounded-xl border bg-card px-4 py-3">
+        <div
+          className={cn(
+            "rounded-xl border bg-card px-4 py-3",
+            haltActive && "border-rose-500/30 bg-rose-500/5",
+          )}
+        >
           <div className="text-[11px] text-muted-foreground">
-            {t("quant.riskSwitch", { defaultValue: "风险开关" })}
+            {t("tradingCenter.haltStatus", { defaultValue: "熔断 / Halt" })}
           </div>
-          <div className="mt-0.5 text-sm font-semibold">
-            {ops?.tradingEnabled
-              ? t("quant.tradingOn", { defaultValue: "交易开启" })
-              : t("quant.tradingOff", { defaultValue: "交易关闭" })}
+          <div
+            className={cn(
+              "mt-0.5 text-sm font-semibold",
+              haltActive ? "text-rose-600 dark:text-rose-400" : "",
+            )}
+          >
+            {haltActive
+              ? t("tradingCenter.halted", { defaultValue: "已熔断" })
+              : t("tradingCenter.normal", { defaultValue: "正常" })}
           </div>
           <div className="text-[11px] text-muted-foreground">
-            {ops?.killSwitch ? "Kill Switch ON" : t("quant.killOk", { defaultValue: "急停未触发" })}
+            {haltDetailText ??
+              (ops?.tradingEnabled
+                ? t("quant.tradingOn", { defaultValue: "交易开启" })
+                : t("quant.tradingOff", { defaultValue: "交易关闭" }))}
           </div>
         </div>
       </section>
@@ -541,7 +640,7 @@ export function QuantDesk() {
                 <button
                   type="button"
                   onClick={() => void handleRunCycle()}
-                  disabled={runningCycle}
+                  disabled={runningCycle || liveGateBlocked}
                   className="inline-flex items-center justify-center gap-2 rounded-md bg-primary px-3 py-2.5 text-sm font-medium text-primary-foreground disabled:opacity-60"
                 >
                   {runningCycle ? (
@@ -554,8 +653,9 @@ export function QuantDesk() {
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     type="button"
+                    disabled={liveGateBlocked}
                     onClick={() => void api.qbitStartAutomation().then(loadAll)}
-                    className="rounded-md border px-3 py-2 text-sm hover:bg-muted"
+                    className="rounded-md border px-3 py-2 text-sm hover:bg-muted disabled:opacity-50"
                   >
                     {t("quant.startScheduler", { defaultValue: "启动调度" })}
                   </button>
@@ -581,15 +681,22 @@ export function QuantDesk() {
                     onClick={() => void handleKillSwitch()}
                     className={cn(
                       "inline-flex items-center justify-center gap-1 rounded-md border px-3 py-2 text-sm",
-                      ops?.killSwitch
+                      haltActive
                         ? "border-rose-500/50 bg-rose-500/10 text-rose-600"
                         : "hover:bg-muted",
                     )}
                   >
                     <ShieldAlert className="h-3.5 w-3.5" />
-                    {ops?.killSwitch ? "Kill ON" : "Kill Switch"}
+                    {haltActive
+                      ? t("quant.killSwitchOn", { defaultValue: "解除急停" })
+                      : t("quant.killSwitchOff", { defaultValue: "急停 Kill Switch" })}
                   </button>
                 </div>
+                {haltActive && haltDetailText ? (
+                  <p className="text-[11px] leading-relaxed text-muted-foreground">
+                    {haltDetailText}
+                  </p>
+                ) : null}
                 <div className="mt-1 flex items-center gap-2 rounded-md border px-2 py-1.5">
                   <Wallet className="h-4 w-4 text-muted-foreground" />
                   <input
@@ -645,7 +752,37 @@ export function QuantDesk() {
             </section>
           </div>
 
+          <TradingCycleAgentLog
+            log={
+              cycleResult?.agent_log
+                ? {
+                    as_of: cycleResult.as_of,
+                    ok: cycleResult.agent_log_ok ?? false,
+                    text: cycleResult.agent_log,
+                    tool_steps: cycleResult.agent_tool_steps,
+                  }
+                : automation?.last_agent_log
+            }
+            enabled={automation?.agent_log_enabled}
+          />
+
           {/* Positions — Chinese name first */}
+          <ModuleCopilot
+            kind="quant"
+            title={t("quant.agentOps", { defaultValue: "Agent 交易运营分析" })}
+            autoRun={false}
+            payload={{
+              strategies: automation?.strategies ?? [],
+              positions: (snapshot?.positions ?? []).map((p) => ({
+                symbol: p.symbol,
+                name: p.name,
+                quantity: p.quantity,
+                avg_cost: p.avg_cost,
+                last_price: p.last_price,
+              })),
+              orders: cycleResult?.orders ?? [],
+            }}
+          />
           <section className="rounded-xl border bg-card">
             <header className="flex items-center justify-between border-b px-4 py-3">
               <div>
@@ -906,7 +1043,13 @@ export function QuantDesk() {
                             ? t("quant.modeMeanRev", { defaultValue: "均值回归" })
                             : s.mode === "equal_weight"
                               ? t("quant.modeEqual", { defaultValue: "等权配置" })
-                              : t("quant.modeMomentum", { defaultValue: "日内动量" })}
+                              : s.mode === "low_volatility"
+                                ? t("quant.modeLowVol", { defaultValue: "低波动" })
+                                : s.mode === "strong_hand"
+                                  ? t("quant.modeStrong", { defaultValue: "强势股" })
+                                  : s.mode === "dip_buy"
+                                    ? t("quant.modeDip", { defaultValue: "超跌反弹" })
+                                    : t("quant.modeMomentum", { defaultValue: "日内动量" })}
                           {` · Top ${Number(s.top_n ?? 5)} · 池 ${Number(s.universe_size ?? 0)}`}
                         </div>
                       </div>
@@ -933,6 +1076,99 @@ export function QuantDesk() {
             {!automation?.strategies?.length ? (
               <p className="mt-3 text-sm text-muted-foreground">—</p>
             ) : null}
+
+            {/* Parameter panel for the active strategy */}
+            {selectedStrategy ? (
+              <div className="mt-4 rounded-lg border bg-background/40 p-3">
+                <div className="mb-2 flex flex-wrap items-center gap-2">
+                  <h3 className="text-sm font-semibold">
+                    {t("quant.params", { defaultValue: "策略参数" })}
+                  </h3>
+                  <span className="text-xs text-muted-foreground">
+                    {String(selectedStrategy.strategy_id)}
+                  </span>
+                </div>
+                <div className="flex flex-wrap items-end gap-3">
+                  <label className="text-xs">
+                    {t("quant.mode", { defaultValue: "模式" })}
+                    <select
+                      value={modeDraft}
+                      onChange={(e) => setModeDraft(e.target.value)}
+                      className="mt-1 block rounded-md border bg-background px-2 py-1.5 text-sm"
+                    >
+                      <option value="momentum">日内动量</option>
+                      <option value="mean_reversion">均值回归</option>
+                      <option value="equal_weight">等权配置</option>
+                      <option value="low_volatility">低波动</option>
+                      <option value="strong_hand">强势股</option>
+                      <option value="dip_buy">超跌反弹</option>
+                    </select>
+                  </label>
+                  <label className="text-xs">
+                    Top N
+                    <input
+                      type="number"
+                      min={1}
+                      max={20}
+                      value={topNDraft}
+                      onChange={(e) => setTopNDraft(Number(e.target.value))}
+                      className="mt-1 w-20 rounded-md border bg-background px-2 py-1.5 text-sm"
+                    />
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => void handleSaveParams()}
+                    className="rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground"
+                  >
+                    {t("quant.saveParams", { defaultValue: "保存参数" })}
+                  </button>
+                </div>
+              </div>
+            ) : null}
+          </div>
+
+          {/* Agent strategy generator */}
+          <div className="rounded-xl border bg-card p-4">
+            <h2 className="text-sm font-semibold">
+              {t("quant.strategyGen", { defaultValue: "Agent 生成策略" })}
+            </h2>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {t("quant.strategyGenHint", {
+                defaultValue:
+                  "用一句话描述你要的策略，例如「只买今天跌最多的 3 只银行股」或「低波动等权持有 4 只」。生成后可复制到配置或交给 Agent 继续改。",
+              })}
+            </p>
+            <div className="mt-3 flex flex-col gap-2">
+              <textarea
+                value={genIntent}
+                onChange={(e) => setGenIntent(e.target.value)}
+                rows={3}
+                placeholder={t("quant.strategyGenPlaceholder", {
+                  defaultValue: "描述你的选股/调仓规则…",
+                })}
+                className="w-full rounded-md border bg-background px-3 py-2 text-sm"
+              />
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  disabled={genLoading || !genIntent.trim()}
+                  onClick={() => void handleGenerateStrategy()}
+                  className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground disabled:opacity-60"
+                >
+                  {genLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Zap className="h-4 w-4" />
+                  )}
+                  {t("quant.generate", { defaultValue: "生成策略配置" })}
+                </button>
+              </div>
+              {genText ? (
+                <pre className="max-h-64 overflow-auto rounded-md bg-muted/30 p-3 text-[11px] leading-relaxed">
+                  {genText}
+                </pre>
+              ) : null}
+            </div>
           </div>
 
           {strategies.length ? (
@@ -1014,9 +1250,23 @@ export function QuantDesk() {
             {t("quant.runBacktest", { defaultValue: "开始回测" })}
           </button>
           {btResult ? (
-            <pre className="mt-4 max-h-80 overflow-auto rounded-md bg-muted/40 p-3 text-[11px] leading-relaxed">
-              {JSON.stringify(btResult, null, 2)}
-            </pre>
+            <>
+              <pre className="mt-4 max-h-80 overflow-auto rounded-md bg-muted/40 p-3 text-[11px] leading-relaxed">
+                {JSON.stringify(btResult, null, 2)}
+              </pre>
+              <ModuleCopilot
+                kind="backtest"
+                className="mt-4"
+                title={t("quant.backtestInsight", { defaultValue: "Agent 回测解读" })}
+                payload={{
+                  metrics: btResult,
+                  symbol: btSymbol,
+                  start: btStart,
+                  end: btEnd,
+                  params: { short_window: btShort, long_window: btLong },
+                }}
+              />
+            </>
           ) : null}
         </section>
       ) : null}

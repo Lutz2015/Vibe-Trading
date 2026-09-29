@@ -1,0 +1,30 @@
+# person-trading-strategy.yaml v0.1 — python_module example
+# Import with module_code from strategies/modules/momentum_live.py
+
+meta:
+  id: momentum_python_live
+  name: Python 动量模块
+  version: "0.1.0"
+  market: a_share
+  description: 调用 build_targets() 的 python_module 示例。
+
+universe:
+  symbols:
+    - "000001.SZ"
+    - "600519.SH"
+    - "000858.SZ"
+    - "601318.SH"
+
+signals:
+  type: python_module
+  path: strategies/modules/momentum_live.py
+  params:
+    top_n: 2
+
+execution:
+  mode: paper
+  time_local: "14:50"
+  poll_interval_sec: 60
+
+portfolio:
+  initial_cash: 1000000

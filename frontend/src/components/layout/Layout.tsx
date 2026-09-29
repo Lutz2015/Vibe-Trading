@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { useEffect, useRef, useState } from "react";
 import { Link, Outlet, useLocation, useSearchParams } from "react-router";
-import { Activity, BarChart3, Bot, CalendarClock, CandlestickChart, Check, ChevronDown, FileText, Languages, Moon, Sun, Plus, Trash2, Pencil, MessageSquare, ChevronsLeft, ChevronsRight, Settings, Layers, Loader2, WalletCards, LineChart, Network, Thermometer, Newspaper, FileCode2, Gauge } from "lucide-react";
+import { Activity, BarChart3, Bot, Brain, CalendarClock, CandlestickChart, Check, ChevronDown, FileText, Languages, Moon, Sun, Plus, Trash2, Pencil, MessageSquare, ChevronsLeft, ChevronsRight, Settings, Layers, Loader2, WalletCards, LineChart, Network, Thermometer, Newspaper, FileCode2, Gauge, CircleDollarSign } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useDarkMode } from "@/hooks/useDarkMode";
 import { api, type SessionItem } from "@/lib/api";
@@ -21,9 +21,11 @@ export function Layout() {
   // matches both "/" and legacy "/agent" deep links.
   const NAV = [
     { to: "/", icon: Bot, label: t('layout.agent') },
+    { to: "/trading", icon: CircleDollarSign, label: t('layout.tradingCenter') },
     { to: "/market", icon: LineChart, label: t('layout.marketOverview') },
     { to: "/logic-chain", icon: Network, label: t('layout.logicChain') },
     { to: "/sentiment", icon: Thermometer, label: t('layout.sentiment') },
+    { to: "/intelligence", icon: Brain, label: t('layout.intelligence') },
     { to: "/news", icon: Newspaper, label: t('layout.newsRadar') },
     { to: "/strategies", icon: FileCode2, label: t('layout.strategyLibrary') },
     { to: "/quant-desk", icon: Gauge, label: t('layout.quantDesk') },
@@ -264,45 +266,38 @@ export function Layout() {
         {/* Spacer when sessions are hidden */}
         {collapsed && <div className="flex-1" />}
 
-        {/* Footer — Settings sits bottom-left */}
-        <div className={cn("mt-auto border-t border-border/60", collapsed ? "p-1 flex flex-col items-center gap-1" : "p-2 space-y-1 max-md:p-1")}>
-          <Link
-            to="/settings"
-            aria-label={t('layout.settings')}
-            className={cn(
-              "flex items-center rounded-md text-[13px] transition-colors",
-              collapsed ? "justify-center px-2 py-1.5" : "gap-3 px-3 py-1.5",
-              pathname.startsWith("/settings")
-                ? "bg-primary/10 text-primary font-medium"
-                : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
-            )}
-            title={collapsed ? t('layout.settings') : undefined}
-          >
-            <Settings className="h-4 w-4 shrink-0" aria-hidden="true" />
-            {!collapsed && <span>{t('layout.settings')}</span>}
-          </Link>
-          {collapsed ? (
-            <button onClick={() => setCollapsed(false)} className="p-1.5 text-muted-foreground hover:text-foreground rounded transition-colors" title={t('layout.expand')}>
-              <ChevronsRight className="h-3.5 w-3.5" />
-            </button>
-          ) : (
-            <div className="flex items-center justify-between px-1 max-md:flex-col">
-              <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground/60 max-md:hidden">
-                <span>{t('app.version')}</span>
-                <span aria-hidden="true">·</span>
-                <Link to="/about" className="transition-colors hover:text-foreground">
-                  {t('layout.about')}
-                </Link>
-              </div>
-              <button
-                onClick={() => setCollapsed(true)}
-                className="p-1.5 text-muted-foreground hover:text-foreground rounded transition-colors max-md:hidden"
-                title={t('layout.collapse')}
-              >
+        {/* Footer — settings + collapse on one row; version/about in Settings */}
+        <div className={cn("mt-auto border-t border-border/60", collapsed ? "p-1" : "p-2 max-md:p-1")}>
+          <div className={cn("flex items-center", collapsed ? "flex-col gap-1" : "gap-0.5")}>
+            <Link
+              to="/settings"
+              aria-label={t('layout.settings')}
+              className={cn(
+                "flex min-w-0 flex-1 items-center rounded-md text-[13px] transition-colors",
+                collapsed ? "justify-center px-2 py-1.5" : "gap-3 px-3 py-1.5",
+                pathname.startsWith("/settings")
+                  ? "bg-primary/10 text-primary font-medium"
+                  : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+              )}
+              title={collapsed ? t('layout.settings') : undefined}
+            >
+              <Settings className="h-4 w-4 shrink-0" aria-hidden="true" />
+              {!collapsed && <span className="truncate">{t('layout.settings')}</span>}
+            </Link>
+            <button
+              type="button"
+              onClick={() => setCollapsed(!collapsed)}
+              className="shrink-0 p-1.5 text-muted-foreground hover:text-foreground rounded transition-colors max-md:hidden"
+              title={collapsed ? t('layout.expand') : t('layout.collapse')}
+              aria-label={collapsed ? t('layout.expand') : t('layout.collapse')}
+            >
+              {collapsed ? (
+                <ChevronsRight className="h-3.5 w-3.5" />
+              ) : (
                 <ChevronsLeft className="h-3.5 w-3.5" />
-              </button>
-            </div>
-          )}
+              )}
+            </button>
+          </div>
         </div>
       </aside>
 

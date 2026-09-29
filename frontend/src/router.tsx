@@ -46,11 +46,17 @@ const Sentiment = lazy(() =>
 const NewsRadar = lazy(() =>
   import("@/pages/NewsRadar").then((m) => ({ default: m.NewsRadar })),
 );
+const IntelligenceCenter = lazy(() =>
+  import("@/pages/IntelligenceCenter").then((m) => ({ default: m.IntelligenceCenter })),
+);
 const StrategyLibrary = lazy(() =>
   import("@/pages/StrategyLibrary").then((m) => ({ default: m.StrategyLibrary })),
 );
 const QuantDesk = lazy(() =>
   import("@/pages/QuantDesk").then((m) => ({ default: m.QuantDesk })),
+);
+const TradingCenter = lazy(() =>
+  import("@/pages/TradingCenter").then((m) => ({ default: m.TradingCenter })),
 );
 
 function PageLoader() {
@@ -89,7 +95,9 @@ export const router = createBrowserRouter([
       { path: "/logic-chain", element: wrap(LogicChain) },
       { path: "/sentiment", element: wrap(Sentiment) },
       { path: "/news", element: wrap(NewsRadar) },
+      { path: "/intelligence", element: wrap(IntelligenceCenter) },
       { path: "/strategies", element: wrap(StrategyLibrary) },
+      { path: "/trading", element: wrap(TradingCenter) },
       { path: "/quant-desk", element: wrap(QuantDesk) },
       { path: "/alpha-zoo", element: wrap(AlphaZoo) },
       { path: "/alpha-zoo/bench", element: wrap(AlphaZoo) },

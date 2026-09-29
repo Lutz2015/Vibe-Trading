@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Activity, RefreshCw, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { api, type SentimentItem } from "@/lib/api";
-import { AiInsightPanel } from "@/components/common/AiInsightPanel";
+import { ModuleCopilot } from "@/components/common/ModuleCopilot";
 import { useTranslation } from "react-i18next";
 import type { TFunction } from "i18next";
 
@@ -268,7 +268,7 @@ export function Sentiment() {
             })}
       </section>
 
-      <AiInsightPanel
+      <ModuleCopilot
         kind="sentiment"
         title={t("sentimentPage.aiInsight")}
         autoRun={false}

@@ -1,0 +1,57 @@
+# person-trading-strategy.yaml v0.1 — example strategy artifact
+# Import path: Strategy Lab → Import YAML (Phase 1)
+
+meta:
+  id: momentum_topn
+  name: 日内动量 Top N
+  version: "0.1.0"
+  market: a_share
+  description: 从核心池中选取动量最强的 N 只等权持有，适合 A 股 paper 自动交易。
+
+universe:
+  symbols:
+    - "000001.SZ"
+    - "600519.SH"
+    - "000858.SZ"
+    - "601318.SH"
+    - "600036.SH"
+    - "000333.SZ"
+    - "601166.SH"
+    - "600900.SH"
+
+signals:
+  type: builtin
+  mode: momentum
+  params:
+    top_n: 4
+    lookback_days: 20
+
+execution:
+  mode: paper
+  rebalance: trading_days
+  rebalance_every_trading_days: 15
+  time_local: "14:50"
+  poll_interval_sec: 60
+  trading_hours:
+    start: "09:30"
+    end: "15:00"
+
+portfolio:
+  initial_cash: 1000000
+  total_exposure: 1.0
+  max_single_weight: 0.5
+  min_trade_lot: 100
+  fee_bps: 3.0
+
+risk:
+  max_drawdown_halt: 0.15
+  max_daily_loss: 0.05
+  kill_switch: true
+
+agent:
+  enabled: true
+  override_on_news: true
+  tools:
+    - get_market_data
+    - get_fund_flow
+    - northbound

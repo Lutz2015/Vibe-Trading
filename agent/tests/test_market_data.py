@@ -34,12 +34,12 @@ from src.market_data import (
 @pytest.mark.parametrize(
     "code,expected",
     [
-        ("600519.SH", "tencent"),
-        ("000001.SZ", "tencent"),
-        ("430139.BJ", "tencent"),
+        ("600519.SH", "tushare"),
+        ("000001.SZ", "tushare"),
+        ("430139.BJ", "tushare"),
         ("AAPL.US", "yahoo"),
-        ("700.HK", "tencent"),
-        ("00700.HK", "tencent"),
+        ("700.HK", "tushare"),
+        ("00700.HK", "tushare"),
         ("RELIANCE.NS", "yahoo"),  # India NSE
         ("TCS.NS", "yahoo"),
         ("M&M.NS", "yahoo"),  # ampersand in ticker
@@ -385,7 +385,7 @@ def test_fetch_auto_hk_walks_hk_chain_not_us_chain() -> None:
         source="auto",
         loader_resolver=resolver,
     )
-    assert attempts[:2] == ["tencent", "eastmoney"]
+    assert attempts[:3] == ["tushare", "tencent", "eastmoney"]
     assert "stooq" not in attempts and "sina" not in attempts
     assert "_unresolved" not in out
     assert "00700.HK" in out
@@ -746,8 +746,7 @@ def test_fetch_chain_provider_hook_wins_over_override(
         fallback_chain_provider=lambda src: ["eastmoney"],
     )
     # Detected source first, then the hook's chain — never the override order.
-    assert attempts[:2] == ["tencent", "eastmoney"]
-    assert "tushare" not in attempts
+    assert attempts[:2] == ["tushare", "eastmoney"]
     assert "600519.SH" in out
 
 

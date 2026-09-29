@@ -18,4 +18,13 @@ describe("Vite API proxy config", () => {
   it("proxies authentication endpoints", () => {
     expect(config).toContain('"/auth"');
   });
+
+  it("proxies qbit quant desk endpoints", () => {
+    expect(config).toContain('"/qbit"');
+  });
+
+  it("proxies sentiment and strategy library API prefixes", () => {
+    expect(config).toContain('"/sentiment"');
+    expect(config).toContain('"/strategies"');
+  });
 });

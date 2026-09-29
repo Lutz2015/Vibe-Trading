@@ -74,6 +74,37 @@ class StrategySelectRequest(BaseModel):
     strategy_ids: list[str]
 
 
+class StrategyYamlImportRequest(BaseModel):
+    yaml: str = Field(..., min_length=10)
+    activate: bool = False
+    merge_globals: bool = True
+    module_code: str | None = None
+
+
+class StrategyYamlExportResponse(BaseModel):
+    strategy_id: str
+    yaml: str
+
+
+class AgentToolStepView(BaseModel):
+    name: str
+    ok: bool = True
+    summary: str = ""
+
+
+class AgentLogView(BaseModel):
+    as_of: str
+    rebalance_id: str | None = None
+    skipped: bool = False
+    skip_reason: str = ""
+    ok: bool = False
+    text: str = ""
+    error: str | None = None
+    tool_steps: list[AgentToolStepView] = []
+    iterations: int = 0
+    model: str | None = None
+
+
 class AutomationStatus(BaseModel):
     enabled: bool
     scheduler_running: bool
@@ -88,6 +119,10 @@ class AutomationStatus(BaseModel):
     trading_hours: dict[str, str] = {}
     rebalance_window: dict[str, Any] = {}
     initial_cash: float | None = None
+    last_agent_log: AgentLogView | None = None
+    agent_log_enabled: bool = False
+    live_broker: str | None = None
+    live_gate: dict[str, Any] | None = None
 
 
 class RunCycleRequest(BaseModel):
@@ -122,6 +157,9 @@ class RunCycleResponse(BaseModel):
     message: str = ""
     strategies: list[StrategyRunDetail] = []
     orders: list[OrderDetail] = []
+    agent_log: str = ""
+    agent_log_ok: bool = False
+    agent_tool_steps: list[AgentToolStepView] = []
 
 
 def wire_dependencies(
@@ -243,15 +281,39 @@ def _score_symbol(quote: Any) -> float:
     return (price / prev_close) - 1.0
 
 
+STRATEGY_MODES = (
+    "momentum",
+    "mean_reversion",
+    "equal_weight",
+    "low_volatility",
+    "strong_hand",
+    "dip_buy",
+)
+
+
 def _strategy_mode(strategy_cfg: dict[str, Any]) -> str:
     params = strategy_cfg.get("params", {}) or {}
     mode = str(params.get("mode") or strategy_cfg.get("mode") or "momentum").strip().lower()
-    if mode in {"momentum", "mean_reversion", "equal_weight"}:
+    if mode in STRATEGY_MODES:
         return mode
     return "momentum"
 
 
+def _is_python_module_strategy(strategy_cfg: dict[str, Any]) -> bool:
+    if str(strategy_cfg.get("signal_type", "")).strip().lower() == "python_module":
+        return True
+    params = strategy_cfg.get("params", {}) or {}
+    return str(params.get("signal_type", "")).strip().lower() == "python_module"
+
+
 def strategy_rule_text(strategy_cfg: dict[str, Any]) -> str:
+    if _is_python_module_strategy(strategy_cfg):
+        params = strategy_cfg.get("params", {}) or {}
+        universe_size = len(params.get("universe_symbols", []) or [])
+        module_path = strategy_cfg.get("module_path") or params.get("module_path") or "python module"
+        return (
+            f"Python 模块策略：从 {universe_size} 只股票池调用 {module_path} 的 build_targets() 选股"
+        )
     params = strategy_cfg.get("params", {}) or {}
     top_n = int(params.get("top_n", 5))
     universe_size = len(params.get("universe_symbols", []) or [])
@@ -266,9 +328,104 @@ def strategy_rule_text(strategy_cfg: dict[str, Any]) -> str:
             f"等权配置：股票池 {universe_size} 只全部纳入，"
             f"按等权（上限 top_n={top_n} 只时取前 N）建仓，再平衡维持权重"
         )
+    if mode == "low_volatility":
+        return (
+            f"低波动：在 {universe_size} 只股票池中按日内波动 |涨跌幅| 升序，"
+            f"取前 {top_n} 只波动最小的等权买入，降低组合波动"
+        )
+    if mode == "strong_hand":
+        return (
+            f"强势回踩过滤：只在日内上涨的标的中按涨幅降序，"
+            f"取前 {top_n} 只等权买入（只做强势、不接飞刀）"
+        )
+    if mode == "dip_buy":
+        return (
+            f"超跌反弹：只在日内下跌的标的中按跌幅排序，"
+            f"取前 {top_n} 只等权买入（博反弹，需设止损）"
+        )
     return (
         f"日内动量：在 {universe_size} 只股票池中按 (现价/昨收-1) 降序，"
         f"取前 {top_n} 只等权买入，再平衡窗口拉回目标权重"
+    )
+
+
+def _agent_log_view(raw: dict[str, Any] | None) -> AgentLogView | None:
+    if not raw or not isinstance(raw, dict):
+        return None
+    steps = [
+        AgentToolStepView(
+            name=str(item.get("name", "")),
+            ok=bool(item.get("ok", True)),
+            summary=str(item.get("summary", "")),
+        )
+        for item in (raw.get("tool_steps") or [])
+        if isinstance(item, dict)
+    ]
+    return AgentLogView(
+        as_of=str(raw.get("as_of", "")),
+        rebalance_id=raw.get("rebalance_id"),
+        skipped=bool(raw.get("skipped", False)),
+        skip_reason=str(raw.get("skip_reason", "")),
+        ok=bool(raw.get("ok", False)),
+        text=str(raw.get("text", "")),
+        error=raw.get("error"),
+        tool_steps=steps,
+        iterations=int(raw.get("iterations", 0)),
+        model=raw.get("model"),
+    )
+
+
+def _finalize_cycle_response(
+    config: dict[str, Any],
+    response: RunCycleResponse,
+    *,
+    rebalance_id: str | None = None,
+    portfolio: dict[str, Any] | None = None,
+) -> RunCycleResponse:
+    """Attach Agent decision log to a cycle response (fail-closed)."""
+    try:
+        from src.insight.trading_cycle_agent import (
+            agent_log_enabled,
+            generate_cycle_decision_log,
+            persist_agent_log,
+        )
+    except Exception:  # noqa: BLE001
+        return response
+
+    if not agent_log_enabled(config):
+        return response
+
+    agent_cfg = config.get("agent_log") or {}
+    payload: dict[str, Any] = {
+        "as_of": response.as_of,
+        "skipped": response.skipped,
+        "skip_reason": response.skip_reason,
+        "rebalance_executed": response.rebalance_executed,
+        "orders_submitted": response.orders_submitted,
+        "orders_filled": response.orders_filled,
+        "message": response.message,
+        "rebalance_id": rebalance_id,
+        "portfolio": portfolio,
+        "strategies": [item.model_dump() for item in response.strategies],
+        "orders": [item.model_dump() for item in response.orders],
+    }
+    entry = generate_cycle_decision_log(
+        payload,
+        locale=str(agent_cfg.get("locale", "zh-CN")),
+        max_iterations=int(agent_cfg.get("max_iterations", 4)),
+    )
+    state = load_state()
+    persist_agent_log(state, entry)
+    save_state(state)
+    return response.model_copy(
+        update={
+            "agent_log": entry.text,
+            "agent_log_ok": entry.ok,
+            "agent_tool_steps": [
+                AgentToolStepView(name=s.name, ok=s.ok, summary=s.summary)
+                for s in entry.tool_steps
+            ],
+        }
     )
 
 
@@ -276,7 +433,24 @@ def build_strategy_targets(
     strategy_cfg: dict[str, Any],
     get_quotes: QuoteGetter,
 ) -> list[dict[str, Any]]:
-    params = strategy_cfg.get("params", {})
+    params = strategy_cfg.get("params", {}) or {}
+    if _is_python_module_strategy(strategy_cfg):
+        from src.strategy_yaml.python_module import build_targets_from_module
+
+        universe = [str(item) for item in params.get("universe_symbols", [])]
+        strategy_id = str(strategy_cfg.get("strategy_id", "")).strip()
+        if not universe:
+            raise ValueError(f"universe_symbols missing for strategy {strategy_id}")
+        quotes = get_quotes(universe)
+        module_path = strategy_cfg.get("module_path") or params.get("module_path")
+        return build_targets_from_module(
+            strategy_id,
+            quotes,
+            universe,
+            params,
+            module_path=str(module_path) if module_path else None,
+        )
+
     universe = [str(item) for item in params.get("universe_symbols", [])]
     top_n = int(params.get("top_n", 5))
     mode = _strategy_mode(strategy_cfg)
@@ -290,6 +464,17 @@ def build_strategy_targets(
         picked = [symbol for symbol, _ in scored[:top_n]] if top_n > 0 else [symbol for symbol, _ in scored]
     elif mode == "mean_reversion":
         ranked = sorted(scored, key=lambda item: item[1])
+        picked = [symbol for symbol, _ in ranked[:top_n]]
+    elif mode == "low_volatility":
+        ranked = sorted(scored, key=lambda item: abs(item[1]))
+        picked = [symbol for symbol, _ in ranked[:top_n]]
+    elif mode == "strong_hand":
+        leaders = [(symbol, score) for symbol, score in scored if score > 0]
+        ranked = sorted(leaders or scored, key=lambda item: item[1], reverse=True)
+        picked = [symbol for symbol, _ in ranked[:top_n]]
+    elif mode == "dip_buy":
+        dippers = [(symbol, score) for symbol, score in scored if score < 0]
+        ranked = sorted(dippers or scored, key=lambda item: item[1])
         picked = [symbol for symbol, _ in ranked[:top_n]]
     else:
         ranked = sorted(scored, key=lambda item: item[1], reverse=True)
@@ -322,14 +507,32 @@ def run_cycle(force: bool = False, rebalance: bool | None = None) -> RunCycleRes
     ingest_monitoring = _ingest_monitoring
 
     config = load_config()
+    try:
+        from src.live.qbit_gate import check_qbit_live_gate
+
+        gate = check_qbit_live_gate(config)
+        if gate.execution_mode == "live" and not gate.ready:
+            resp = RunCycleResponse(
+                skipped=True,
+                skip_reason="live_gate_blocked",
+                as_of=_now_local().isoformat(),
+                message=", ".join(gate.reasons) or "live_gate_blocked",
+            )
+            return _finalize_cycle_response(config, resp)
+    except Exception:  # noqa: BLE001 — gate import failures must not crash paper
+        pass
+
     if not bool(config.get("enabled", False)) and not force:
-        return RunCycleResponse(skipped=True, skip_reason="automation_disabled", as_of=_now_local().isoformat())
+        resp = RunCycleResponse(skipped=True, skip_reason="automation_disabled", as_of=_now_local().isoformat())
+        return _finalize_cycle_response(config, resp)
 
     now = _now_local()
     if not is_trading_weekday(now.date()) and not force:
-        return RunCycleResponse(skipped=True, skip_reason="non_trading_weekday", as_of=now.isoformat())
+        resp = RunCycleResponse(skipped=True, skip_reason="non_trading_weekday", as_of=now.isoformat())
+        return _finalize_cycle_response(config, resp)
     if not is_within_trading_hours(config, now) and not force:
-        return RunCycleResponse(skipped=True, skip_reason="outside_trading_hours", as_of=now.isoformat())
+        resp = RunCycleResponse(skipped=True, skip_reason="outside_trading_hours", as_of=now.isoformat())
+        return _finalize_cycle_response(config, resp)
 
     state = load_state()
     do_rebalance = rebalance if rebalance is not None else is_rebalance_window(config, now)
@@ -337,7 +540,8 @@ def run_cycle(force: bool = False, rebalance: bool | None = None) -> RunCycleRes
         do_rebalance = False
 
     if not do_rebalance and not force:
-        return RunCycleResponse(skipped=True, skip_reason="not_rebalance_window", as_of=now.isoformat())
+        resp = RunCycleResponse(skipped=True, skip_reason="not_rebalance_window", as_of=now.isoformat())
+        return _finalize_cycle_response(config, resp)
 
     portfolio_cfg = config.get("portfolio", {})
     initial_cash = float(portfolio_cfg.get("initial_cash", 1_000_000.0))
@@ -346,7 +550,8 @@ def run_cycle(force: bool = False, rebalance: bool | None = None) -> RunCycleRes
 
     strategy_cfgs = [item for item in config.get("strategies", []) if bool(item.get("enabled", True))]
     if not strategy_cfgs:
-        return RunCycleResponse(skipped=True, skip_reason="no_enabled_strategies", as_of=now.isoformat())
+        resp = RunCycleResponse(skipped=True, skip_reason="no_enabled_strategies", as_of=now.isoformat())
+        return _finalize_cycle_response(config, resp)
 
     allocation_items: list[dict[str, Any]] = []
     strategy_targets: list[dict[str, Any]] = []
@@ -407,6 +612,7 @@ def run_cycle(force: bool = False, rebalance: bool | None = None) -> RunCycleRes
         "prices": prices,
         "current_positions": [{"symbol": pos.symbol, "quantity": pos.quantity} for pos in snapshot.positions],
         "execution_mode": str(config.get("execution_mode", config.get("mode", "paper"))),
+        "live_broker": str(config.get("live_broker", "") or "").strip().lower(),
         "min_trade_lot": int(portfolio_cfg.get("min_trade_lot", 100)),
         "trace_id": trace_id,
         "rebalance_id": rebalance_id,
@@ -531,7 +737,20 @@ def run_cycle(force: bool = False, rebalance: bool | None = None) -> RunCycleRes
         state["last_rebalance_trading_day"] = now.date().isoformat()
     save_state(state)
 
-    return RunCycleResponse(
+    portfolio_ctx = {
+        "portfolio_value": portfolio_value,
+        "cash": snapshot.cash,
+        "positions": [
+            {
+                "symbol": pos.symbol,
+                "quantity": pos.quantity,
+                "market_value": getattr(pos, "market_value", None),
+                "strategy_id": symbol_strategy.get(pos.symbol),
+            }
+            for pos in snapshot.positions
+        ],
+    }
+    resp = RunCycleResponse(
         skipped=False,
         rebalance_executed=True,
         orders_submitted=orders_submitted,
@@ -540,6 +759,12 @@ def run_cycle(force: bool = False, rebalance: bool | None = None) -> RunCycleRes
         message=message,
         strategies=strategy_details,
         orders=order_details,
+    )
+    return _finalize_cycle_response(
+        config,
+        resp,
+        rebalance_id=rebalance_id,
+        portfolio=portfolio_ctx,
     )
 
 
@@ -564,6 +789,17 @@ def start_scheduler() -> None:
     with _lock:
         if _scheduler_running:
             return
+        try:
+            config = load_config()
+            from src.live.qbit_gate import check_qbit_live_gate
+
+            gate = check_qbit_live_gate(config)
+            if gate.execution_mode == "live" and not gate.ready:
+                raise RuntimeError(
+                    f"live_gate_blocked:{','.join(gate.reasons) or 'not_ready'}"
+                )
+        except FileNotFoundError:
+            pass
         _scheduler_stop.clear()
         _scheduler_thread = threading.Thread(target=_scheduler_loop, name="auto-trading-scheduler", daemon=True)
         _scheduler_thread.start()
@@ -596,6 +832,19 @@ def build_status() -> AutomationStatus:
             )
         )
     portfolio_cfg = config.get("portfolio", {}) or {}
+    try:
+        from src.insight.trading_cycle_agent import agent_log_enabled
+    except Exception:  # noqa: BLE001
+        agent_enabled = False
+    else:
+        agent_enabled = agent_log_enabled(config)
+    live_gate_dict: dict[str, Any] | None = None
+    try:
+        from src.live.qbit_gate import check_qbit_live_gate
+
+        live_gate_dict = check_qbit_live_gate(config).to_dict()
+    except Exception:  # noqa: BLE001
+        live_gate_dict = None
     return AutomationStatus(
         enabled=bool(config.get("enabled", False)),
         scheduler_running=_scheduler_running,
@@ -619,6 +868,10 @@ def build_status() -> AutomationStatus:
             ),
         },
         initial_cash=float(portfolio_cfg.get("initial_cash", 1_000_000.0)),
+        last_agent_log=_agent_log_view(state.get("last_agent_log")),
+        agent_log_enabled=agent_enabled,
+        live_broker=str(config.get("live_broker", "") or "").strip().lower() or None,
+        live_gate=live_gate_dict,
     )
 
 
@@ -647,7 +900,12 @@ def automation_run_cycle(payload: RunCycleRequest) -> RunCycleResponse:
 
 @app.post("/automation/start")
 def automation_start() -> dict[str, str]:
-    start_scheduler()
+    try:
+        start_scheduler()
+    except RuntimeError as exc:
+        if "live_gate_blocked" in str(exc):
+            raise HTTPException(status_code=403, detail=str(exc)) from exc
+        raise
     return {"status": "started"}
 
 
@@ -673,7 +931,7 @@ def patch_strategy(strategy_id: str, payload: StrategyPatchRequest) -> Automatio
             params["top_n"] = int(payload.top_n)
         if payload.mode is not None:
             mode = str(payload.mode).strip().lower()
-            if mode not in {"momentum", "mean_reversion", "equal_weight"}:
+            if mode not in STRATEGY_MODES:
                 raise HTTPException(status_code=400, detail=f"unsupported mode: {payload.mode}")
             params["mode"] = mode
         updated = True
@@ -683,6 +941,46 @@ def patch_strategy(strategy_id: str, payload: StrategyPatchRequest) -> Automatio
     config["strategies"] = items
     save_config(config)
     return build_status()
+
+
+@app.get("/automation/strategies/{strategy_id}/export-yaml", response_model=StrategyYamlExportResponse)
+def export_strategy_yaml_route(strategy_id: str) -> StrategyYamlExportResponse:
+    """Export one Qbit strategy entry as person-trading-strategy.yaml."""
+    from src.strategy_yaml.exporter import export_strategy_yaml
+
+    try:
+        config = load_config()
+        text = export_strategy_yaml(config, strategy_id.strip())
+        return StrategyYamlExportResponse(strategy_id=strategy_id.strip(), yaml=text)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@app.post("/automation/strategies/import-yaml", response_model=AutomationStatus)
+def import_strategy_yaml(payload: StrategyYamlImportRequest) -> AutomationStatus:
+    """Import person-trading-strategy.yaml into auto-trading.yaml."""
+    from src.strategy_yaml.importer import StrategyImportError, apply_strategy_yaml_to_config
+
+    try:
+        config = load_config()
+        config, doc, _created = apply_strategy_yaml_to_config(
+            config,
+            payload.yaml,
+            activate=payload.activate,
+            merge_globals=payload.merge_globals,
+            module_code=payload.module_code,
+        )
+        save_config(config)
+        imported_dir = Path.home() / ".person-trading" / "strategies" / "imported"
+        imported_dir.mkdir(parents=True, exist_ok=True)
+        (imported_dir / f"{doc.meta.id}.yaml").write_text(payload.yaml.strip() + "\n", encoding="utf-8")
+        return build_status()
+    except StrategyImportError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
 
 
 @app.post("/automation/strategies/select", response_model=AutomationStatus)

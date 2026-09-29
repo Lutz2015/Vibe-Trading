@@ -546,7 +546,7 @@ export const api = {
   },
 
   // Market overview (real quotes via loader fallback chain)
-  fetchMarketOverview: () => request<MarketOverviewResponse>("/market/overview"),
+  fetchMarketOverview: () => request<MarketOverviewResponse>("/api/data/market/overview"),
 
   // News radar (Eastmoney / Yahoo headlines)
   fetchNewsRadar: (params: Record<string, string | number> = {}) => {
@@ -555,10 +555,31 @@ export const api = {
       if (v !== undefined && v !== null && v !== "") q.set(k, String(v));
     }
     const qs = q.toString();
-    return request<NewsRadarResponse>(`/news/radar${qs ? `?${qs}` : ""}`);
+    return request<NewsRadarResponse>(`/api/data/news/feed${qs ? `?${qs}` : ""}`);
   },
 
+  fetchIntelligenceSnapshot: (params: { q?: string; topic?: string; limit?: number } = {}) => {
+    const q = new URLSearchParams();
+    if (params.q) q.set("q", params.q);
+    if (params.topic) q.set("topic", params.topic);
+    if (params.limit != null) q.set("limit", String(params.limit));
+    const qs = q.toString();
+    return request<IntelligenceSnapshot>(`/api/intelligence/snapshot${qs ? `?${qs}` : ""}`);
+  },
+
+  syncDataCache: (bars = true, news = true) => {
+    const q = new URLSearchParams();
+    q.set("bars", String(bars));
+    q.set("news", String(news));
+    return request<DataSyncResponse>(`/api/data/sync?${q.toString()}`, { method: "POST" });
+  },
+
+  dataCacheStats: () => request<DataCacheStatsResponse>("/api/data/cache/stats"),
+
   fetchSentiment: () => request<SentimentResponse>("/sentiment/thermometer"),
+
+  dataCapabilities: () => request<DataCapabilitiesResponse>("/api/data/capabilities"),
+  dataHealth: () => request<DataHealthResponse>("/api/data/health"),
 
   // Qbit quant desk (embedded paper-trading stack at /qbit)
   qbitHealth: () => request<QbitHealthResponse>("/qbit/health"),
@@ -638,7 +659,16 @@ export const api = {
 
   // One-shot Agent insight for overview / news / sentiment / logic-chain pages
   analyzeInsight: (body: {
-    kind: "market" | "news" | "sentiment" | "logic_chain";
+    kind:
+      | "market"
+      | "news"
+      | "sentiment"
+      | "logic_chain"
+      | "portfolio"
+      | "quant"
+      | "strategy_gen"
+      | "backtest"
+      | "intelligence";
     payload: Record<string, unknown>;
     locale?: string;
   }) =>
@@ -647,10 +677,57 @@ export const api = {
       body: JSON.stringify(body),
     }),
 
+  /** Module Copilot — mini ReAct with scoped tools per page module. */
+  copilotInsight: (body: {
+    kind:
+      | "market"
+      | "news"
+      | "sentiment"
+      | "logic_chain"
+      | "portfolio"
+      | "quant"
+      | "strategy_gen"
+      | "backtest"
+      | "intelligence";
+    payload: Record<string, unknown>;
+    locale?: string;
+    max_iterations?: number;
+  }) =>
+    request<CopilotResponse>("/insight/copilot", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+
   // Strategy library
   listStrategies: () => request<StrategyListResponse>("/strategies"),
   getStrategy: (id: string) =>
     request<StrategyItem>(`/strategies/${encodeURIComponent(id)}`),
+  exportStrategyYaml: (id: string) =>
+    request<StrategyYamlExportResponse>(`/strategies/${encodeURIComponent(id)}/export-yaml`),
+  exportQbitStrategyYaml: (qbitStrategyId: string) =>
+    request<StrategyYamlExportResponse>(
+      `/strategies/qbit/${encodeURIComponent(qbitStrategyId)}/export-yaml`,
+    ),
+  importStrategyYaml: (body: {
+    yaml: string;
+    activate?: boolean;
+    merge_globals?: boolean;
+    group?: string;
+    module_code?: string;
+  }) =>
+    request<StrategyYamlImportResponse>("/strategies/import-yaml", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+  qbitImportStrategyYaml: (body: {
+    yaml: string;
+    activate?: boolean;
+    merge_globals?: boolean;
+  }) =>
+    request<QbitAutomationStatus>("/qbit/automation/strategies/import-yaml", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
   createStrategy: (body: {
     name: string;
     group?: string;
@@ -726,6 +803,11 @@ export const api = {
   // Read the persistent runtime status across all authorized brokers (SPEC §7.5).
   // Polled by the RunnerStatus panel; a plain authenticated GET, never a chat message.
   getLiveStatus: (signal?: AbortSignal) => request<LiveStatus>("/live/status", { signal }),
+  getLiveReadiness: (broker?: string, scope = "qbit", signal?: AbortSignal) => {
+    const params = new URLSearchParams({ scope });
+    if (broker) params.set("broker", broker);
+    return request<LiveReadinessResponse>(`/live/readiness?${params}`, { signal });
+  },
   verifyConnector: (profileId: string) =>
     request<ConnectorVerifyResponse>(`/live/connectors/${encodeURIComponent(profileId)}/verify?force=true`, {
       method: "POST",
@@ -1905,7 +1987,22 @@ export interface MarketOverviewResponse {
   hot_stocks: MarketQuoteItem[];
   as_of: string;
   source?: string;
+  primary_provider?: string;
   cached?: boolean;
+  northbound?: {
+    sh_net?: number | null;
+    sz_net?: number | null;
+    total_net?: number | null;
+    source?: string;
+  } | null;
+  limit_stats?: {
+    limit_up_approx?: number | null;
+    limit_down_approx?: number | null;
+    universe_total?: number | null;
+    note?: string;
+    source?: string;
+  } | null;
+  data_notes?: string[];
 }
 
 export interface NewsArticle {
@@ -1923,6 +2020,44 @@ export interface NewsRadarResponse {
   topics: string[];
   as_of: string;
   source_notes: string[];
+  cached?: boolean;
+}
+
+export interface IntelligenceSnapshot {
+  as_of: string;
+  market: {
+    as_of?: string;
+    primary_provider?: string;
+    indices?: { name: string; change_pct?: number | null; price?: number | null }[];
+    hot_boards?: { name: string; change_pct?: number | null }[];
+  };
+  news: {
+    articles: NewsArticle[];
+    positive_count?: number;
+    negative_count?: number;
+    neutral_count?: number;
+  };
+  sentiment: {
+    composite?: number;
+    mode?: string;
+    as_of?: string;
+    items?: { title: string; probability: number; delta24h?: number }[];
+  };
+  cache: DataCacheStatsResponse;
+  source_notes?: string[];
+}
+
+export interface DataCacheStatsResponse {
+  db_path: string;
+  daily_bars: number;
+  news_articles: number;
+  streams?: Record<string, { watermark?: string; last_run_at?: string; rows_added?: number; detail?: string }>;
+}
+
+export interface DataSyncResponse {
+  bars?: Record<string, unknown>;
+  news?: Record<string, unknown>;
+  stats?: DataCacheStatsResponse;
 }
 
 export interface SentimentItem {
@@ -1958,11 +2093,77 @@ export interface QbitStrategyConfigView {
   expected_return_pct?: number | null;
 }
 
+export interface DataCapabilityItem {
+  id: string;
+  label: string;
+  min_points: number;
+  available: boolean;
+  error?: string | null;
+}
+
+export interface DataCapabilitiesResponse {
+  primary_provider: string;
+  tushare: {
+    configured: boolean;
+    connected: boolean;
+    message: string;
+    capabilities: DataCapabilityItem[];
+  };
+  fallback_providers: string[];
+}
+
+export interface DataHealthResponse {
+  status: string;
+  provider: string;
+}
+
+export interface QbitAgentToolStep {
+  name: string;
+  ok: boolean;
+  summary: string;
+}
+
+export interface QbitAgentLog {
+  as_of: string;
+  rebalance_id?: string | null;
+  skipped?: boolean;
+  skip_reason?: string;
+  ok: boolean;
+  text: string;
+  error?: string | null;
+  tool_steps?: QbitAgentToolStep[];
+  iterations?: number;
+  model?: string | null;
+}
+
+export interface QbitLiveGate {
+  ready: boolean;
+  execution_mode?: string;
+  broker?: string;
+  mandate_ok?: boolean;
+  halt_ok?: boolean;
+  live_env_ok?: boolean;
+  reasons?: string[];
+}
+
+export interface LiveReadinessResponse {
+  scope: string;
+  ready: boolean;
+  execution_mode: string;
+  broker: string;
+  mandate_ok: boolean;
+  halt_ok: boolean;
+  live_env_ok: boolean;
+  reasons: string[];
+}
+
 export interface QbitAutomationStatus {
   enabled: boolean;
   scheduler_running: boolean;
   mode: string;
   execution_mode: string;
+  live_broker?: string | null;
+  live_gate?: QbitLiveGate | null;
   poll_interval_sec: number;
   last_run_at: string | null;
   last_rebalance_date: string | null;
@@ -1976,6 +2177,8 @@ export interface QbitAutomationStatus {
     every_trading_days?: number;
   };
   initial_cash?: number | null;
+  last_agent_log?: QbitAgentLog | null;
+  agent_log_enabled?: boolean;
 }
 
 export interface QbitLedgerSnapshot {
@@ -2033,11 +2236,24 @@ export interface QbitRunCycleResponse {
   message?: string;
   strategies?: QbitStrategyRunDetail[];
   orders?: QbitOrderDetail[];
+  agent_log?: string;
+  agent_log_ok?: boolean;
+  agent_tool_steps?: QbitAgentToolStep[];
+}
+
+export interface QbitHaltDetail {
+  active: boolean;
+  scope: "none" | "global" | "broker";
+  source: "none" | "qbit" | "frontend" | "cli" | "file" | "unknown" | string;
+  broker?: string;
+  reason?: string;
+  by?: string;
 }
 
 export interface QbitOpsStatus {
   tradingEnabled: boolean;
   killSwitch: boolean;
+  halt?: QbitHaltDetail | null;
 }
 
 export interface SentimentResponse {
@@ -2049,6 +2265,22 @@ export interface SentimentResponse {
   cached?: boolean;
   partial?: boolean;
   source_notes?: string[];
+}
+
+export interface StrategyYamlExportResponse {
+  strategy_id: string;
+  yaml: string;
+  source: string;
+}
+
+export interface StrategyYamlImportResponse {
+  ok: boolean;
+  strategy: StrategyItem;
+  qbit_strategy_id: string;
+  created: boolean;
+  activated: boolean;
+  message: string;
+  error?: string | null;
 }
 
 export interface StrategyItem {
@@ -2125,4 +2357,20 @@ export interface InsightResponse {
   text: string;
   model?: string | null;
   error?: string | null;
+}
+
+export interface CopilotToolStep {
+  name: string;
+  ok: boolean;
+  summary: string;
+}
+
+export interface CopilotResponse {
+  ok: boolean;
+  kind: string;
+  text: string;
+  model?: string | null;
+  error?: string | null;
+  tool_steps: CopilotToolStep[];
+  iterations: number;
 }

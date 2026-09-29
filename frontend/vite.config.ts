@@ -4,6 +4,7 @@ import path from "path";
 
 const PROXY_PATHS = [
   "/api",
+  "/qbit",
   "/auth",
   "/sessions",
   "/swarm/presets",
@@ -53,6 +54,9 @@ export default defineConfig(({ mode }) => {
         // (/options/payoff, /options/chain) — same dual role as /correlation.
         // Overrides the plain PROXY_PATHS entry above.
         "/options": apiProxyWithHtmlFallback,
+        // SPA pages that share an API prefix with their backend routes.
+        "/sentiment": apiProxyWithHtmlFallback,
+        "/strategies": apiProxyWithHtmlFallback,
         "^/alpha(?:/|$)": apiProxy,
       },
     },

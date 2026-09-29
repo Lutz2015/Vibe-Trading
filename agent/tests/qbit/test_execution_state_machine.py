@@ -119,11 +119,44 @@ def test_ledger_persist_and_reload() -> None:
     os.environ.pop("EXECUTION_LEDGER_PATH", None)
 
 
-def test_routed_order_live_disabled_falls_back_to_paper() -> None:
+def test_routed_order_live_disabled_fails_closed_by_default() -> None:
+    """Live intent with live mode off must be rejected (fail-closed)."""
     with tempfile.TemporaryDirectory() as tmpdir:
         os.environ["EXECUTION_LEDGER_PATH"] = str(Path(tmpdir) / "ledger.json")
         os.environ["EXECUTION_LIVE_ENABLED"] = "false"
+        os.environ.pop("EXECUTION_LIVE_FAIL_CLOSED", None)
         module = _load_execution_module("execution_engine_main_route_disabled")
+        module._orders_by_id.clear()
+        module._orders_by_client_id.clear()
+
+        try:
+            module.create_routed_order(
+                module.RoutedOrderRequest(
+                    symbol="000001.SZ",
+                    side="BUY",
+                    quantity=100,
+                    limit_price=10.0,
+                    strategy_id="route_v1",
+                    client_order_id="cli_route_001",
+                    trace_id="trace_route_001",
+                    mode="live",
+                )
+            )
+        except Exception as exc:  # noqa: BLE001 - HTTPException from FastAPI
+            detail = getattr(exc, "detail", None)
+            assert detail == "live_mode_disabled"
+        else:
+            raise AssertionError("expected fail-closed rejection when live is disabled")
+    os.environ.pop("EXECUTION_LEDGER_PATH", None)
+    os.environ.pop("EXECUTION_LIVE_ENABLED", None)
+
+
+def test_routed_order_live_disabled_opt_in_falls_back_to_paper() -> None:
+    with tempfile.TemporaryDirectory() as tmpdir:
+        os.environ["EXECUTION_LEDGER_PATH"] = str(Path(tmpdir) / "ledger.json")
+        os.environ["EXECUTION_LIVE_ENABLED"] = "false"
+        os.environ["EXECUTION_LIVE_FAIL_CLOSED"] = "false"
+        module = _load_execution_module("execution_engine_main_route_disabled_soft")
         module._orders_by_id.clear()
         module._orders_by_client_id.clear()
 
@@ -144,6 +177,7 @@ def test_routed_order_live_disabled_falls_back_to_paper() -> None:
         assert routed.reason == "live_mode_disabled"
     os.environ.pop("EXECUTION_LEDGER_PATH", None)
     os.environ.pop("EXECUTION_LIVE_ENABLED", None)
+    os.environ.pop("EXECUTION_LIVE_FAIL_CLOSED", None)
 
 
 def test_routed_order_paper_mode() -> None:

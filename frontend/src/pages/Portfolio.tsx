@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { PortfolioSourceEditor } from "@/components/portfolio/PortfolioSourceEditor";
 import { PortfolioCompatibilityBadge } from "@/components/portfolio/PortfolioCompatibilityBadge";
+import { ModuleCopilot } from "@/components/common/ModuleCopilot";
 import {
   api,
   type PortfolioAccount,
@@ -346,6 +347,24 @@ export function Portfolio() {
         </header>
 
         {error ? <div className="flex items-start gap-2 rounded-lg border border-danger/30 bg-danger/5 p-4 text-sm text-danger"><AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />{error}</div> : null}
+        {snapshot ? (
+          <ModuleCopilot
+            kind="portfolio"
+            title={t("portfolio.agentDiagnose", { defaultValue: "Agent 持仓诊断" })}
+            payload={{
+              cash: snapshot.totals.cny,
+              portfolio_value: snapshot.totals.cny,
+              holdings: (snapshot.positions ?? []).slice(0, 20).map((row) => ({
+                symbol: row.symbol,
+                name: row.name,
+                quantity: row.quantity,
+                cost_price: row.cost_price,
+                market_price: row.market_price,
+                unrealized_pnl_usd: row.unrealized_pnl_usd,
+              })),
+            }}
+          />
+        ) : null}
         {refreshing && refreshState ? <RefreshProgress state={refreshState} settings={portfolioSettings} /> : null}
         {loading ? <div className="flex h-56 items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div> : null}
 

@@ -84,6 +84,7 @@ class PortfolioRebalanceRequest(BaseModel):
     prices: dict[str, float]
     current_positions: list[PositionInput] = []
     execution_mode: str = "paper"
+    live_broker: str = ""
     min_trade_lot: int = Field(default=100, ge=1)
     trace_id: str
     rebalance_id: str
@@ -139,6 +140,7 @@ class RoutedOrderPayload(BaseModel):
     client_order_id: str
     trace_id: str
     mode: str
+    live_broker: str = ""
 
 
 class RoutedOrderResult(BaseModel):
@@ -412,6 +414,7 @@ def _execute_rebalance(payload: PortfolioRebalanceRequest) -> PortfolioRebalance
                 client_order_id=client_order_id,
                 trace_id=payload.trace_id,
                 mode=payload.execution_mode,
+                live_broker=str(payload.live_broker or "").strip().lower(),
             )
         )
         orders.append(

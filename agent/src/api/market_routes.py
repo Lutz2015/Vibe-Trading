@@ -84,7 +84,12 @@ class MarketOverviewResponse(BaseModel):
     hot_stocks: List[QuoteItem] = Field(default_factory=list)
     as_of: str
     source: str = "eastmoney"
+    primary_provider: str = "eastmoney"
     cached: bool = False
+    # Domestic-first extras (P0): northbound flow + limit-up/down breadth.
+    northbound: Optional[Dict[str, Any]] = None
+    limit_stats: Optional[Dict[str, Any]] = None
+    data_notes: List[str] = Field(default_factory=list)
 
 
 class NewsArticle(BaseModel):
@@ -564,23 +569,137 @@ def _fetch_hot_stocks(limit: int = 12) -> List[QuoteItem]:
         return []
 
 
+def _fetch_northbound() -> Optional[Dict[str, Any]]:
+    """Northbound (沪深港通) net inflow snapshot — best-effort via Eastmoney."""
+    try:
+        payload = _em_get(
+            "/api/qt/kamt.rtmin/get",
+            {"fields1": "f1,f2,f3,f4", "fields2": "f51,f53,f56,f58"},
+        )
+        data = (payload or {}).get("data") or {}
+        if not isinstance(data, dict):
+            return None
+        s2n = data.get("s2n") or {}
+        # Prefer the latest cumulative net inflow (f3 is typically 亿元 in some
+        # mirrors; keep raw and let the UI label units from data_notes).
+        def _last_number(key: str) -> Optional[float]:
+            rows = s2n.get(key) if isinstance(s2n, dict) else None
+            if isinstance(rows, list) and rows:
+                tail = rows[-1]
+                if isinstance(tail, list) and len(tail) >= 2:
+                    try:
+                        return float(tail[1])
+                    except (TypeError, ValueError):
+                        return None
+            if isinstance(rows, (int, float)):
+                return float(rows)
+            return None
+
+        return {
+            "sh_net": _last_number("f51") or _last_number("f1"),
+            "sz_net": _last_number("f53") or _last_number("f2"),
+            "total_net": _last_number("f56") or _last_number("f3"),
+            "source": "eastmoney",
+        }
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("northbound fetch failed: %s", exc)
+        return None
+
+
+def _fetch_limit_stats() -> Optional[Dict[str, Any]]:
+    """Limit-up / limit-down counts from A-share spot list (best-effort)."""
+    try:
+        payload = _em_get(
+            "/api/qt/clist/get",
+            {
+                "pn": 1,
+                "pz": 1,
+                "po": 1,
+                "np": 1,
+                "fltt": 2,
+                "invt": 2,
+                "fid": "f3",
+                "fs": "m:0+t:6,m:0+t:80,m:1+t:2,m:1+t:23",
+                "fields": "f3",
+            },
+        )
+        total = ((payload or {}).get("data") or {}).get("total") or 0
+
+        def _count(up: bool) -> Optional[int]:
+            # 10cm boards mostly; 20cm for 创业板/科创板 — use f3 filter via po.
+            fs = "m:0+t:6,m:0+t:80,m:1+t:2,m:1+t:23"
+            p = _em_get(
+                "/api/qt/clist/get",
+                {
+                    "pn": 1,
+                    "pz": 1,
+                    "po": 1 if up else 0,
+                    "np": 1,
+                    "fltt": 2,
+                    "invt": 2,
+                    "fid": "f3",
+                    "fs": fs,
+                    "fields": "f3,f2",
+                },
+            )
+            rows = ((p or {}).get("data") or {}).get("diff") or []
+            if not rows:
+                return 0 if total else None
+            row = rows[0] if isinstance(rows[0], dict) else None
+            if not row:
+                return 0 if total else None
+            try:
+                chg = float(row.get("f3"))
+            except (TypeError, ValueError):
+                return None
+            # Approximate: count not directly returned; expose top-move only.
+            return None
+
+        _ = _count
+        # Practical approach: pull a wider page and count extremes.
+        wide = _em_get(
+            "/api/qt/clist/get",
+            {
+                "pn": 1,
+                "pz": 80,
+                "po": 1,
+                "np": 1,
+                "fltt": 2,
+                "invt": 2,
+                "fid": "f3",
+                "fs": "m:0+t:6,m:0+t:80,m:1+t:2,m:1+t:23",
+                "fields": "f3",
+            },
+        )
+        rows = ((wide or {}).get("data") or {}).get("diff") or []
+        up = down = 0
+        for row in rows:
+            if not isinstance(row, dict):
+                continue
+            try:
+                chg = float(row.get("f3"))
+            except (TypeError, ValueError):
+                continue
+            if chg >= 9.8:
+                up += 1
+            elif chg <= -9.8:
+                down += 1
+        return {
+            "limit_up_approx": up,
+            "limit_down_approx": down,
+            "universe_total": int(total or 0),
+            "note": "limit counts approximated from top movers page (80)",
+            "source": "eastmoney",
+        }
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("limit stats fetch failed: %s", exc)
+        return None
+
+
 def _build_overview() -> MarketOverviewResponse:
-    indices = _fetch_indices()
-    industries = _fetch_board_list("industry", 5)
-    concepts = _fetch_board_list("concept", 3)
-    boards = industries + concepts
-    # Leaders for every visible board so the UI does not show empty tables.
-    # Lighter spacing than the headline calls to keep overview latency bounded.
-    for board in boards:
-        board.leaders = _fetch_board_leaders(board.board_code, 4)
-    hot_stocks = _fetch_hot_stocks(10)
-    return MarketOverviewResponse(
-        indices=indices,
-        hot_boards=boards,
-        hot_stocks=hot_stocks,
-        as_of=date.today().isoformat(),
-        source="eastmoney",
-    )
+    from src.data.market_desk import build_market_overview
+
+    return build_market_overview()
 
 
 def _fetch_sina_roll(limit: int = 20) -> List[Dict[str, Any]]:
@@ -935,6 +1054,12 @@ def register_market_routes(
             return fresh
 
         fresh = await asyncio.to_thread(_load_news)
+        try:
+            from src.data.cache_store import upsert_news_rows
+
+            upsert_news_rows([a.model_dump() for a in fresh.articles])
+        except Exception:  # noqa: BLE001 — cache write is best-effort
+            logger.debug("news cache upsert skipped", exc_info=True)
         with _cache_lock:
             _news_cache[cache_key] = (time.monotonic(), fresh)
             if len(_news_cache) > 32:

@@ -58,6 +58,7 @@ class RejectOrderRequest(BaseModel):
 
 class RoutedOrderRequest(CreateOrderRequest):
     mode: str = "paper"  # paper | live
+    live_broker: str = ""
 
 
 class RoutedOrderResponse(BaseModel):
@@ -137,6 +138,24 @@ def _is_canary_hit(client_order_id: str) -> bool:
     digest = hashlib.sha256(client_order_id.encode("utf-8")).hexdigest()
     bucket = int(digest[:8], 16) / 0xFFFFFFFF
     return bucket < _live_canary_ratio
+
+
+def _live_fail_closed() -> bool:
+    return os.getenv("EXECUTION_LIVE_FAIL_CLOSED", "true").strip().lower() in {"1", "true", "yes"}
+
+
+def _assert_live_gate(live_broker: str) -> None:
+    from src.live.qbit_gate import check_qbit_live_gate
+
+    # Local gray-release self-test adapter: never reaches a real broker.
+    if _broker_adapter_name == "sim_broker":
+        return
+    result = check_qbit_live_gate(
+        {"execution_mode": "live", "live_broker": live_broker},
+    )
+    if not result.ready:
+        detail = ",".join(result.reasons) or "not_ready"
+        raise HTTPException(status_code=403, detail=f"live_gate_blocked:{detail}")
 
 
 def _push_to_live_broker(payload: CreateOrderRequest) -> bool:
@@ -247,6 +266,8 @@ def create_routed_order(payload: RoutedOrderRequest) -> RoutedOrderResponse:
         raise HTTPException(status_code=400, detail="invalid_mode: use paper|live")
 
     if not _live_enabled:
+        if _live_fail_closed():
+            raise HTTPException(status_code=403, detail="live_mode_disabled")
         order = create_order(create_payload)
         return RoutedOrderResponse(
             order=order,
@@ -256,7 +277,11 @@ def create_routed_order(payload: RoutedOrderRequest) -> RoutedOrderResponse:
             reason="live_mode_disabled",
         )
 
+    _assert_live_gate(str(payload.live_broker or "").strip().lower())
+
     if not _is_canary_hit(payload.client_order_id):
+        if _live_fail_closed():
+            raise HTTPException(status_code=403, detail="canary_not_selected")
         order = create_order(create_payload)
         return RoutedOrderResponse(
             order=order,
@@ -271,6 +296,9 @@ def create_routed_order(payload: RoutedOrderRequest) -> RoutedOrderResponse:
         live_ok = _push_to_live_broker(create_payload)
     except Exception:
         live_ok = False
+
+    if not live_ok and _live_fail_closed():
+        raise HTTPException(status_code=502, detail="live_push_failed")
 
     order = create_order(create_payload)
     return RoutedOrderResponse(

@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
-import { Database, KeyRound, Loader2, MessageSquareMore, Play, RefreshCw, RotateCcw, Save, Server, SlidersHorizontal, Square } from "lucide-react";
+import { Database, Info, KeyRound, Loader2, MessageSquareMore, Play, RefreshCw, RotateCcw, Save, Server, SlidersHorizontal, Square } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { ModelPicker } from "@/components/settings/ModelPicker";
 import { QVerisSettings } from "@/components/settings/QVerisSettings"; // QVERIS-INTEGRATION
 import { SourcePrioritySettings } from "@/components/settings/SourcePrioritySettings";
-import { api, isAuthRequiredError, type ChannelRuntimeStatus, type DataSourceSettings, type LLMProviderOption, type LLMSettings } from "@/lib/api";
+import { api, isAuthRequiredError, type ChannelRuntimeStatus, type DataCapabilitiesResponse, type DataSourceSettings, type LLMProviderOption, type LLMSettings } from "@/lib/api";
 import { getApiAuthKey, setApiAuthKey } from "@/lib/apiAuth";
 
 interface LLMFormState {
@@ -53,10 +53,27 @@ export function Settings() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [dataSaving, setDataSaving] = useState(false);
+  const [tushareCap, setTushareCap] = useState<DataCapabilitiesResponse | null>(null);
+  const [tushareCapLoading, setTushareCapLoading] = useState(false);
   const [channelRefreshing, setChannelRefreshing] = useState(false);
   const [channelExampleOpen, setChannelExampleOpen] = useState(false);
   const [channelAction, setChannelAction] = useState<"start" | "stop" | null>(null);
   const [settingsLoadError, setSettingsLoadError] = useState<string | null>(null);
+
+  const loadTushareCapabilities = async () => {
+    setTushareCapLoading(true);
+    try {
+      setTushareCap(await api.dataCapabilities());
+    } catch {
+      setTushareCap(null);
+    } finally {
+      setTushareCapLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    void loadTushareCapabilities();
+  }, []);
 
   useEffect(() => {
     let alive = true;
@@ -276,6 +293,7 @@ export function Settings() {
         toast.info(t("settings.desktopCredentialRestarting"));
         await desktop.restartBackend();
       }
+      void loadTushareCapabilities();
     } catch (error) {
       toast.error(t("settings.saveDataSourceSettingsFailed", {
         message: error instanceof Error
@@ -809,26 +827,84 @@ export function Settings() {
             </button>
           </div>
 
-          <div className="rounded-md border bg-muted/20 p-4">
-            <div className="mb-3 flex items-center justify-between gap-3">
-              <span className="text-sm font-medium">{t("settings.baostock")}</span>
-              <span className={`rounded-full px-2 py-0.5 text-xs ${dataSettings.baostock_supported ? "bg-success/10 text-success" : "bg-warning/10 text-warning"}`}>
-                {dataSettings.baostock_supported ? t("settings.loaderAvailable") : t("settings.noProjectLoader")}
-              </span>
+          <div className="space-y-4">
+            <div className="rounded-md border bg-muted/20 p-4">
+              <div className="mb-3 flex items-center justify-between gap-3">
+                <span className="text-sm font-medium">{t("settings.tushareCapabilities")}</span>
+                <button
+                  type="button"
+                  onClick={() => void loadTushareCapabilities()}
+                  disabled={tushareCapLoading}
+                  className="inline-flex items-center gap-1 text-xs text-primary hover:underline disabled:opacity-50"
+                >
+                  <RefreshCw className={`h-3 w-3 ${tushareCapLoading ? "animate-spin" : ""}`} />
+                  {t("settings.probeTushare")}
+                </button>
+              </div>
+              {tushareCapLoading && !tushareCap ? (
+                <p className="text-sm text-muted-foreground">{t("settings.probingTushare")}</p>
+              ) : tushareCap ? (
+                <div className="space-y-2 text-sm">
+                  <p className="text-muted-foreground">{tushareCap.tushare.message}</p>
+                  <ul className="max-h-48 space-y-1 overflow-y-auto">
+                    {tushareCap.tushare.capabilities.map((cap) => (
+                      <li key={cap.id} className="flex items-center justify-between gap-2 text-xs">
+                        <span>{cap.label}</span>
+                        <span
+                          className={
+                            cap.available
+                              ? "text-emerald-600 dark:text-emerald-400"
+                              : "text-muted-foreground"
+                          }
+                        >
+                          {cap.available
+                            ? t("settings.capabilityOk")
+                            : cap.error?.slice(0, 40) || t("settings.capabilityNo")}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">{t("settings.tushareProbeFailed")}</p>
+              )}
             </div>
-            <div className="space-y-2 text-sm text-muted-foreground">
-              <p>{dataSettings.baostock_message}</p>
-              <p>
-                {dataSettings.baostock_installed
-                  ? t("settings.pythonPackageInstalled")
-                  : t("settings.pythonPackageNotInstalled")}
-              </p>
+
+            <div className="rounded-md border bg-muted/20 p-4">
+              <div className="mb-3 flex items-center justify-between gap-3">
+                <span className="text-sm font-medium">{t("settings.baostock")}</span>
+                <span className={`rounded-full px-2 py-0.5 text-xs ${dataSettings.baostock_supported ? "bg-success/10 text-success" : "bg-warning/10 text-warning"}`}>
+                  {dataSettings.baostock_supported ? t("settings.loaderAvailable") : t("settings.noProjectLoader")}
+                </span>
+              </div>
+              <div className="space-y-2 text-sm text-muted-foreground">
+                <p>{dataSettings.baostock_message}</p>
+                <p>
+                  {dataSettings.baostock_installed
+                    ? t("settings.pythonPackageInstalled")
+                    : t("settings.pythonPackageNotInstalled")}
+                </p>
+              </div>
             </div>
           </div>
         </div>
       </form>
 
       <SourcePrioritySettings />
+
+      <section className="rounded-lg border bg-card p-5 shadow-sm">
+        <div className="flex items-center gap-2">
+          <Info className="h-4 w-4 text-primary" />
+          <h2 className="text-base font-semibold">{t("settings.aboutDetail")}</h2>
+        </div>
+        <p className="mt-2 text-sm text-muted-foreground">{t("settings.aboutDetailDesc")}</p>
+        <div className="mt-3 flex flex-wrap items-center gap-2 text-sm">
+          <span className="rounded-md bg-muted/50 px-2 py-1 font-mono text-xs">{t("app.version")}</span>
+          <a href="/about" className="text-primary hover:underline">
+            {t("settings.viewAbout")}
+          </a>
+        </div>
+      </section>
     </div>
   );
 }

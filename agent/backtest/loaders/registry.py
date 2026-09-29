@@ -183,6 +183,13 @@ def _enabled_markets() -> frozenset[str]:
     return _enabled_markets_cache
 
 
+def reset_enabled_markets_cache() -> None:
+    """Drop the allowlist cache (tests that flip MARKET_DATA_ENABLED_MARKETS)."""
+    global _enabled_markets_cache, _enabled_markets_env_snapshot
+    _enabled_markets_cache = None
+    _enabled_markets_env_snapshot = None
+
+
 def is_market_enabled(market: str) -> bool:
     """Whether ``market`` is on the domestic allowlist (or explicitly enabled)."""
     return market.strip().lower().replace("-", "_") in _enabled_markets()

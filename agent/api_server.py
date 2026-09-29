@@ -313,6 +313,9 @@ register_options_routes(app)
 from src.api.market_routes import register_market_routes  # noqa: E402
 register_market_routes(app, require_local_or_auth=require_local_or_auth)
 
+from src.api.data_routes import register_data_routes  # noqa: E402
+register_data_routes(app, require_local_or_auth=require_local_or_auth)
+
 # --- Agent insights (market / news / sentiment / logic-chain) ---
 from src.api.insight_routes import register_insight_routes  # noqa: E402
 register_insight_routes(app, require_local_or_auth=require_local_or_auth)

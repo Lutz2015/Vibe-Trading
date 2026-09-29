@@ -161,6 +161,19 @@ class LiveStatusResponse(BaseModel):
     brokers: List[LiveBrokerStatus]
 
 
+class LiveReadinessResponse(BaseModel):
+    """Unified live readiness for Qbit automation or connector scopes."""
+
+    scope: str = "qbit"
+    ready: bool
+    execution_mode: str = "paper"
+    broker: str = ""
+    mandate_ok: bool = False
+    halt_ok: bool = True
+    live_env_ok: bool = False
+    reasons: List[str] = Field(default_factory=list)
+
+
 # ============================================================================
 # Runner state (module-level; monkeypatched by tests via api_server re-export)
 # ============================================================================
@@ -753,6 +766,26 @@ def register_live_routes(
             {"kind": "halt_cleared", "broker": payload.broker, "cleared": cleared},
         )
         return result
+
+    @app.get("/live/readiness", response_model=LiveReadinessResponse, dependencies=[Depends(require_auth)])
+    async def live_readiness_endpoint(
+        broker: Optional[str] = Query(None, max_length=64),
+        scope: str = Query("qbit", max_length=32),
+    ) -> LiveReadinessResponse:
+        """Return whether live automation / routing is allowed (mandate + halt + env)."""
+        from src.live.qbit_gate import (
+            check_qbit_live_gate,
+            load_qbit_automation_config,
+            resolve_live_broker,
+        )
+
+        config = load_qbit_automation_config() if scope.strip().lower() == "qbit" else {}
+        if broker:
+            config = {**config, "live_broker": broker.strip().lower()}
+        elif resolve_live_broker(config):
+            config = {**config, "live_broker": resolve_live_broker(config)}
+        result = check_qbit_live_gate(config, broker=broker)
+        return LiveReadinessResponse(scope=scope, **result.to_dict())
 
     @app.get("/live/status", response_model=LiveStatusResponse, dependencies=[Depends(require_auth)])
     async def live_status_endpoint(broker: Optional[str] = Query(None, max_length=64)):

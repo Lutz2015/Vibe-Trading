@@ -2,16 +2,17 @@ enabled: true
 mode: paper
 execution_mode: paper
 poll_interval_sec: 60
-
 trading_hours:
-  start: "09:30"
-  end: "15:00"
-
+  start: 09:30
+  end: '15:00'
 rebalance:
-  time_local: "14:50"
+  time_local: '14:50'
   window_minutes: 30
   rebalance_every_trading_days: 15
-
+agent_log:
+  enabled: true
+  locale: zh-CN
+  max_iterations: 4
 portfolio:
   initial_cash: 1000000
   total_exposure: 1.0
@@ -19,62 +20,72 @@ portfolio:
   risk_aversion: 1.0
   min_trade_lot: 100
   fee_bps: 3.0
-
-# 可选策略：界面「策略仓库」里可切换启用。默认只开动量。
 strategies:
-  - strategy_id: momentum_topn
-    label: 日内动量 Top N
-    enabled: true
-    expected_return_pct: 18.0
-    risk_volatility_pct: 12.0
-    max_weight: 0.7
-    params:
-      mode: momentum
-      top_n: 4
-      universe_symbols:
-        - "000001.SZ"
-        - "600519.SH"
-        - "000858.SZ"
-        - "601318.SH"
-        - "600036.SH"
-        - "000333.SZ"
-        - "601166.SH"
-        - "600900.SH"
-
-  - strategy_id: mean_reversion_topn
-    label: 均值回归 Top N
-    enabled: false
-    expected_return_pct: 12.0
-    risk_volatility_pct: 10.0
-    max_weight: 0.5
-    params:
-      mode: mean_reversion
-      top_n: 4
-      universe_symbols:
-        - "000001.SZ"
-        - "600519.SH"
-        - "000858.SZ"
-        - "601318.SH"
-        - "600036.SH"
-        - "000333.SZ"
-        - "601166.SH"
-        - "600900.SH"
-
-  - strategy_id: equal_weight_core
-    label: 核心等权
-    enabled: false
-    expected_return_pct: 10.0
-    risk_volatility_pct: 8.0
-    max_weight: 0.25
-    params:
-      mode: equal_weight
-      top_n: 8
-      universe_symbols:
-        - "000001.SZ"
-        - "600519.SH"
-        - "000858.SZ"
-        - "601318.SH"
-        - "600036.SH"
-        - "000333.SZ"
-        - "601166.SH"
-        - "600900.SH"
+- strategy_id: momentum_topn
+  label: 日内动量 Top N
+  enabled: true
+  expected_return_pct: 18.0
+  risk_volatility_pct: 12.0
+  max_weight: 0.7
+  params:
+    mode: momentum
+    top_n: 4
+    universe_symbols: &id001
+    - 000001.SZ
+    - 600519.SH
+    - 000858.SZ
+    - 601318.SH
+    - 600036.SH
+    - 000333.SZ
+    - 601166.SH
+    - 600900.SH
+- strategy_id: mean_reversion_topn
+  label: 均值回归 Top N
+  enabled: false
+  expected_return_pct: 12.0
+  risk_volatility_pct: 10.0
+  max_weight: 0.5
+  params:
+    mode: mean_reversion
+    top_n: 4
+    universe_symbols: *id001
+- strategy_id: equal_weight_core
+  label: 核心等权
+  enabled: false
+  expected_return_pct: 10.0
+  risk_volatility_pct: 8.0
+  max_weight: 0.25
+  params:
+    mode: equal_weight
+    top_n: 8
+    universe_symbols: *id001
+- strategy_id: low_volatility
+  label: 低波动
+  enabled: false
+  expected_return_pct: 9.0
+  risk_volatility_pct: 6.0
+  max_weight: 0.3
+  params:
+    mode: low_volatility
+    top_n: 4
+    universe_symbols: *id001
+- strategy_id: strong_hand
+  label: 强势股
+  enabled: false
+  expected_return_pct: 20.0
+  risk_volatility_pct: 16.0
+  max_weight: 0.4
+  params:
+    mode: strong_hand
+    top_n: 3
+    universe_symbols: *id001
+- strategy_id: dip_buy
+  label: 超跌反弹
+  enabled: false
+  expected_return_pct: 14.0
+  risk_volatility_pct: 15.0
+  max_weight: 0.35
+  params:
+    mode: dip_buy
+    top_n: 3
+    universe_symbols: *id001

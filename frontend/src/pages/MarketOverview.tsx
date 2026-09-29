@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { RefreshCw, TrendingUp, TrendingDown, Flame, Activity, Clock3 } from "lucide-react";
-import { AiInsightPanel } from "@/components/common/AiInsightPanel";
+import { ModuleCopilot } from "@/components/common/ModuleCopilot";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "react-i18next";
 import type { TFunction } from "i18next";
@@ -130,15 +130,6 @@ export function MarketOverview() {
     () => (updatedAt ? updatedAt.toLocaleString("zh-CN", { hour12: false }) : "—"),
     [updatedAt],
   );
-  const breadth = useMemo(() => {
-    const valid = (data?.indices || []).filter((item) => item.change_pct != null);
-    return {
-      up: valid.filter((item) => (item.change_pct ?? 0) > 0).length,
-      down: valid.filter((item) => (item.change_pct ?? 0) < 0).length,
-      flat: valid.filter((item) => (item.change_pct ?? 0) === 0).length,
-    };
-  }, [data]);
-
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-5 p-6">
       <div className="flex items-start justify-between gap-4">
@@ -155,7 +146,19 @@ export function MarketOverview() {
               <Clock3 className="h-3 w-3" /> {data?.as_of || stamp}
             </span>
             {data?.cached ? <span className="rounded-full bg-amber-500/10 px-2 py-1 text-amber-600">{t("marketPage.cached")}</span> : null}
-            {data?.source ? <span className="rounded-full bg-muted px-2 py-1">{t("marketPage.source", { source: data.source })}</span> : null}
+            {data?.primary_provider || data?.source ? (
+              <span className="rounded-full bg-primary/10 px-2 py-1 text-primary">
+                {t("marketPage.primaryProvider", {
+                  defaultValue: "数据：{{provider}}",
+                  provider: data.primary_provider || data.source,
+                })}
+              </span>
+            ) : null}
+            {(data?.data_notes || []).map((note) => (
+              <span key={note} className="rounded-full bg-muted/60 px-2 py-1">
+                {note}
+              </span>
+            ))}
           </div>
         </div>
         <button
@@ -176,19 +179,7 @@ export function MarketOverview() {
       ) : null}
 
       <section>
-          <h2 className="mb-2 text-sm font-medium text-muted-foreground">{t("marketPage.indices")}</h2>
-        <div className="mb-3 grid grid-cols-3 gap-2 sm:max-w-md">
-          {[
-            [t("marketPage.up"), breadth.up, "text-rose-500"],
-            [t("marketPage.down"), breadth.down, "text-emerald-500"],
-            [t("marketPage.flat"), breadth.flat, "text-muted-foreground"],
-          ].map(([label, value, color]) => (
-            <div key={String(label)} className="rounded-lg border bg-card px-3 py-2 shadow-sm">
-              <div className="text-[10px] text-muted-foreground">{label}</div>
-              <div className={cn("mt-0.5 text-lg font-semibold tabular-nums", color)}>{value}</div>
-            </div>
-          ))}
-        </div>
+        <h2 className="mb-2 text-sm font-medium text-muted-foreground">{t("marketPage.indices")}</h2>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7">
           {(data?.indices || []).map((idx) => (
             <article key={idx.symbol} className="rounded-xl border bg-card px-3 py-3 shadow-sm">
@@ -207,6 +198,51 @@ export function MarketOverview() {
               ))
             : null}
         </div>
+
+        {/* Domestic pulse: northbound + limit breadth */}
+        {data?.northbound || data?.limit_stats ? (
+          <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+            <div className="rounded-lg border bg-card px-3 py-2">
+              <div className="text-[10px] text-muted-foreground">
+                {t("marketPage.northboundTotal", { defaultValue: "北向净流入" })}
+              </div>
+              <div
+                className={cn(
+                  "mt-0.5 text-lg font-semibold tabular-nums",
+                  (data?.northbound?.total_net ?? 0) >= 0 ? "text-rose-500" : "text-emerald-500",
+                )}
+              >
+                {data?.northbound?.total_net == null
+                  ? "—"
+                  : `${data.northbound.total_net >= 0 ? "+" : ""}${data.northbound.total_net.toFixed(2)}`}
+              </div>
+            </div>
+            <div className="rounded-lg border bg-card px-3 py-2">
+              <div className="text-[10px] text-muted-foreground">
+                {t("marketPage.northboundSh", { defaultValue: "沪股通" })}
+              </div>
+              <div className="mt-0.5 text-lg font-semibold tabular-nums">
+                {data?.northbound?.sh_net == null ? "—" : data.northbound.sh_net.toFixed(2)}
+              </div>
+            </div>
+            <div className="rounded-lg border bg-card px-3 py-2">
+              <div className="text-[10px] text-muted-foreground">
+                {t("marketPage.limitUp", { defaultValue: "涨停(估)" })}
+              </div>
+              <div className="mt-0.5 text-lg font-semibold tabular-nums text-rose-500">
+                {data?.limit_stats?.limit_up_approx ?? "—"}
+              </div>
+            </div>
+            <div className="rounded-lg border bg-card px-3 py-2">
+              <div className="text-[10px] text-muted-foreground">
+                {t("marketPage.limitDown", { defaultValue: "跌停(估)" })}
+              </div>
+              <div className="mt-0.5 text-lg font-semibold tabular-nums text-emerald-500">
+                {data?.limit_stats?.limit_down_approx ?? "—"}
+              </div>
+            </div>
+          </div>
+        ) : null}
       </section>
 
       <section className="flex flex-col gap-3">
@@ -236,7 +272,7 @@ export function MarketOverview() {
         <QuoteTable rows={data?.hot_stocks || []} t={t} />
       </section>
 
-      <AiInsightPanel
+      <ModuleCopilot
         kind="market"
         title={t("marketPage.aiInsight")}
         autoRun={false}
@@ -244,6 +280,8 @@ export function MarketOverview() {
           indices: data?.indices || [],
           hot_boards: data?.hot_boards || [],
           hot_stocks: data?.hot_stocks || [],
+          northbound: data?.northbound || null,
+          limit_stats: data?.limit_stats || null,
         }}
       />
 

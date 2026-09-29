@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Newspaper, RefreshCw, ExternalLink, Search, Radar } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { api, type NewsArticle } from "@/lib/api";
-import { AiInsightPanel } from "@/components/common/AiInsightPanel";
+import { ModuleCopilot } from "@/components/common/ModuleCopilot";
 
 /** Soft topic chips — only nudge the Eastmoney keyword, never hardcode tickers. */
 const TOPIC_PRESETS = [
@@ -51,6 +51,7 @@ export function NewsRadar() {
   const [input, setInput] = useState("");
   const [articles, setArticles] = useState<NewsArticle[]>([]);
   const [notes, setNotes] = useState<string[]>([]);
+  const [fromCache, setFromCache] = useState(false);
   const [loading, setLoading] = useState(false);
   const [updatedAt, setUpdatedAt] = useState<Date | null>(null);
 
@@ -62,7 +63,16 @@ export function NewsRadar() {
       else if (topic) params.topic = topic;
       const res = await api.fetchNewsRadar(params);
       setArticles(res.articles || []);
-      setNotes(res.source_notes || []);
+      setFromCache(Boolean(res.cached));
+      const rawNotes = res.source_notes || [];
+      setNotes(
+        rawNotes.filter(
+          (n) =>
+            !/^duckdb cache$/i.test(n.trim()) &&
+            !n.startsWith("cache_write:") &&
+            !n.startsWith("cache:"),
+        ),
+      );
     } catch (e) {
       setArticles([]);
       setNotes([e instanceof Error ? e.message : "新闻获取失败"]);
@@ -100,6 +110,13 @@ export function NewsRadar() {
           <p className="mt-1 text-sm text-muted-foreground">
             新浪财经 / Tushare / 东方财富 多源并行 · 秒级返回 · 25s 自动刷新
           </p>
+          <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
+            {fromCache ? (
+              <span className="rounded-full bg-amber-500/10 px-2 py-0.5 text-amber-600 dark:text-amber-300">
+                本地缓存
+              </span>
+            ) : null}
+          </div>
         </div>
         <button
           type="button"
@@ -247,7 +264,7 @@ export function NewsRadar() {
         )}
       </section>
 
-      <AiInsightPanel
+      <ModuleCopilot
         kind="news"
         title="AI 资讯扫描"
         autoRun={false}

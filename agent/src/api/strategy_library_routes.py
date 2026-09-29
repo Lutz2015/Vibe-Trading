@@ -146,6 +146,30 @@ class StrategyAiResponse(BaseModel):
     error: Optional[str] = None
 
 
+class StrategyYamlImportRequest(BaseModel):
+    yaml: str = Field(..., min_length=10)
+    activate: bool = False
+    merge_globals: bool = True
+    group: str = "导入"
+    module_code: Optional[str] = None
+
+
+class StrategyYamlExportResponse(BaseModel):
+    strategy_id: str
+    yaml: str
+    source: str = "qbit"
+
+
+class StrategyYamlImportResponse(BaseModel):
+    ok: bool
+    strategy: StrategyItem
+    qbit_strategy_id: str
+    created: bool
+    activated: bool
+    message: str = ""
+    error: Optional[str] = None
+
+
 def _path_for(strategy_id: str) -> Path:
     if not re.fullmatch(r"[a-zA-Z0-9_-]{8,64}", strategy_id or ""):
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "invalid strategy id")
@@ -191,6 +215,13 @@ def _list_versions(strategy_id: str) -> List[StrategyVersion]:
         except Exception:
             logger.warning("skip unreadable strategy version %s", path)
     return sorted(result, key=lambda item: item.version, reverse=True)
+
+
+def _find_by_qbit_id(qbit_strategy_id: str) -> Optional[StrategyItem]:
+    for item in _list_all():
+        if item.qbit_strategy_id == qbit_strategy_id:
+            return item
+    return None
 
 
 def _list_all() -> List[StrategyItem]:
@@ -247,6 +278,138 @@ def register_strategy_library_routes(
         items = _list_all()
         groups = sorted({s.group or "默认" for s in items} | {"默认"})
         return StrategyListResponse(items=items, groups=groups)
+
+    @app.post("/strategies/import-yaml", response_model=StrategyYamlImportResponse, dependencies=deps)
+    async def import_strategy_yaml(body: StrategyYamlImportRequest) -> StrategyYamlImportResponse:
+        """Parse person-trading-strategy.yaml, register in Qbit, save library copy."""
+        from src.strategy_yaml.importer import StrategyImportError, import_strategy_yaml_file
+        from src.qbit.platform import create_qbit_app
+        import os
+
+        create_qbit_app()
+        config_path = Path(
+            os.getenv(
+                "AUTO_TRADING_CONFIG_PATH",
+                str(Path(__file__).resolve().parents[2] / "qbit" / "configs" / "auto-trading.yaml"),
+            )
+        )
+        try:
+            summary = import_strategy_yaml_file(
+                config_path,
+                body.yaml,
+                activate=body.activate,
+                merge_globals=body.merge_globals,
+                module_code=body.module_code,
+            )
+        except StrategyImportError as exc:
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, str(exc)) from exc
+
+        qbit_id = str(summary["strategy_id"])
+        existing = _find_by_qbit_id(qbit_id)
+        now = time.time()
+        if existing:
+            item = existing.model_copy(update={
+                "name": str(summary["name"]),
+                "group": (body.group or "导入").strip()[:40],
+                "kind": "YAML策略",
+                "language": "yaml",
+                "code": body.yaml.strip(),
+                "description": f"Imported YAML strategy ({qbit_id})",
+                "qbit_strategy_id": qbit_id,
+                "qbit_registry_status": "imported",
+                "lifecycle": "paper" if body.activate else "draft",
+                "updated_at": now,
+            })
+            created = False
+        else:
+            item = StrategyItem(
+                id=uuid.uuid4().hex[:16],
+                name=str(summary["name"]),
+                group=(body.group or "导入").strip()[:40],
+                kind="YAML策略",
+                language="yaml",
+                code=body.yaml.strip(),
+                notes=f"person-trading-strategy.yaml · mode={summary.get('mode')}",
+                description=f"Imported YAML strategy ({qbit_id})",
+                created_at=now,
+                updated_at=now,
+                lifecycle="paper" if body.activate else "draft",
+                qbit_strategy_id=qbit_id,
+                qbit_registry_status="imported",
+            )
+            created = True
+        _save(item)
+        _save_version(item, "import yaml")
+        msg = (
+            f"已{'更新' if not created else '导入'}策略 {qbit_id}"
+            + (" 并已激活" if body.activate else "")
+        )
+        return StrategyYamlImportResponse(
+            ok=True,
+            strategy=item,
+            qbit_strategy_id=qbit_id,
+            created=created,
+            activated=body.activate,
+            message=msg,
+        )
+
+    @app.get("/strategies/{strategy_id}/export-yaml", response_model=StrategyYamlExportResponse, dependencies=deps)
+    async def export_strategy_yaml_route(strategy_id: str) -> StrategyYamlExportResponse:
+        """Export library or Qbit strategy as person-trading-strategy.yaml."""
+        from src.strategy_yaml.exporter import export_strategy_yaml
+        from src.strategy_yaml.importer import load_auto_trading_config
+        import os
+
+        try:
+            item = _load(strategy_id)
+        except HTTPException:
+            item = None
+
+        if item and item.language == "yaml" and (item.code or "").strip() and not item.qbit_strategy_id:
+            return StrategyYamlExportResponse(
+                strategy_id=strategy_id,
+                yaml=item.code.strip() + "\n",
+                source="library",
+            )
+
+        qbit_id = item.qbit_strategy_id if item else strategy_id
+        config_path = Path(
+            os.getenv(
+                "AUTO_TRADING_CONFIG_PATH",
+                str(Path(__file__).resolve().parents[2] / "qbit" / "configs" / "auto-trading.yaml"),
+            )
+        )
+        try:
+            config = load_auto_trading_config(config_path)
+            text = export_strategy_yaml(config, str(qbit_id))
+        except Exception as exc:
+            if item and item.language == "yaml" and (item.code or "").strip():
+                return StrategyYamlExportResponse(
+                    strategy_id=strategy_id,
+                    yaml=item.code.strip() + "\n",
+                    source="library",
+                )
+            raise HTTPException(status.HTTP_404_NOT_FOUND, str(exc)) from exc
+        return StrategyYamlExportResponse(strategy_id=str(qbit_id), yaml=text, source="qbit")
+
+    @app.get("/strategies/qbit/{qbit_strategy_id}/export-yaml", response_model=StrategyYamlExportResponse, dependencies=deps)
+    async def export_qbit_strategy_yaml(qbit_strategy_id: str) -> StrategyYamlExportResponse:
+        from src.strategy_yaml.exporter import export_strategy_yaml
+        from src.strategy_yaml.importer import load_auto_trading_config
+        import os
+
+        config_path = Path(
+            os.getenv(
+                "AUTO_TRADING_CONFIG_PATH",
+                str(Path(__file__).resolve().parents[2] / "qbit" / "configs" / "auto-trading.yaml"),
+            )
+        )
+        try:
+            config = load_auto_trading_config(config_path)
+            text = export_strategy_yaml(config, qbit_strategy_id.strip())
+        except KeyError as exc:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, str(exc)) from exc
+        return StrategyYamlExportResponse(strategy_id=qbit_strategy_id.strip(), yaml=text, source="qbit")
 
     @app.post("/strategies", response_model=StrategyItem, dependencies=deps)
     async def create_strategy(body: StrategyCreate) -> StrategyItem:

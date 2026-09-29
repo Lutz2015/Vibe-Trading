@@ -7,6 +7,7 @@ import {
   Loader2,
   MoreHorizontal,
   Play,
+  FileUp,
   Plus,
   RefreshCw,
   Rocket,
@@ -20,7 +21,9 @@ import { useNavigate, useSearchParams } from "react-router";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import { ApiError, api, type LiveStatus, type StrategyBacktestRecord, type StrategyItem, type StrategyVersion } from "@/lib/api";
+import { downloadText } from "@/lib/downloadText";
 import { RunnerStatus } from "@/components/chat/RunnerStatus";
+import { StrategyYamlImportDialog } from "@/components/strategy/StrategyYamlImportDialog";
 
 type AiChatMessage = {
   role: "user" | "assistant";
@@ -111,7 +114,7 @@ function StrategyDeployBar({
   const proposeMandateInAgent = async () => {
     await onSave(draft);
     const seed = [
-      `请为以下策略生成 **paper 模拟盘** 的 mandate 提案（使用 propose_mandate_profiles 工具）：`,
+      `请为以下策略生成 **paper ** 的 mandate 提案（使用 propose_mandate_profiles 工具）：`,
       `策略名：${draft.name}`,
       `类型：${draft.kind}`,
       draft.description ? `描述：${draft.description}` : "",
@@ -275,6 +278,7 @@ export function StrategyLibrary() {
   const [busyStrategy, setBusyStrategy] = useState<string | null>(null);
   const [versions, setVersions] = useState<StrategyVersion[]>([]);
   const [backtests, setBacktests] = useState<StrategyBacktestRecord[]>([]);
+  const [yamlImportOpen, setYamlImportOpen] = useState(false);
 
   const flash = (msg: string) => {
     setToast(msg);
@@ -373,6 +377,27 @@ export function StrategyLibrary() {
       setEditing(created);
     } catch (e) {
       flash(e instanceof Error ? e.message : "新建失败");
+    }
+  };
+
+  const exportYaml = async (s: StrategyItem) => {
+    setBusyStrategy(s.id);
+    try {
+      const res = s.qbit_strategy_id
+        ? await api.exportQbitStrategyYaml(s.qbit_strategy_id)
+        : await api.exportStrategyYaml(s.id);
+      downloadText(res.yaml, `${res.strategy_id || s.name}.yaml`, "text/yaml;charset=utf-8");
+      flash(t("strategyYaml.exportSuccess", { defaultValue: "YAML 已导出" }));
+    } catch (e) {
+      if (s.language === "yaml" && s.code?.trim()) {
+        downloadText(s.code.trim() + "\n", `${s.name}.yaml`, "text/yaml;charset=utf-8");
+        flash(t("strategyYaml.exportSuccess", { defaultValue: "YAML 已导出" }));
+      } else {
+        flash(e instanceof Error ? e.message : t("strategyYaml.exportFailed", { defaultValue: "导出失败" }));
+      }
+    } finally {
+      setBusyStrategy(null);
+      setMenuFor(null);
     }
   };
 
@@ -477,6 +502,14 @@ export function StrategyLibrary() {
 
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-4 p-6">
+      <StrategyYamlImportDialog
+        open={yamlImportOpen}
+        onClose={() => setYamlImportOpen(false)}
+        onImported={(msg) => {
+          flash(msg);
+          void load();
+        }}
+      />
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
@@ -488,6 +521,14 @@ export function StrategyLibrary() {
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => setYamlImportOpen(true)}
+            className="inline-flex items-center gap-1.5 rounded-md border border-primary/40 bg-primary/5 px-3 py-2 text-sm font-medium text-primary"
+          >
+            <FileUp className="h-4 w-4" />
+            {t("strategyYaml.importButton")}
+          </button>
           <button
             type="button"
             onClick={() => void createStrategy()}
@@ -650,31 +691,39 @@ export function StrategyLibrary() {
                         </button>
                         {menuFor === s.id ? (
                           <div className="absolute end-0 z-20 mt-1 w-28 rounded-md border bg-popover py-1 shadow-lg">
-                            {["导出", "应用"].map((label) => (
-                              <button
-                                key={label}
-                                type="button"
-                                onClick={() => {
-                                  if (label === "导出") {
-                                    const blob = new Blob([s.code || ""], {
-                                      type: "text/plain;charset=utf-8",
-                                    });
-                                    const a = document.createElement("a");
-                                    a.href = URL.createObjectURL(blob);
-                                    a.download = `${s.name || "strategy"}.py`;
-                                    a.click();
-                                    URL.revokeObjectURL(a.href);
-                                    flash("已导出代码");
-                                  } else {
-                                    setEditing(s);
-                                  }
-                                  setMenuFor(null);
-                                }}
-                                className="block w-full px-3 py-1.5 text-start text-xs hover:bg-muted"
-                              >
-                                {label}
-                              </button>
-                            ))}
+                            <button
+                              type="button"
+                              onClick={() => void exportYaml(s)}
+                              className="block w-full px-3 py-1.5 text-start text-xs hover:bg-muted"
+                            >
+                              {t("strategyYaml.exportYaml")}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const blob = new Blob([s.code || ""], { type: "text/plain;charset=utf-8" });
+                                const a = document.createElement("a");
+                                a.href = URL.createObjectURL(blob);
+                                a.download = `${s.name || "strategy"}.${s.language === "yaml" ? "yaml" : "py"}`;
+                                a.click();
+                                URL.revokeObjectURL(a.href);
+                                flash(t("strategyYaml.exportCodeSuccess", { defaultValue: "代码已导出" }));
+                                setMenuFor(null);
+                              }}
+                              className="block w-full px-3 py-1.5 text-start text-xs hover:bg-muted"
+                            >
+                              {t("strategyYaml.exportCode")}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setEditing(s);
+                                setMenuFor(null);
+                              }}
+                              className="block w-full px-3 py-1.5 text-start text-xs hover:bg-muted"
+                            >
+                              {t("strategyYaml.openEditor", { defaultValue: "编辑" })}
+                            </button>
                           </div>
                         ) : null}
                       </div>

@@ -46,16 +46,17 @@ class OpsToggleRequest(BaseModel):
 
 
 def effective_trading_state() -> tuple[bool, bool]:
+    from src.live.qbit_halt_bridge import effective_qbit_kill_switch
+
     limits = load_risk_limits()
     trading_enabled = (
         _trading_enabled_override
         if _trading_enabled_override is not None
         else limits["global"]["trading_enabled"]
     )
-    kill_switch = (
-        _kill_switch_override
-        if _kill_switch_override is not None
-        else limits["global"]["kill_switch"]
+    kill_switch = effective_qbit_kill_switch(
+        bool(limits["global"]["kill_switch"]),
+        _kill_switch_override,
     )
     if kill_switch:
         trading_enabled = False
@@ -63,20 +64,29 @@ def effective_trading_state() -> tuple[bool, bool]:
 
 
 @app.get("/health")
-def health() -> dict[str, str | bool]:
+def health() -> dict[str, str | bool | dict[str, Any]]:
+    from src.live.qbit_halt_bridge import describe_qbit_halt_state
+
     trading_enabled, kill_switch = effective_trading_state()
     return {
         "status": "ok",
         "service": "risk-engine",
         "tradingEnabled": trading_enabled,
         "killSwitch": kill_switch,
+        "halt": describe_qbit_halt_state(),
     }
 
 
 @app.get("/ops/status")
-def ops_status() -> dict[str, bool]:
+def ops_status() -> dict[str, bool | dict[str, Any]]:
+    from src.live.qbit_halt_bridge import describe_qbit_halt_state
+
     trading_enabled, kill_switch = effective_trading_state()
-    return {"tradingEnabled": trading_enabled, "killSwitch": kill_switch}
+    return {
+        "tradingEnabled": trading_enabled,
+        "killSwitch": kill_switch,
+        "halt": describe_qbit_halt_state(),
+    }
 
 
 @app.post("/ops/trading-toggle")
@@ -88,13 +98,16 @@ def set_trading_toggle(payload: OpsToggleRequest) -> dict[str, bool]:
 
 
 @app.post("/ops/kill-switch")
-def set_kill_switch(payload: OpsToggleRequest) -> dict[str, bool]:
-    global _kill_switch_override, _trading_enabled_override
-    _kill_switch_override = payload.enabled
-    if payload.enabled:
-        _trading_enabled_override = False
+def set_kill_switch(payload: OpsToggleRequest) -> dict[str, bool | dict[str, Any]]:
+    from src.live.qbit_halt_bridge import describe_qbit_halt_state, sync_qbit_kill_switch
+
+    sync_qbit_kill_switch(payload.enabled)
     trading_enabled, kill_switch = effective_trading_state()
-    return {"killSwitch": kill_switch, "tradingEnabled": trading_enabled}
+    return {
+        "killSwitch": kill_switch,
+        "tradingEnabled": trading_enabled,
+        "halt": describe_qbit_halt_state(),
+    }
 
 
 @app.post("/risk/check-order", response_model=RiskCheckResponse)

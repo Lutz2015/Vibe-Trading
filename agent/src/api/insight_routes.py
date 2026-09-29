@@ -18,7 +18,10 @@ logger = logging.getLogger(__name__)
 
 
 class InsightRequest(BaseModel):
-    kind: str = Field(..., description="market | news | sentiment | logic_chain")
+    kind: str = Field(
+        ...,
+        description="market | news | sentiment | logic_chain | portfolio | quant | strategy_gen | backtest | intelligence",
+    )
     payload: Dict[str, Any] = Field(default_factory=dict)
     locale: str = "zh-CN"
     max_chars: int = Field(default=1200, ge=200, le=4000)
@@ -30,6 +33,32 @@ class InsightResponse(BaseModel):
     text: str = ""
     model: Optional[str] = None
     error: Optional[str] = None
+
+
+class CopilotToolStep(BaseModel):
+    name: str
+    ok: bool = True
+    summary: str = ""
+
+
+class CopilotRequest(BaseModel):
+    kind: str = Field(
+        ...,
+        description="market | news | sentiment | logic_chain | portfolio | quant | strategy_gen | backtest | intelligence",
+    )
+    payload: Dict[str, Any] = Field(default_factory=dict)
+    locale: str = "zh-CN"
+    max_iterations: int = Field(default=6, ge=1, le=8)
+
+
+class CopilotResponse(BaseModel):
+    ok: bool
+    kind: str
+    text: str = ""
+    model: Optional[str] = None
+    error: Optional[str] = None
+    tool_steps: List[CopilotToolStep] = Field(default_factory=list)
+    iterations: int = 0
 
 
 def _clip(value: Any, limit: int = 180) -> str:
@@ -47,6 +76,18 @@ def _market_brief(payload: Dict[str, Any]) -> str:
             continue
         lines.append(
             f"- {row.get('name')}: {row.get('price')} ({row.get('change_pct')}%)"
+        )
+    northbound = payload.get("northbound") or {}
+    if northbound:
+        lines.append("【北向资金】")
+        lines.append(
+            f"- 净流入合计 {northbound.get('total_net')} / 沪 {northbound.get('sh_net')} / 深 {northbound.get('sz_net')}"
+        )
+    limit_stats = payload.get("limit_stats") or {}
+    if limit_stats:
+        lines.append("【涨跌停概况】")
+        lines.append(
+            f"- 涨停(估) {limit_stats.get('limit_up_approx')} / 跌停(估) {limit_stats.get('limit_down_approx')}"
         )
     lines.append("【热点板块涨幅榜】")
     for board in boards[:8]:
@@ -67,6 +108,107 @@ def _market_brief(payload: Dict[str, Any]) -> str:
         if not isinstance(row, dict):
             continue
         lines.append(f"- {row.get('name')} {row.get('price')} ({row.get('change_pct')}%)")
+    return "\n".join(lines)
+
+
+def _strategy_gen_brief(payload: Dict[str, Any]) -> str:
+    return str(payload.get("intent") or payload.get("request") or payload.get("prompt") or payload)
+
+
+def _intelligence_brief(payload: Dict[str, Any]) -> str:
+    lines: List[str] = ["【情报快照】"]
+    market = payload.get("market") or {}
+    if market:
+        lines.append(f"- 大盘 as_of={market.get('as_of')} provider={market.get('primary_provider')}")
+        for row in (market.get("indices") or [])[:6]:
+            if isinstance(row, dict):
+                lines.append(f"  · {row.get('name')} {row.get('change_pct')}%")
+    news = payload.get("news") or {}
+    articles = news.get("articles") or payload.get("articles") or []
+    lines.append(f"- 新闻条数 {len(articles)} 偏多={news.get('positive_count')} 偏空={news.get('negative_count')}")
+    for row in articles[:12]:
+        if isinstance(row, dict):
+            lines.append(f"  · [{row.get('source')}] {_clip(row.get('title'), 100)}")
+    sentiment = payload.get("sentiment") or {}
+    if sentiment:
+        lines.append(f"- 情绪温度 {sentiment.get('composite')} mode={sentiment.get('mode')}")
+    return "\n".join(lines)
+
+
+def _backtest_brief(payload: Dict[str, Any]) -> str:
+    metrics = payload.get("metrics") or payload
+    keys = (
+        "total_return_pct",
+        "max_drawdown_pct",
+        "sharpe_like",
+        "win_rate_pct",
+        "trade_count",
+        "annualized_volatility_pct",
+        "symbol",
+        "strategy_id",
+        "start",
+        "end",
+    )
+    lines: List[str] = ["【回测指标】"]
+    if isinstance(metrics, dict):
+        for key in keys:
+            if key in metrics:
+                lines.append(f"- {key}: {metrics.get(key)}")
+        extra = payload.get("note") or payload.get("params")
+        if extra:
+            lines.append(f"- 其它: {extra}")
+    else:
+        lines.append(str(metrics))
+    return "\n".join(lines)
+
+
+def _portfolio_brief(payload: Dict[str, Any]) -> str:
+    holdings = payload.get("holdings") or payload.get("positions") or []
+    cash = payload.get("cash")
+    total = payload.get("portfolio_value") or payload.get("total_value")
+    lines: List[str] = ["【组合概况】"]
+    lines.append(f"- 净值/市值: {total} 现金: {cash}")
+    lines.append("【持仓明细】")
+    for row in holdings[:20]:
+        if not isinstance(row, dict):
+            continue
+        lines.append(
+            f"- {row.get('name') or row.get('symbol')} ({row.get('symbol')})"
+            f" 数量={row.get('quantity')} 成本={row.get('avg_cost') or row.get('cost_price')}"
+            f" 现价={row.get('last_price') or row.get('market_price')}"
+            f" 盈亏={row.get('unrealized_pnl_usd') or row.get('pos_pnl')}"
+        )
+    return "\n".join(lines)
+
+
+def _quant_brief(payload: Dict[str, Any]) -> str:
+    strategies = payload.get("strategies") or []
+    positions = payload.get("positions") or []
+    lines: List[str] = ["【自动交易策略】"]
+    for row in strategies[:6]:
+        if not isinstance(row, dict):
+            continue
+        lines.append(
+            f"- {row.get('strategy_id')}: enabled={row.get('enabled')} rule={row.get('rule')}"
+        )
+    lines.append("【当前持仓】")
+    for row in positions[:12]:
+        if not isinstance(row, dict):
+            continue
+        lines.append(
+            f"- {row.get('name') or row.get('symbol')} x{row.get('quantity')}"
+            f" 成本={row.get('avg_cost')} 现价={row.get('last_price')}"
+        )
+    orders = payload.get("orders") or []
+    if orders:
+        lines.append("【最近指令】")
+        for row in orders[:10]:
+            if not isinstance(row, dict):
+                continue
+            lines.append(
+                f"- {row.get('name') or row.get('symbol')} {row.get('side')}"
+                f" {row.get('quantity')}@{row.get('price')} status={row.get('status')}"
+            )
     return "\n".join(lines)
 
 
@@ -217,6 +359,83 @@ _USER_PROMPTS = {
             "Context:\n{brief}"
         ),
     },
+    "portfolio": {
+        "zh-CN": (
+            "请诊断我的持仓组合（A股/港股为主）：\n"
+            "1) 集中度与行业暴露风险；2) 浮亏/浮盈标的的可能原因与应对；"
+            "3) 2-3 条可执行的调仓或观察建议（不构成投资建议）。\n\n{brief}"
+        ),
+        "en": (
+            "Diagnose this portfolio (A-share/HK focused):\n"
+            "1) concentration and sector exposure; 2) drivers for winners/losers and actions; "
+            "3) 2-3 actionable rebalance or watch items (not investment advice).\n\n{brief}"
+        ),
+    },
+    "quant": {
+        "zh-CN": (
+            "请从自动交易运营角度分析：\n"
+            "1) 当前策略是否清晰、可解释；2) 持仓与策略是否匹配；"
+            "3) 风险与下一步操作（暂停/切换策略/手动干预）建议。\n\n{brief}"
+        ),
+        "en": (
+            "Analyze from an auto-trading ops perspective:\n"
+            "1) is the strategy clear and explainable; 2) do holdings match the strategy; "
+            "3) risks and next ops (pause / switch / manual override).\n\n{brief}"
+        ),
+    },
+    "strategy_gen": {
+        "zh-CN": (
+            "根据用户的策略意图，输出一个可直接导入的 JSON 策略配置（只输出 JSON，不要其它文字）。\n"
+            "字段：\n"
+            "```json\n"
+            "{{\n"
+            '  "strategy_id": "snake_case_id",\n'
+            '  "label": "中文策略名",\n'
+            '  "enabled": false,\n'
+            '  "expected_return_pct": 10.0,\n'
+            '  "risk_volatility_pct": 10.0,\n'
+            '  "max_weight": 0.4,\n'
+            '  "params": {{\n'
+            '    "mode": "momentum|mean_reversion|equal_weight|low_volatility|strong_hand|dip_buy",\n'
+            '    "top_n": 3,\n'
+            '    "universe_symbols": ["000001.SZ","600519.SH"]\n'
+            "  }}\n"
+            "}}\n"
+            "```\n"
+            "mode 必须是枚举之一。universe_symbols 用 A 股/港股代码。用户意图：\n{brief}"
+        ),
+        "en": (
+            "Output ONLY a JSON strategy config matching this schema:\n"
+            'strategy_id, label, enabled, expected_return_pct, risk_volatility_pct, max_weight, '
+            'params.mode in {momentum,mean_reversion,equal_weight,low_volatility,strong_hand,dip_buy}, '
+            "params.top_n, params.universe_symbols.\n"
+            "Intent:\n{brief}"
+        ),
+    },
+    "backtest": {
+        "zh-CN": (
+            "请解读回测结果（A股/港股语境）：\n"
+            "1) 收益/回撤/夏普是否合理；2) 是否有过拟合或数据窥探嫌疑；"
+            "3) 实盘前还需要验证什么；4) 是否建议上模拟盘/实盘。\n\n{brief}"
+        ),
+        "en": (
+            "Interpret this backtest (A-share/HK context):\n"
+            "1) are return/drawdown/Sharpe sensible; 2) overfitting or data-snooping risks; "
+            "3) what to validate before live; 4) paper vs live recommendation.\n\n{brief}"
+        ),
+    },
+    "intelligence": {
+        "zh-CN": (
+            "请作为情报分析师，综合市场、新闻与情绪快照：\n"
+            "1) 提炼 3 个最重要催化；2) 受益/受损板块；3) 与 A 股/港股相关的观察点；"
+            "4) 需进一步核实的信息。\n\n{brief}"
+        ),
+        "en": (
+            "As an intelligence analyst, synthesize market/news/sentiment:\n"
+            "1) top 3 catalysts; 2) sectors helped/hurt; 3) A-share/HK watchpoints; "
+            "4) items to verify.\n\n{brief}"
+        ),
+    },
 }
 
 
@@ -226,6 +445,11 @@ def _build_messages(kind: str, payload: Dict[str, Any], locale: str) -> List[Dic
         "news": _news_brief,
         "sentiment": _sentiment_brief,
         "logic_chain": _logic_chain_brief,
+        "portfolio": _portfolio_brief,
+        "quant": _quant_brief,
+        "strategy_gen": _strategy_gen_brief,
+        "backtest": _backtest_brief,
+        "intelligence": _intelligence_brief,
     }
     builder = builders.get(kind)
     if builder is None:
@@ -342,3 +566,51 @@ def register_insight_routes(
         import asyncio
 
         return await asyncio.to_thread(_run)
+
+    @app.post("/insight/copilot", response_model=CopilotResponse, dependencies=deps)
+    async def copilot_insight(body: CopilotRequest) -> CopilotResponse:
+        """Module Copilot — mini ReAct with per-module tool whitelist."""
+        kind = (body.kind or "").strip()
+        try:
+            messages = _build_messages(kind, body.payload or {}, body.locale or "zh-CN")
+        except ValueError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)
+            ) from exc
+
+        user_message = messages[-1]["content"]
+
+        def _run_copilot() -> CopilotResponse:
+            try:
+                from src.providers.llm import _sync_provider_env
+                from src.config.accessor import reset_env_config
+
+                reset_env_config()
+                _sync_provider_env()
+            except Exception:  # noqa: BLE001
+                logger.debug("provider env sync skipped", exc_info=True)
+
+            from src.insight.module_copilot import run_module_copilot
+
+            result = run_module_copilot(
+                kind,
+                user_message,
+                locale=body.locale or "zh-CN",
+                max_iterations=body.max_iterations,
+            )
+            return CopilotResponse(
+                ok=result.ok,
+                kind=result.kind,
+                text=result.text,
+                model=result.model,
+                error=result.error,
+                tool_steps=[
+                    CopilotToolStep(name=s.name, ok=s.ok, summary=s.summary)
+                    for s in result.tool_steps
+                ],
+                iterations=result.iterations,
+            )
+
+        import asyncio
+
+        return await asyncio.to_thread(_run_copilot)

@@ -105,6 +105,12 @@ def trip_halt(by: str, reason: str, broker: str | None = None) -> Path:
         by,
         reason,
     )
+    try:
+        from src.live.qbit_halt_bridge import on_halt_changed
+
+        on_halt_changed(tripped=True, broker=broker, reason=reason, by=by)
+    except Exception:
+        logger.debug("qbit halt bridge notify skipped", exc_info=True)
     return path
 
 
@@ -129,6 +135,12 @@ def clear_halt(broker: str | None = None) -> bool:
     except FileNotFoundError:
         return False
     logger.warning("live kill switch cleared (broker=%s)", broker or "*")
+    try:
+        from src.live.qbit_halt_bridge import on_halt_changed
+
+        on_halt_changed(tripped=False, broker=broker)
+    except Exception:
+        logger.debug("qbit halt bridge notify skipped", exc_info=True)
     return True
 
 

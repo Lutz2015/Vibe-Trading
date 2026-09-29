@@ -94,6 +94,14 @@ _PRIOR_SOURCE_ORDER_ENV = {
     for key in [k for k in list(os.environ) if k.startswith("MARKET_DATA_ORDER_")]
 }
 
+# Production default is domestic-first (a_share,hk_equity only). Unit tests that
+# exercise overseas chains (US/IN/KR/crypto/…) enable those markets explicitly
+# here; the domestic-first policy test overrides this per-test.
+os.environ["MARKET_DATA_ENABLED_MARKETS"] = (
+    "a_share,hk_equity,us_equity,ca_equity,uk_equity,india_equity,kr_equity,"
+    "vietnam_equity,crypto,futures,fund,macro,forex,index"
+)
+
 # Tests that spawn a subprocess hand it this environment, HOME included. On a
 # machine whose dependencies live in the per-user site directory -- what
 # ``pip install --user`` does, and the default when no virtualenv is active --

@@ -284,19 +284,31 @@ class TestFallbackChains:
 
     def test_domestic_first_allowlist(self) -> None:
         """Overseas markets are refused unless MARKET_DATA_ENABLED_MARKETS widens."""
+        import os
+
         from backtest.loaders.base import NoAvailableSourceError
         from backtest.loaders import registry as reg
 
-        assert reg.is_market_enabled("a_share") is True
-        assert reg.is_market_enabled("hk_equity") is True
-        assert reg.is_market_enabled("us_equity") is False
-        assert reg.is_market_enabled("crypto") is False
+        prior = os.environ.get("MARKET_DATA_ENABLED_MARKETS")
+        os.environ["MARKET_DATA_ENABLED_MARKETS"] = "a_share,hk_equity"
+        reg.reset_enabled_markets_cache()
         try:
-            reg.resolve_loader("us_equity")
-        except NoAvailableSourceError as exc:
-            assert "disabled" in str(exc).lower() or "allowlist" in str(exc).lower()
-        else:
-            raise AssertionError("us_equity should be blocked by default")
+            assert reg.is_market_enabled("a_share") is True
+            assert reg.is_market_enabled("hk_equity") is True
+            assert reg.is_market_enabled("us_equity") is False
+            assert reg.is_market_enabled("crypto") is False
+            try:
+                reg.resolve_loader("us_equity")
+            except NoAvailableSourceError as exc:
+                assert "disabled" in str(exc).lower() or "allowlist" in str(exc).lower()
+            else:
+                raise AssertionError("us_equity should be blocked by default")
+        finally:
+            if prior is None:
+                os.environ.pop("MARKET_DATA_ENABLED_MARKETS", None)
+            else:
+                os.environ["MARKET_DATA_ENABLED_MARKETS"] = prior
+            reg.reset_enabled_markets_cache()
 
     def test_unchanged_chains_preserved(self) -> None:
         """crypto/fund/macro/forex chains must be left untouched."""
