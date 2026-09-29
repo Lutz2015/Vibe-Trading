@@ -155,22 +155,73 @@ _NO_NETWORK_FALLBACK_SOURCES: frozenset[str] = frozenset(
 
 
 # ---------------------------------------------------------------------------
+# Market enablement (domestic-first policy)
+# ---------------------------------------------------------------------------
+
+#: Markets allowed for automatic data loading. Overseas markets stay registered
+#: but are refused unless explicitly re-enabled via ``MARKET_DATA_ENABLED_MARKETS``.
+DEFAULT_ENABLED_MARKETS: frozenset[str] = frozenset({"a_share", "hk_equity"})
+_ENABLED_MARKETS_ENV = "MARKET_DATA_ENABLED_MARKETS"
+_enabled_markets_cache: frozenset[str] | None = None
+_enabled_markets_env_snapshot: str | None = None
+
+
+def _enabled_markets() -> frozenset[str]:
+    """Return the active market allowlist (A-share + HK by default)."""
+    global _enabled_markets_cache, _enabled_markets_env_snapshot
+    from src.config.accessor import get_env_value
+
+    raw = (get_env_value(_ENABLED_MARKETS_ENV, "") or "").strip()
+    if raw == _enabled_markets_env_snapshot and _enabled_markets_cache is not None:
+        return _enabled_markets_cache
+    _enabled_markets_env_snapshot = raw
+    if not raw:
+        _enabled_markets_cache = DEFAULT_ENABLED_MARKETS
+    else:
+        parts = {p.strip().lower().replace("-", "_") for p in raw.split(",") if p.strip()}
+        _enabled_markets_cache = frozenset(parts) if parts else DEFAULT_ENABLED_MARKETS
+    return _enabled_markets_cache
+
+
+def is_market_enabled(market: str) -> bool:
+    """Whether ``market`` is on the domestic allowlist (or explicitly enabled)."""
+    return market.strip().lower().replace("-", "_") in _enabled_markets()
+
+
+def assert_market_enabled(market: str) -> None:
+    """Fail closed when a market is outside the allowlist.
+
+    Raises:
+        NoAvailableSourceError: Overseas / disabled market requested.
+    """
+    key = market.strip().lower().replace("-", "_")
+    if key in _enabled_markets():
+        return
+    allowed = ", ".join(sorted(_enabled_markets()))
+    raise NoAvailableSourceError(
+        f"Market '{market}' is disabled. Current allowlist: [{allowed}]. "
+        f"Set {_ENABLED_MARKETS_ENV} to re-enable (e.g. "
+        f"{_ENABLED_MARKETS_ENV}=a_share,hk_equity,us_equity)."
+    )
+
+
+# ---------------------------------------------------------------------------
 # Fallback chains: market_type -> ordered list of source names
 # ---------------------------------------------------------------------------
 
-# Chains are ordered by IP-ban risk first (lighter, throttle-tolerant public
-# endpoints lead; key-gated REST and rate-limit-prone sources trail), then by
-# data quality. Eastmoney/Sina/Stooq/Yahoo are unauthenticated public sources
-# that must be politely throttled; Finnhub/AlphaVantage/Tiingo/FMP are key-gated
-# REST fallbacks placed deeper in the chain.
+# Chains are ordered by preference first (Tushare Pro is the primary domestic
+# source when a token is present), then by IP-ban risk and data quality.
+# Eastmoney/Sina/Stooq/Yahoo are unauthenticated public sources that must be
+# politely throttled; Finnhub/AlphaVantage/Tiingo/FMP are key-gated REST
+# fallbacks placed deeper in the chain.
 FALLBACK_CHAINS: dict[str, list[str]] = {
     "a_share": [
+        "tushare",
         "tencent",
         "mootdx",
         "eastmoney",
         "baostock",
         "akshare",
-        "tushare",
         "local",
     ],
     "us_equity": [
@@ -187,17 +238,17 @@ FALLBACK_CHAINS: dict[str, list[str]] = {
         "akshare",
         "local",
     ],
-    # HK: tencent leads (no observed IP ban); akshare (Eastmoney-backed)
-    # precedes the Yahoo-SDK family, which is blocked from mainland IPs;
-    # tushare hk_daily is key-gated.
+    # HK: Tushare Pro first (hk_daily / adj_factor unavailable → raw),
+    # then tencent (no observed IP ban). Yahoo-SDK family is blocked from
+    # mainland IPs and sits after local CN-friendly sources.
     "hk_equity": [
+        "tushare",
         "tencent",
         "eastmoney",
-        "yahoo",
-        "futu",
         "akshare",
+        "futu",
+        "yahoo",
         "yfinance",
-        "tushare",
         "longbridge",
         "local",
     ],
@@ -451,9 +502,11 @@ def resolve_loader(market: str) -> Any:
         A loader instance.
 
     Raises:
-        NoAvailableSourceError: If every candidate is unavailable.
+        NoAvailableSourceError: If every candidate is unavailable, or the
+            market is outside the domestic allowlist.
     """
     _ensure_registered()
+    assert_market_enabled(market)
     chain = FALLBACK_CHAINS.get(market, [])
     tried: list[str] = []
     for name in chain:
@@ -527,6 +580,8 @@ def get_loader_cls_with_fallback(source: str) -> Type[Any]:
 
     # Source unavailable — try same-market fallback
     for market in loader_cls.markets:
+        if not is_market_enabled(market):
+            continue
         try:
             fallback = resolve_loader(market)
             logger.warning(

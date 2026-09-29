@@ -225,6 +225,11 @@ class DataConfig(_EnvBase):
     # backtest.loaders.registry.refresh_source_order_overrides() (which reads
     # os.getenv directly); declared here for visibility/validation parity.
     market_data_order_a_share: str = Field(alias="MARKET_DATA_ORDER_A_SHARE", default="")
+    # Domestic-first allowlist: comma-separated market keys. Empty = product
+    # default (a_share,hk_equity). Overseas markets are refused when absent.
+    market_data_enabled_markets: str = Field(
+        alias="MARKET_DATA_ENABLED_MARKETS", default=""
+    )
     market_data_order_us_equity: str = Field(alias="MARKET_DATA_ORDER_US_EQUITY", default="")
     market_data_order_hk_equity: str = Field(alias="MARKET_DATA_ORDER_HK_EQUITY", default="")
     market_data_order_india_equity: str = Field(alias="MARKET_DATA_ORDER_INDIA_EQUITY", default="")

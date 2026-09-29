@@ -147,6 +147,80 @@ def extract_date_time(parts: list[str]) -> tuple[str, str]:
 
 
 @dataclass
+class TushareProvider:
+    """Tushare Pro realtime quotes — preferred domestic source when token is set."""
+
+    name: str = "tushare"
+
+    def __post_init__(self) -> None:
+        token = (os.getenv("TUSHARE_TOKEN") or "").strip()
+        if not token or token == "your-tushare-token":
+            raise RuntimeError("TUSHARE_TOKEN is not configured; set it or switch provider to sina")
+
+    def get_quotes(self, symbols: list[str]) -> list[Quote]:
+        import tushare as ts
+
+        pro = ts.pro_api(os.getenv("TUSHARE_TOKEN", "").strip())
+        ts_codes = [normalize_symbol(s) for s in symbols]
+        # realtime_quote covers A-share + HK listing names when the token has access.
+        frame = pro.realtime_quote(ts_code=",".join(ts_codes))
+        quotes: list[Quote] = []
+        now = datetime.utcnow().isoformat()
+        if frame is None or getattr(frame, "empty", True):
+            return quotes
+        for _, row in frame.iterrows():
+            code = str(row.get("code") or row.get("ts_code") or "")
+            if "." in code:
+                std = code if code.split(".")[-1].upper() in {"SH", "SZ", "BJ", "HK"} else normalize_symbol(code)
+            else:
+                std = normalize_symbol(code)
+            try:
+                quotes.append(
+                    Quote(
+                        symbol=std,
+                        name=str(row.get("name") or std),
+                        open=float(row.get("open") or 0.0),
+                        prev_close=float(row.get("pre_close") or row.get("last_close") or 0.0),
+                        price=float(row.get("price") or row.get("close") or 0.0),
+                        high=float(row.get("high") or 0.0),
+                        low=float(row.get("low") or 0.0),
+                        volume=float(row.get("volume") or 0.0),
+                        amount=float(row.get("amount") or 0.0),
+                        ts=str(row.get("trade_time") or row.get("datetime") or now),
+                        source=self.name,
+                    )
+                )
+            except (TypeError, ValueError):
+                continue
+        return quotes
+
+    def get_daily_bars(self, symbol: str, start_date: str, end_date: str) -> list[Bar]:
+        import tushare as ts
+
+        pro = ts.pro_api(os.getenv("TUSHARE_TOKEN", "").strip())
+        std = normalize_symbol(symbol)
+        frame = pro.daily(ts_code=std, start_date=start_date.replace("-", ""), end_date=end_date.replace("-", ""))
+        bars: list[Bar] = []
+        if frame is None or getattr(frame, "empty", True):
+            return bars
+        for _, row in frame.iterrows():
+            bars.append(
+                Bar(
+                    symbol=std,
+                    trade_date=str(row.get("trade_date") or ""),
+                    open=float(row.get("open") or 0.0),
+                    high=float(row.get("high") or 0.0),
+                    low=float(row.get("low") or 0.0),
+                    close=float(row.get("close") or 0.0),
+                    volume=float(row.get("vol") or 0.0),
+                    amount=float(row.get("amount") or 0.0),
+                    source=self.name,
+                )
+            )
+        return bars
+
+
+@dataclass
 class AkshareProvider:
     name: str = "akshare"
 
@@ -365,7 +439,13 @@ class JoinquantProvider:
 
 
 def build_provider() -> MarketDataProvider:
-    provider_name = os.getenv("MARKET_DATA_PROVIDER", "sina").strip().lower()
+    provider_name = os.getenv("MARKET_DATA_PROVIDER", "tushare").strip().lower()
+    if provider_name == "tushare":
+        try:
+            return TushareProvider()
+        except RuntimeError:
+            # No token — keep the desk usable with free CN quotes.
+            return SinaProvider()
     if provider_name == "sina":
         return SinaProvider()
     if provider_name == "akshare":
@@ -378,20 +458,28 @@ def build_provider() -> MarketDataProvider:
 
 
 def build_fallback_provider() -> MarketDataProvider | None:
-    fallback_name = os.getenv("MARKET_DATA_FALLBACK_PROVIDER", "").strip().lower()
+    fallback_name = os.getenv("MARKET_DATA_FALLBACK_PROVIDER", "sina").strip().lower()
     if not fallback_name:
         return None
-    if fallback_name == provider.name:
+    try:
+        candidate: MarketDataProvider | None
+        if fallback_name == "tushare":
+            candidate = TushareProvider()
+        elif fallback_name == "sina":
+            candidate = SinaProvider()
+        elif fallback_name == "akshare":
+            candidate = AkshareProvider()
+        elif fallback_name == "eastmoney":
+            candidate = EastmoneyProvider()
+        elif fallback_name == "joinquant":
+            candidate = JoinquantProvider()
+        else:
+            return None
+    except RuntimeError:
         return None
-    if fallback_name == "sina":
-        return SinaProvider()
-    if fallback_name == "akshare":
-        return AkshareProvider()
-    if fallback_name == "eastmoney":
-        return EastmoneyProvider()
-    if fallback_name == "joinquant":
-        return JoinquantProvider()
-    return None
+    if candidate.name == provider.name:
+        return None
+    return candidate
 
 
 provider = build_provider()

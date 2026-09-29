@@ -44,7 +44,7 @@ def _bootstrap_environment() -> None:
         "AUTO_TRADING_CONFIG_PATH": str(_QBIT_ROOT / "configs" / "auto-trading.yaml"),
         "AUTO_TRADING_STATE_PATH": str(_DATA_DIR / "automation-state.json"),
         "VIBE_TRADING_QBIT_STRATEGIES_ROOT": str(_QBIT_ROOT / "strategies"),
-        "MARKET_DATA_PROVIDER": os.getenv("MARKET_DATA_PROVIDER", "akshare"),
+        "MARKET_DATA_PROVIDER": os.getenv("MARKET_DATA_PROVIDER", "tushare"),
         "MARKET_DATA_FALLBACK_PROVIDER": os.getenv("MARKET_DATA_FALLBACK_PROVIDER", "sina"),
     }
     for key, value in defaults.items():
@@ -145,6 +145,24 @@ def create_qbit_app(*, start_scheduler: bool = False) -> FastAPI:
 
     def _inprocess_ledger_snapshot(prices: dict[str, float]) -> Any:
         return ledger_module.build_snapshot(prices=prices or None)
+
+    def _inprocess_quote_lookup(symbols: list[str]) -> dict[str, dict[str, Any]]:
+        """Live mark + Chinese name for ledger enrichment (best-effort)."""
+        if not symbols:
+            return {}
+        try:
+            quotes = _inprocess_get_quotes(symbols)
+        except Exception:
+            return {}
+        out: dict[str, dict[str, Any]] = {}
+        for symbol, quote in quotes.items():
+            out[symbol] = {
+                "price": getattr(quote, "price", None),
+                "name": getattr(quote, "name", None),
+            }
+        return out
+
+    ledger_module.set_quote_lookup(_inprocess_quote_lookup)
 
     def _inprocess_ensure_ledger(initial_cash: float) -> None:
         ledger_module.ensure_initialized(initial_cash)

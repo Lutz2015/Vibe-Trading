@@ -580,6 +580,19 @@ export const api = {
     request<{ status: string }>("/qbit/automation/start", { method: "POST" }),
   qbitStopAutomation: () =>
     request<{ status: string }>("/qbit/automation/stop", { method: "POST" }),
+  qbitSelectStrategies: (strategyIds: string[]) =>
+    request<QbitAutomationStatus>("/qbit/automation/strategies/select", {
+      method: "POST",
+      body: JSON.stringify({ strategy_ids: strategyIds }),
+    }),
+  qbitPatchStrategy: (
+    strategyId: string,
+    body: { enabled?: boolean; top_n?: number; mode?: string },
+  ) =>
+    request<QbitAutomationStatus>(
+      `/qbit/automation/strategies/${encodeURIComponent(strategyId)}`,
+      { method: "PATCH", body: JSON.stringify(body) },
+    ),
   qbitOpsStatus: () => request<QbitOpsStatus>("/qbit/ops/status"),
   qbitKillSwitch: (enabled: boolean) =>
     request<QbitOpsStatus>("/qbit/ops/kill-switch", {
@@ -1934,6 +1947,17 @@ export interface QbitHealthResponse {
   mounted_services?: string[];
 }
 
+export interface QbitStrategyConfigView {
+  strategy_id: string;
+  enabled: boolean;
+  rule: string;
+  top_n: number;
+  universe_size: number;
+  mode?: string;
+  max_weight?: number | null;
+  expected_return_pct?: number | null;
+}
+
 export interface QbitAutomationStatus {
   enabled: boolean;
   scheduler_running: boolean;
@@ -1944,12 +1968,27 @@ export interface QbitAutomationStatus {
   last_rebalance_date: string | null;
   last_run_status: string | null;
   last_run_detail: string | null;
+  strategies?: QbitStrategyConfigView[];
+  trading_hours?: { start: string; end: string };
+  rebalance_window?: {
+    time_local?: string;
+    window_minutes?: number;
+    every_trading_days?: number;
+  };
+  initial_cash?: number | null;
 }
 
 export interface QbitLedgerSnapshot {
   initial_cash: number;
   cash: number;
-  positions: { symbol: string; quantity: number }[];
+  positions: {
+    symbol: string;
+    quantity: number;
+    name?: string | null;
+    avg_cost?: number | null;
+    last_price?: number | null;
+    market_value?: number | null;
+  }[];
   position_value: number;
   portfolio_value: number;
   as_of: string;
@@ -1963,6 +2002,25 @@ export interface QbitTradeRecord {
   fee: number;
   cash_after: number;
   ts: string;
+  name?: string | null;
+  strategy_id?: string | null;
+}
+
+export interface QbitOrderDetail {
+  symbol: string;
+  name?: string | null;
+  side: string;
+  quantity: number;
+  price: number;
+  strategy_id?: string | null;
+  status: string;
+  skip_reason?: string | null;
+}
+
+export interface QbitStrategyRunDetail {
+  strategy_id: string;
+  rule: string;
+  picked: string[];
 }
 
 export interface QbitRunCycleResponse {
@@ -1972,6 +2030,9 @@ export interface QbitRunCycleResponse {
   orders_submitted: number;
   orders_filled: number;
   as_of: string;
+  message?: string;
+  strategies?: QbitStrategyRunDetail[];
+  orders?: QbitOrderDetail[];
 }
 
 export interface QbitOpsStatus {

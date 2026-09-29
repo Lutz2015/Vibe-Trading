@@ -47,3 +47,30 @@ def test_ledger_snapshot_marks_to_market() -> None:
         assert snapshot.position_value == 160_000.0
         assert snapshot.portfolio_value == snapshot.cash + snapshot.position_value
     os.environ.pop("PORTFOLIO_LEDGER_PATH", None)
+
+
+def test_ledger_tracks_name_strategy_and_avg_cost() -> None:
+    with tempfile.TemporaryDirectory() as tmpdir:
+        os.environ["PORTFOLIO_LEDGER_PATH"] = str(Path(tmpdir) / "ledger.json")
+        module = _load_module("portfolio_ledger_test_meta")
+        module.reset_ledger(100_000.0)
+        module.apply_fill(
+            module.ApplyFillRequest(
+                symbol="000001.SZ",
+                side="BUY",
+                quantity=1000,
+                price=10.0,
+                name="平安银行",
+                strategy_id="test1_multifactor",
+            )
+        )
+        snapshot = module.build_snapshot(prices={"000001.SZ": 10.5})
+        pos = snapshot.positions[0]
+        assert pos.name == "平安银行"
+        assert pos.avg_cost == 10.0
+        assert pos.last_price == 10.5
+        assert pos.market_value == 10_500.0
+        trades = module.get_trades(10)
+        assert trades[-1].name == "平安银行"
+        assert trades[-1].strategy_id == "test1_multifactor"
+    os.environ.pop("PORTFOLIO_LEDGER_PATH", None)

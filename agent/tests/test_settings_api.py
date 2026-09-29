@@ -673,7 +673,7 @@ def test_get_data_source_settings_lists_default_source_orders(
     assert a_share["override"] is None
     assert a_share["override_invalid"] is False
     assert a_share["effective_order"] == a_share["default_order"]
-    assert a_share["default_order"][0] == "tencent"
+    assert a_share["default_order"][0] == "tushare"
     uk_equity = orders["uk_equity"]
     assert uk_equity["env_var"] == "MARKET_DATA_ORDER_UK_EQUITY"
     assert uk_equity["default_order"][0] == "yahoo"
@@ -693,8 +693,8 @@ def test_update_source_orders_persists_and_hot_applies(
                 {
                     "market": "a_share",
                     "order": [
-                        "tushare", "tencent", "mootdx", "eastmoney",
-                        "baostock", "akshare", "local",
+                        "tencent", "mootdx", "eastmoney", "baostock",
+                        "akshare", "tushare", "local",
                     ],
                 },
             ],
@@ -706,16 +706,16 @@ def test_update_source_orders_persists_and_hot_applies(
         e for e in response.json()["source_orders"] if e["market"] == "a_share"
     )
     # Response reports the new effective order...
-    assert entry["effective_order"][0] == "tushare"
+    assert entry["effective_order"][0] == "tencent"
     assert entry["override"] is not None
-    assert entry["override"][0] == "tushare"
+    assert entry["override"][0] == "tencent"
     # ...persisted to the dotenv...
     env_text = (tmp_path / ".env").read_text(encoding="utf-8")
-    assert "MARKET_DATA_ORDER_A_SHARE=tushare,tencent,mootdx" in env_text
+    assert "MARKET_DATA_ORDER_A_SHARE=tencent,mootdx" in env_text
     # ...synced into the running process env...
-    assert os.environ.get("MARKET_DATA_ORDER_A_SHARE", "").startswith("tushare,")
+    assert os.environ.get("MARKET_DATA_ORDER_A_SHARE", "").startswith("tencent,")
     # ...and hot-applied to the live registry chain.
-    assert registry.FALLBACK_CHAINS["a_share"][0] == "tushare"
+    assert registry.FALLBACK_CHAINS["a_share"][0] == "tencent"
 
 
 def test_update_source_orders_reset_clears_override(
@@ -732,8 +732,8 @@ def test_update_source_orders_reset_clears_override(
                 {
                     "market": "a_share",
                     "order": [
-                        "tushare", "tencent", "mootdx", "eastmoney",
-                        "baostock", "akshare", "local",
+                        "tencent", "mootdx", "eastmoney", "baostock",
+                        "akshare", "tushare", "local",
                     ],
                 },
             ],

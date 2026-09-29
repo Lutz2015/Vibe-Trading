@@ -15,14 +15,13 @@ DEFAULT_MAX_ROWS = 250
 
 # Symbol -> preferred source. The matched source is a member of its market's
 # fallback chain (registry.FALLBACK_CHAINS), so an unavailable preferred source
-# still degrades gracefully to the rest of the chain. US equities route to the
-# throttle-tolerant Yahoo public endpoint first (lower IP-ban risk than the
-# yfinance SDK), A-shares and HK equities to the never-banned Tencent endpoint.
+# still degrades gracefully to the rest of the chain. Domestic (A-share / HK)
+# prefers Tushare Pro when the token is configured.
 _SOURCE_PATTERNS = [
     (re.compile(r"^local:", re.I), "local"),
-    (re.compile(r"^\d{6}\.(SZ|SH|BJ)$", re.I), "tencent"),
+    (re.compile(r"^\d{6}\.(SZ|SH|BJ)$", re.I), "tushare"),
     (re.compile(r"^[A-Z]+\.US$", re.I), "yahoo"),
-    (re.compile(r"^\d{3,5}\.HK$", re.I), "tencent"),
+    (re.compile(r"^\d{3,5}\.HK$", re.I), "tushare"),
     # India: NSE (RELIANCE.NS) / BSE (500325.BO). Tickers may carry '&' and '-'
     # (e.g. M&M.NS, BAJAJ-AUTO.NS). Served by Yahoo's public chart endpoint.
     (re.compile(r"^[A-Z0-9&.\-]+\.(NS|BO)$", re.I), "yahoo"),
@@ -227,9 +226,24 @@ def fetch_market_data(
     }
 
     groups: dict[tuple[str, str], list[str]] = {}
+    disabled_markets: list[str] = []
     for code in codes:
         src = detect_source(code) if source == "auto" else source
-        groups.setdefault((src, _detect_market(code)), []).append(code)
+        market = _detect_market(code)
+        from backtest.loaders.registry import is_market_enabled
+
+        if not is_market_enabled(market):
+            # Domestic-first policy: refuse overseas markets at the door.
+            results[code] = []
+            disabled_markets.append(code)
+            provenance[code] = {
+                "source": None,
+                "market": market,
+                "volume_unit": None,
+                "error": f"market_disabled:{market}",
+            }
+            continue
+        groups.setdefault((src, market), []).append(code)
 
     def _chain_for(src: str, market: str) -> list[str]:
         """Return the ordered fallback chain for ``src``.
@@ -470,6 +484,10 @@ def fetch_market_data(
                     )
                     unresolved.remove(code)
 
+    if disabled_markets:
+        for code in disabled_markets:
+            if code not in unresolved:
+                unresolved.append(code)
     if unresolved:
         results["_unresolved"] = unresolved
     if include_provenance and provenance:

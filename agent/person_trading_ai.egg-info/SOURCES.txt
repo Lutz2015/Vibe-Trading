@@ -1816,6 +1816,7 @@ agent/tests/test_market_data.py
 agent/tests/test_market_data_tool.py
 agent/tests/test_market_detection.py
 agent/tests/test_market_hooks_liquidation.py
+agent/tests/test_market_overview_indices.py
 agent/tests/test_market_screener_tool.py
 agent/tests/test_mcp_alpha_zoo_contract.py
 agent/tests/test_mcp_client_adapter.py

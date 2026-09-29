@@ -233,15 +233,15 @@ class TestFallbackChains:
         assert FALLBACK_CHAINS["crypto"][:3] == ["okx", "binance", "ccxt"]
 
     def test_chains_ordered_by_ip_ban_risk(self) -> None:
-        """Equity chains lead with throttle-tolerant public sources and trail
-        with key-gated REST fallbacks, in the exact reviewed order."""
+        """Domestic equity chains lead with Tushare Pro (preferred), then
+        throttle-tolerant public sources, then key-gated REST fallbacks."""
         assert FALLBACK_CHAINS["a_share"] == [
+            "tushare",
             "tencent",
             "mootdx",
             "eastmoney",
             "baostock",
             "akshare",
-            "tushare",
             "local",
         ]
         assert FALLBACK_CHAINS["us_equity"] == [
@@ -259,13 +259,13 @@ class TestFallbackChains:
             "local",
         ]
         assert FALLBACK_CHAINS["hk_equity"] == [
+            "tushare",
             "tencent",
             "eastmoney",
-            "yahoo",
-            "futu",
             "akshare",
+            "futu",
+            "yahoo",
             "yfinance",
-            "tushare",
             "longbridge",
             "local",
         ]
@@ -281,6 +281,22 @@ class TestFallbackChains:
     def test_a_share_includes_baostock(self) -> None:
         """'baostock' must remain a reachable A-share fallback."""
         assert "baostock" in FALLBACK_CHAINS["a_share"]
+
+    def test_domestic_first_allowlist(self) -> None:
+        """Overseas markets are refused unless MARKET_DATA_ENABLED_MARKETS widens."""
+        from backtest.loaders.base import NoAvailableSourceError
+        from backtest.loaders import registry as reg
+
+        assert reg.is_market_enabled("a_share") is True
+        assert reg.is_market_enabled("hk_equity") is True
+        assert reg.is_market_enabled("us_equity") is False
+        assert reg.is_market_enabled("crypto") is False
+        try:
+            reg.resolve_loader("us_equity")
+        except NoAvailableSourceError as exc:
+            assert "disabled" in str(exc).lower() or "allowlist" in str(exc).lower()
+        else:
+            raise AssertionError("us_equity should be blocked by default")
 
     def test_unchanged_chains_preserved(self) -> None:
         """crypto/fund/macro/forex chains must be left untouched."""

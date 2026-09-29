@@ -27,15 +27,14 @@ _HEADERS = {
     "Accept": "application/json,text/plain,*/*",
 }
 
-# Major indices (secid for eastmoney stock/get).
+# Major indices (secid for eastmoney stock/get). Domestic-first: A-share + HK.
 INDEX_SECIDS = [
     ("1.000001", "上证指数", "CN"),
     ("0.399001", "深证成指", "CN"),
     ("0.399006", "创业板指", "CN"),
     ("1.000300", "沪深300", "CN"),
-    ("100.DJIA", "道琼斯", "US"),
-    ("100.NDX", "纳斯达克", "US"),
-    ("100.SPX", "标普500", "US"),
+    ("100.HSI", "恒生指数", "HK"),
+    ("100.HSTECH", "恒生科技", "HK"),
 ]
 
 _EM_MIN_INTERVAL_S = 1.2
@@ -194,28 +193,57 @@ _EM_HOSTS = (
 )
 
 
-def _em_get(path: str, params: Dict[str, Any]) -> Any:
-    """GET Eastmoney JSON with process-wide spacing, host fallback, retries."""
-    import httpx
+def _em_get(
+    path: str,
+    params: Dict[str, Any],
+    *,
+    min_interval_s: Optional[float] = None,
+) -> Any:
+    """GET Eastmoney JSON with process-wide spacing, host fallback, retries.
+
+    Uses stdlib urllib first: push2 mirrors drop persistent/http2-style clients
+    mid-burst ("Server disconnected without sending a response"), while a fresh
+    HTTP/1.1 urllib request succeeds. httpx is kept as a secondary path.
+
+    Args:
+        path: Eastmoney API path (host is applied by the caller's host loop).
+        params: Query string parameters.
+        min_interval_s: Optional override of the global spacing. Board-leader
+            fan-out uses a lighter gap so multi-board overviews stay responsive.
+    """
+    import json as _json
+    import urllib.error
+    import urllib.parse
+    import urllib.request
 
     global _em_last_at
+    interval = _EM_MIN_INTERVAL_S if min_interval_s is None else max(0.0, float(min_interval_s))
     last: Exception | None = None
     for attempt in range(3):
         with _em_lock:
-            wait = _EM_MIN_INTERVAL_S - (time.monotonic() - _em_last_at)
+            wait = interval - (time.monotonic() - _em_last_at)
             if wait > 0:
                 time.sleep(wait)
             _em_last_at = time.monotonic()
         host = _EM_HOSTS[attempt % len(_EM_HOSTS)]
-        url = f"{host}{path}"
+        url = f"{host}{path}?{urllib.parse.urlencode(params)}"
         try:
+            request = urllib.request.Request(url, headers=_HEADERS)
+            with urllib.request.urlopen(request, timeout=10.0) as response:
+                return _json.loads(response.read().decode("utf-8"))
+        except Exception as exc:  # noqa: BLE001
+            last = exc
+            logger.debug("eastmoney urllib %s failed: %s", url, exc)
+        try:
+            import httpx
+
             with httpx.Client(timeout=10.0, follow_redirects=True) as client:
-                response = client.get(url, params=params, headers=_HEADERS)
+                response = client.get(f"{host}{path}", params=params, headers=_HEADERS)
                 response.raise_for_status()
                 return response.json()
         except Exception as exc:  # noqa: BLE001
             last = exc
-            logger.debug("eastmoney %s failed: %s", url, exc)
+            logger.debug("eastmoney httpx %s failed: %s", f"{host}{path}", exc)
             time.sleep(0.4 * (attempt + 1))
     raise last if last else RuntimeError("eastmoney request failed")
 
@@ -233,61 +261,168 @@ def _symbol_with_suffix(code: str) -> str:
     return code
 
 
-def _fetch_indices() -> List[QuoteItem]:
-    """One clist call for major CN/US indices (fewer round-trips than per-secid)."""
+def _quote_from_em_row(row: Dict[str, Any], secid: str, name: str, market: str) -> QuoteItem:
     try:
-        # m:1 = 上证指数等；m:100 = 国际指数；fid=f3 按涨跌幅，这里只要字段。
+        price = float(row.get("f2"))
+    except (TypeError, ValueError):
+        price = None
+    try:
+        chg = float(row.get("f3"))
+    except (TypeError, ValueError):
+        chg = None
+    return QuoteItem(
+        symbol=secid,
+        name=str(row.get("f14") or name),
+        market=market,
+        price=price,
+        change_pct=chg,
+        source="eastmoney",
+    )
+
+
+def _fetch_index_stock_get(secid: str, name: str, market: str) -> QuoteItem:
+    """Per-secid fallback via /api/qt/stock/get (reliable for CN/US majors)."""
+    try:
         payload = _em_get(
-            "/api/qt/clist/get",
-            {
-                "pn": 1,
-                "pz": 50,
-                "po": 1,
-                "np": 1,
-                "fltt": 2,
-                "invt": 2,
-                "fid": "f12",
-                "fs": "m:1+s:2,m:0+s:2,m:0+s:32,m:100",
-                "fields": "f12,f14,f2,f3",
-            },
+            "/api/qt/stock/get",
+            {"secid": secid, "fields": "f43,f57,f58,f169,f170", "fltt": 2},
         )
-        rows = ((payload or {}).get("data") or {}).get("diff") or []
-        by_code: Dict[str, Dict[str, Any]] = {}
-        for row in rows:
-            if isinstance(row, dict):
-                by_code[str(row.get("f12") or "")] = row
-        items: List[QuoteItem] = []
-        for secid, name, market in INDEX_SECIDS:
-            raw_code = secid.split(".")[-1]
-            raw = by_code.get(raw_code)
-            if not isinstance(raw, dict):
+        data = (payload or {}).get("data") or {}
+        if not isinstance(data, dict) or not data:
+            return QuoteItem(symbol=secid, name=name, market=market, error="unavailable")
+        try:
+            price = float(data.get("f43"))
+        except (TypeError, ValueError):
+            price = None
+        try:
+            chg = float(data.get("f170"))
+        except (TypeError, ValueError):
+            chg = None
+        return QuoteItem(
+            symbol=secid,
+            name=str(data.get("f58") or name),
+            market=market,
+            price=price,
+            change_pct=chg,
+            source="eastmoney",
+        )
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("index stock/get failed for %s: %s", secid, exc)
+        return QuoteItem(symbol=secid, name=name, market=market, error=str(exc)[:120])
+
+
+# Sina free quotes (GBK). Used when Eastmoney is rate-limiting the overview.
+# Codes map 1:1 with INDEX_SECIDS order (A-share + HK only).
+_SINA_INDEX_CODES = [
+    "s_sh000001",
+    "s_sz399001",
+    "s_sz399006",
+    "s_sh000300",
+    "int_hsi",
+    "int_hstech",
+]
+
+
+def _fetch_indices_sina() -> List[QuoteItem]:
+    """Fallback index snapshot from Sina HQ (no login, stable on CN networks)."""
+    import re
+    import urllib.request
+
+    items: List[QuoteItem] = []
+    try:
+        url = "https://hq.sinajs.cn/list=" + ",".join(_SINA_INDEX_CODES)
+        headers = {
+            "User-Agent": _HEADERS["User-Agent"],
+            "Referer": "https://finance.sina.com.cn/",
+        }
+        request = urllib.request.Request(url, headers=headers)
+        with urllib.request.urlopen(request, timeout=6.0) as response:
+            raw = response.read()
+        text = raw.decode("gbk", errors="replace")
+        quoted: Dict[str, str] = {}
+        for match in re.finditer(r'hq_str_([A-Za-z0-9_]+)="([^"]*)"', text):
+            quoted[match.group(1)] = match.group(2)
+
+        for (secid, name, market), sina_code in zip(INDEX_SECIDS, _SINA_INDEX_CODES):
+            payload = quoted.get(sina_code, "")
+            parts = [p.strip() for p in payload.split(",") if p.strip() != ""]
+            if len(parts) < 2:
                 items.append(QuoteItem(symbol=secid, name=name, market=market, error="unavailable"))
                 continue
             try:
-                price = float(raw.get("f2"))
+                price = float(parts[1])
             except (TypeError, ValueError):
                 price = None
-            try:
-                chg = float(raw.get("f3"))
-            except (TypeError, ValueError):
-                chg = None
+            change_pct: Optional[float] = None
+            # Sina index shape: name, price, change, change_pct, ...
+            if len(parts) >= 4:
+                try:
+                    change_pct = float(parts[3])
+                except (TypeError, ValueError):
+                    change_pct = None
             items.append(
                 QuoteItem(
                     symbol=secid,
-                    name=str(raw.get("f14") or name),
+                    name=name,
                     market=market,
                     price=price,
-                    change_pct=chg,
-                    source="eastmoney",
+                    change_pct=change_pct,
+                    source="sina",
                 )
             )
         return items
     except Exception as exc:  # noqa: BLE001
-        logger.warning("index fetch failed: %s", exc)
+        logger.warning("sina index fetch failed: %s", exc)
         return [
             QuoteItem(symbol=s, name=n, market=m, error=str(exc)[:120])
             for s, n, m in INDEX_SECIDS
         ]
+
+
+def _fetch_indices() -> List[QuoteItem]:
+    """Batch-fetch major CN/US indices via ulist (exact secids, one round-trip).
+
+    ``clist/get`` only returns a paged code-sorted slice of the index universe,
+    so major boards like 上证指数 / 沪深300 / 道琼斯 often miss the page and
+    render as empty cards. ``ulist.np/get`` accepts the explicit secid list.
+    Sina is the last-resort fallback when Eastmoney drops connections.
+    """
+    secids = ",".join(secid for secid, _, _ in INDEX_SECIDS)
+    by_key: Dict[str, Dict[str, Any]] = {}
+    try:
+        payload = _em_get(
+            "/api/qt/ulist.np/get",
+            {
+                "secids": secids,
+                "fields": "f2,f3,f12,f13,f14",
+                "fltt": 2,
+            },
+        )
+        rows = ((payload or {}).get("data") or {}).get("diff") or []
+        for row in rows:
+            if not isinstance(row, dict):
+                continue
+            code = str(row.get("f12") or "")
+            market_id = row.get("f13")
+            if code:
+                by_key[code] = row
+            if code and market_id is not None:
+                by_key[f"{market_id}.{code}"] = row
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("index ulist fetch failed: %s", exc)
+
+    if not by_key:
+        return _fetch_indices_sina()
+
+    items: List[QuoteItem] = []
+    for secid, name, market in INDEX_SECIDS:
+        raw_code = secid.split(".", 1)[-1]
+        raw = by_key.get(secid) or by_key.get(raw_code)
+        if isinstance(raw, dict):
+            items.append(_quote_from_em_row(raw, secid, name, market))
+        else:
+            items.append(_fetch_index_stock_get(secid, name, market))
+    return items
 
 
 def _fetch_board_list(kind: str, limit: int) -> List[HotBoard]:
@@ -348,6 +483,7 @@ def _fetch_board_leaders(board_code: str, limit: int = 5) -> List[QuoteItem]:
                 "fs": f"b:{board_code}",
                 "fields": "f12,f14,f2,f3",
             },
+            min_interval_s=0.35,
         )
         rows = ((payload or {}).get("data") or {}).get("diff") or []
         items: List[QuoteItem] = []
@@ -433,9 +569,10 @@ def _build_overview() -> MarketOverviewResponse:
     industries = _fetch_board_list("industry", 5)
     concepts = _fetch_board_list("concept", 3)
     boards = industries + concepts
-    # Leaders for the top board only — one extra EM round-trip under throttle.
-    if boards:
-        boards[0].leaders = _fetch_board_leaders(boards[0].board_code, 4)
+    # Leaders for every visible board so the UI does not show empty tables.
+    # Lighter spacing than the headline calls to keep overview latency bounded.
+    for board in boards:
+        board.leaders = _fetch_board_leaders(board.board_code, 4)
     hot_stocks = _fetch_hot_stocks(10)
     return MarketOverviewResponse(
         indices=indices,

@@ -20,14 +20,17 @@ portfolio:
   min_trade_lot: 100
   fee_bps: 3.0
 
+# 可选策略：界面「策略仓库」里可切换启用。默认只开动量。
 strategies:
-  - strategy_id: test1_multifactor
+  - strategy_id: momentum_topn
+    label: 日内动量 Top N
     enabled: true
     expected_return_pct: 18.0
     risk_volatility_pct: 12.0
     max_weight: 0.7
     params:
-      top_n: 5
+      mode: momentum
+      top_n: 4
       universe_symbols:
         - "000001.SZ"
         - "600519.SH"
@@ -38,10 +41,40 @@ strategies:
         - "601166.SH"
         - "600900.SH"
 
-  - strategy_id: test2_futures_spread
+  - strategy_id: mean_reversion_topn
+    label: 均值回归 Top N
+    enabled: false
+    expected_return_pct: 12.0
+    risk_volatility_pct: 10.0
+    max_weight: 0.5
+    params:
+      mode: mean_reversion
+      top_n: 4
+      universe_symbols:
+        - "000001.SZ"
+        - "600519.SH"
+        - "000858.SZ"
+        - "601318.SH"
+        - "600036.SH"
+        - "000333.SZ"
+        - "601166.SH"
+        - "600900.SH"
+
+  - strategy_id: equal_weight_core
+    label: 核心等权
     enabled: false
     expected_return_pct: 10.0
-    risk_volatility_pct: 6.0
-    max_weight: 0.3
+    risk_volatility_pct: 8.0
+    max_weight: 0.25
     params:
-      note: "futures automation deferred; enable after broker adapter is ready"
+      mode: equal_weight
+      top_n: 8
+      universe_symbols:
+        - "000001.SZ"
+        - "600519.SH"
+        - "000858.SZ"
+        - "601318.SH"
+        - "600036.SH"
+        - "000333.SZ"
+        - "601166.SH"
+        - "600900.SH"
